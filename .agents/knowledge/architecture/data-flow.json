@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "project": "UPA-GURU",
+  "version": "1.0.0",
+  "data_flows": [
+    {
+      "flow_id": "FLOW-01",
+      "name": "Notification Ingestion & HITL Verification",
+      "source": "Government Exam Websites (KPSC, UPSC, SSC, RRB)",
+      "ingestion_agent": "Scraper & RSS Module",
+      "ai_processor": "Gemini Structured Output LLM Engine",
+      "intermediate_state": "Supabase draft_notifications table",
+      "verification": "Admin HITL Portal Dashboard",
+      "destination": "Supabase notifications table (Published)",
+      "caching": "Redis Cache Invalidation & Update"
+    },
+    {
+      "flow_id": "FLOW-02",
+      "name": "Candidate Notification Consumption",
+      "source": "Published notifications in Supabase / Redis",
+      "presentation": "Next.js 15 App Router Edge CDN",
+      "seo_layer": "JobPosting & Event JSON-LD Generation",
+      "consumer": "Candidate Web / PWA Users"
+    },
+    {
+      "flow_id": "FLOW-03",
+      "name": "Omnichannel Real-Time Alert Dispatch",
+      "trigger": "PostgreSQL Insert/Update Trigger on published status",
+      "dispatcher": "Omnichannel Push Engine",
+      "channels": [
+        {
+          "name": "Telegram",
+          "protocol": "Telegram Bot API Channel & DM Broadcast"
+        },
+        {
+          "name": "WhatsApp",
+          "protocol": "WhatsApp Business API Template Message"
+        },
+        {
+          "name": "Web Push",
+          "protocol": "Firebase Cloud Messaging (FCM) Service Worker"
+        }
+      ]
+    },
+    {
+      "flow_id": "FLOW-04",
+      "name": "Candidate & Admin Authentication & RBAC",
+      "source": "Next.js 15 Auth Forms (Email/Password, Google OAuth 2.0, Magic Link)",
+      "identity_provider": "Supabase Auth (GoTrue)",
+      "sync_trigger": "handle_new_auth_user() on auth.users",
+      "persistence": "public.profiles & public.user_subscriptions",
+      "claims_engine": "custom_access_token_hook injecting role claim",
+      "authorization": "PostgreSQL Row Level Security (RLS) & Admin Audit Logging"
+    }
+  ]
+}

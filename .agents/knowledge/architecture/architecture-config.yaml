@@ -1,0 +1,38 @@
+project:
+  name: UPA-GURU
+  description: Pan-India Exam Notification & Competitive Examination Ecosystem
+  version: 1.0.0
+
+tech_stack:
+  frontend:
+    framework: Next.js 15 (App Router, RSC, Server Actions)
+    styling: Tailwind CSS / Vanilla CSS
+    pwa: Next-PWA / Workbox
+    deployment: Vercel / Edge CDN
+  backend:
+    platform: Supabase
+    database: PostgreSQL 15+
+    authentication: Supabase Auth (JWT, RBAC)
+    storage: Supabase Storage (PDFs, Thumbnails)
+    cache: Redis (Upstash / Cloud Redis)
+  ai_extraction:
+    model: Gemini Flash / Pro Structured Output
+    pdf_ocr: Tesseract / PDF.js
+  push_channels:
+    telegram: Telegram Bot API
+    whatsapp: WhatsApp Business API (Meta Cloud API)
+    web_push: Firebase Cloud Messaging (FCM)
+
+active_phases:
+  - phase_1:
+      name: Exam Notification Portal + Admin HITL Portal
+      priority: High
+      status: Active
+  - phase_2:
+      name: AI Extraction Engine + Web Scrapers
+      priority: High
+      status: Active
+  - phase_3:
+      name: Subscriptions + Omnichannel Push Engine
+      priority: High
+      status: Active

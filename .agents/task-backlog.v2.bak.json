@@ -1,0 +1,2757 @@
+{
+  "project": "UPA-GURU",
+  "version": "2.0.0",
+  "generated_at": "2026-09-02T13:00:00+05:30",
+  "source_references": [
+    "ADR-001-Frontend.md",
+    "ADR-002-Database.md",
+    "ADR-003-Authentication.md",
+    "ADR-004-Backend.md",
+    "ADR-005-Hosting.md",
+    "ADR-006-Search.md",
+    "ADR-007-Notification-System.md",
+    "ADR-008-SEO-Strategy.md",
+    "ADR-009-Analytics.md",
+    "ADR-010-Caching.md",
+    "ADR-011-File-Storage.md",
+    "ADR-012-Monitoring.md",
+    "ADR-013-Security.md",
+    "ADR-014-API-Design.md",
+    "ADR-015-AI-Integration.md",
+    "schema-v1.sql",
+    "system-architecture.md",
+    "data-flow.json"
+  ],
+  "epics": [
+    {
+      "epic_id": "EPIC-01",
+      "title": "Foundation: Database, Auth & Hosting Infrastructure",
+      "priority": "P0",
+      "status": "In Progress",
+      "estimated_effort": "3 weeks",
+      "features": [
+        {
+          "feature_id": "FEAT-0101",
+          "title": "Supabase PostgreSQL Database Schema & Migrations",
+          "priority": "P0",
+          "dependency": [],
+          "status": "Completed",
+          "estimated_effort": "3 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-010101",
+              "title": "As a developer, I need the core PostgreSQL schema deployed so all application tables exist with proper types and constraints.",
+              "priority": "P0",
+              "status": "Completed",
+              "estimated_effort": "2 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-01010101",
+                  "title": "Create Enum Types (exam_category_enum, notification_status_enum, draft_status_enum)",
+                  "priority": "P0",
+                  "dependency": [],
+                  "agent": "Solution Architect Agent",
+                  "estimated_effort": "1 hour",
+                  "status": "Completed",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0101010101",
+                      "title": "Define exam_category_enum with 8 values (civil_services, banking, railways, defense, state_psc, teaching, police, other)",
+                      "status": "Completed"
+                    },
+                    {
+                      "subtask_id": "SUB-0101010102",
+                      "title": "Define notification_status_enum (draft, under_review, published, archived)",
+                      "status": "Completed"
+                    },
+                    {
+                      "subtask_id": "SUB-0101010103",
+                      "title": "Define draft_status_enum (pending_review, approved, rejected)",
+                      "status": "Completed"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-01010102",
+                  "title": "Create Core Tables: exams, notifications, draft_notifications, user_subscriptions, audit_logs",
+                  "priority": "P0",
+                  "dependency": ["TASK-01010101"],
+                  "agent": "Solution Architect Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Completed",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0101010201",
+                      "title": "Create public.exams table with UUID PK, slug unique index, category enum, state_or_central field",
+                      "status": "Completed"
+                    },
+                    {
+                      "subtask_id": "SUB-0101010202",
+                      "title": "Create public.notifications table with FK to exams, JSONB syllabus_summary, status enum, verified_by FK",
+                      "status": "Completed"
+                    },
+                    {
+                      "subtask_id": "SUB-0101010203",
+                      "title": "Create public.draft_notifications table with source_url, parsed_json JSONB, extraction_confidence_score NUMERIC(5,2)",
+                      "status": "Completed"
+                    },
+                    {
+                      "subtask_id": "SUB-0101010204",
+                      "title": "Create public.user_subscriptions table with preferred_channels TEXT[], subscribed_exam_ids UUID[], subscribed_categories enum[]",
+                      "status": "Completed"
+                    },
+                    {
+                      "subtask_id": "SUB-0101010205",
+                      "title": "Create public.audit_logs table with admin_id FK, action TEXT, target_entity TEXT, metadata JSONB",
+                      "status": "Completed"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-01010103",
+                  "title": "Create Performance Indexes on notifications, exams, draft_notifications",
+                  "priority": "P0",
+                  "dependency": ["TASK-01010102"],
+                  "agent": "Solution Architect Agent",
+                  "estimated_effort": "1 hour",
+                  "status": "Completed",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0101010301",
+                      "title": "Create idx_notifications_status, idx_notifications_exam_id, idx_notifications_dates",
+                      "status": "Completed"
+                    },
+                    {
+                      "subtask_id": "SUB-0101010302",
+                      "title": "Create idx_exams_category, idx_exams_state",
+                      "status": "Completed"
+                    },
+                    {
+                      "subtask_id": "SUB-0101010303",
+                      "title": "Create idx_draft_status on draft_notifications(status)",
+                      "status": "Completed"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "story_id": "STORY-010102",
+              "title": "As a security engineer, I need mandatory Row Level Security policies on all tables to enforce RBAC at the database tier.",
+              "priority": "P0",
+              "status": "Completed",
+              "estimated_effort": "1 day",
+              "tasks": [
+                {
+                  "task_id": "TASK-01010201",
+                  "title": "Enable RLS on All 5 Public Tables",
+                  "priority": "P0",
+                  "dependency": ["TASK-01010102"],
+                  "agent": "Security Specialist Agent",
+                  "estimated_effort": "30 minutes",
+                  "status": "Completed",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0101020101",
+                      "title": "Execute ALTER TABLE ... ENABLE ROW LEVEL SECURITY on exams, notifications, draft_notifications, user_subscriptions, audit_logs",
+                      "status": "Completed"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-01010202",
+                  "title": "Create Public Read Policies for Candidate Access",
+                  "priority": "P0",
+                  "dependency": ["TASK-01010201"],
+                  "agent": "Security Specialist Agent",
+                  "estimated_effort": "1 hour",
+                  "status": "Completed",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0101020201",
+                      "title": "CREATE POLICY 'Public Read Published Exams' ON exams FOR SELECT USING (true)",
+                      "status": "Completed"
+                    },
+                    {
+                      "subtask_id": "SUB-0101020202",
+                      "title": "CREATE POLICY 'Public Read Published Notifications' ON notifications FOR SELECT USING (status = 'published')",
+                      "status": "Completed"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-01010203",
+                  "title": "Create Admin Full Access Policies Using JWT Role Claims",
+                  "priority": "P0",
+                  "dependency": ["TASK-01010201"],
+                  "agent": "Security Specialist Agent",
+                  "estimated_effort": "1 hour",
+                  "status": "Completed",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0101020301",
+                      "title": "CREATE POLICY 'Admin Full Access' FOR ALL USING (auth.jwt() ->> 'role' = 'admin') on exams, notifications, draft_notifications, audit_logs",
+                      "status": "Completed"
+                    },
+                    {
+                      "subtask_id": "SUB-0101020302",
+                      "title": "CREATE POLICY 'User Subscriptions Own Access' FOR ALL USING (auth.uid() = user_id)",
+                      "status": "Completed"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0102",
+          "title": "Supabase Auth Integration & RBAC Role Configuration",
+          "priority": "P0",
+          "dependency": ["FEAT-0101"],
+          "status": "Pending",
+          "estimated_effort": "3 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-010201",
+              "title": "As a candidate, I want to register and log in using Email/Password or Google OAuth so I can save my preferences.",
+              "priority": "P0",
+              "status": "Pending",
+              "estimated_effort": "1.5 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-01020101",
+                  "title": "Configure Supabase Auth Providers (Email/Password + Google OAuth)",
+                  "priority": "P0",
+                  "dependency": [],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "2 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0102010101",
+                      "title": "Enable Email/Password provider with mandatory email verification in Supabase Dashboard",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0102010102",
+                      "title": "Configure Google OAuth 2.0 provider with client ID/secret stored in environment variables",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0102010103",
+                      "title": "Configure Magic Link passwordless login provider",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-01020102",
+                  "title": "Build Supabase Auth Client Wrapper with TypeScript Types",
+                  "priority": "P0",
+                  "dependency": ["TASK-01020101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0102010201",
+                      "title": "Create lib/supabase/client.ts with browser Supabase client instance",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0102010202",
+                      "title": "Create lib/supabase/server.ts with server-side Supabase client (cookies-based auth for RSC)",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0102010203",
+                      "title": "Create lib/supabase/middleware.ts for Next.js middleware session refresh",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-01020103",
+                  "title": "Build Login / Register / Forgot Password UI Pages",
+                  "priority": "P0",
+                  "dependency": ["TASK-01020102"],
+                  "agent": "UI/UX Designer Agent",
+                  "estimated_effort": "6 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0102010301",
+                      "title": "Create /auth/login page with Email + Google OAuth buttons",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0102010302",
+                      "title": "Create /auth/register page with Zod form validation",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0102010303",
+                      "title": "Create /auth/forgot-password page with Magic Link trigger",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0102010304",
+                      "title": "Create /auth/callback route handler for OAuth code exchange",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "story_id": "STORY-010202",
+              "title": "As a system admin, I need JWT custom claims to carry role information (admin/moderator/candidate) for RLS enforcement.",
+              "priority": "P0",
+              "status": "Pending",
+              "estimated_effort": "1 day",
+              "tasks": [
+                {
+                  "task_id": "TASK-01020201",
+                  "title": "Create Supabase Database Function to Set Custom JWT Claims (role)",
+                  "priority": "P0",
+                  "dependency": ["TASK-01010201"],
+                  "agent": "Security Specialist Agent",
+                  "estimated_effort": "3 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0102020101",
+                      "title": "Write PL/pgSQL function set_user_role(user_id, role) to update auth.users raw_app_meta_data",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0102020102",
+                      "title": "Create database trigger on auth.users to set default role = 'candidate' on signup",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-01020202",
+                  "title": "Build Next.js Middleware for Role-Based Route Protection",
+                  "priority": "P0",
+                  "dependency": ["TASK-01020102", "TASK-01020201"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0102020201",
+                      "title": "Create middleware.ts with route matchers: /admin/* requires role=admin, /auth/* is public, /* is public read",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0102020202",
+                      "title": "Redirect unauthorized users to /auth/login with returnTo param",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0103",
+          "title": "Cloud Hosting & Deployment Pipeline Setup",
+          "priority": "P0",
+          "dependency": [],
+          "status": "Pending",
+          "estimated_effort": "2 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-010301",
+              "title": "As a developer, I need a CI/CD pipeline from GitHub to Vercel with automatic preview deployments.",
+              "priority": "P0",
+              "status": "Pending",
+              "estimated_effort": "1 day",
+              "tasks": [
+                {
+                  "task_id": "TASK-01030101",
+                  "title": "Initialize Next.js 15 App Router Project with TypeScript Strict Mode",
+                  "priority": "P0",
+                  "dependency": [],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "2 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0103010101",
+                      "title": "Run npx create-next-app@latest with App Router, TypeScript, ESLint, Tailwind CSS flags",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0103010102",
+                      "title": "Configure tsconfig.json strict mode, path aliases (@/components, @/lib, @/types)",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0103010103",
+                      "title": "Create .env.local.example template with all required env var placeholders",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-01030102",
+                  "title": "Connect GitHub Repo to Vercel Project with Environment Variables",
+                  "priority": "P0",
+                  "dependency": ["TASK-01030101"],
+                  "agent": "DevOps Agent",
+                  "estimated_effort": "1 hour",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0103010201",
+                      "title": "Link GitHub repo to Vercel project, configure production/preview branches",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0103010202",
+                      "title": "Set all Supabase, Redis, Sentry, and analytics environment variables in Vercel Dashboard",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-01030103",
+                  "title": "Configure Security Headers in next.config.js",
+                  "priority": "P0",
+                  "dependency": ["TASK-01030101"],
+                  "agent": "Security Specialist Agent",
+                  "estimated_effort": "2 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0103010301",
+                      "title": "Add Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Referrer-Policy headers",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0103010302",
+                      "title": "Configure CORS allowed origins for Supabase and Vercel domains",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0104",
+          "title": "Upstash Redis Cache & Rate Limiter Setup",
+          "priority": "P1",
+          "dependency": ["FEAT-0103"],
+          "status": "Pending",
+          "estimated_effort": "1 day",
+          "user_stories": [
+            {
+              "story_id": "STORY-010401",
+              "title": "As a platform operator, I need Redis-backed rate limiting on public API endpoints to prevent abuse.",
+              "priority": "P1",
+              "status": "Pending",
+              "estimated_effort": "1 day",
+              "tasks": [
+                {
+                  "task_id": "TASK-01040101",
+                  "title": "Provision Upstash Redis Instance & Configure Environment Variables",
+                  "priority": "P1",
+                  "dependency": [],
+                  "agent": "DevOps Agent",
+                  "estimated_effort": "1 hour",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0104010101",
+                      "title": "Create Upstash Redis instance, store UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in .env.local",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-01040102",
+                  "title": "Implement Sliding Window Rate Limiter Middleware Using @upstash/ratelimit",
+                  "priority": "P1",
+                  "dependency": ["TASK-01040101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "3 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0104010201",
+                      "title": "Create lib/rate-limit.ts using @upstash/ratelimit with sliding window (60 requests/minute per IP)",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0104010202",
+                      "title": "Apply rate limiter to /api/v1/search and /api/v1/notifications routes",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "epic_id": "EPIC-02",
+      "title": "Candidate Portal: Notification Feed, Detail Pages & Search",
+      "priority": "P0",
+      "status": "Pending",
+      "estimated_effort": "4 weeks",
+      "features": [
+        {
+          "feature_id": "FEAT-0201",
+          "title": "Application Shell, Global Layout & Navigation",
+          "priority": "P0",
+          "dependency": ["FEAT-0103"],
+          "status": "Pending",
+          "estimated_effort": "3 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-020101",
+              "title": "As a candidate, I want a responsive, fast-loading navigation bar with UPA-GURU branding, search bar, and category links.",
+              "priority": "P0",
+              "status": "Pending",
+              "estimated_effort": "2 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-02010101",
+                  "title": "Build Root Layout (app/layout.tsx) with Global CSS, Fonts & Metadata",
+                  "priority": "P0",
+                  "dependency": ["TASK-01030101"],
+                  "agent": "UI/UX Designer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0201010101",
+                      "title": "Import Inter/Outfit Google Fonts via next/font/google",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0201010102",
+                      "title": "Set global metadata: title template 'UPA-GURU | %s', description, OpenGraph defaults",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0201010103",
+                      "title": "Create global CSS variables for color palette, spacing, and typography tokens",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-02010102",
+                  "title": "Build Responsive Header Component with Logo, Navigation Links & Mobile Menu",
+                  "priority": "P0",
+                  "dependency": ["TASK-02010101"],
+                  "agent": "UI/UX Designer Agent",
+                  "estimated_effort": "6 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0201010201",
+                      "title": "Create Header RSC component with UPA-GURU logo, nav links (Home, Categories, About)",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0201010202",
+                      "title": "Create MobileMenuToggle client component with hamburger animation and slide-out drawer",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0201010203",
+                      "title": "Integrate search bar input in header with debounced search trigger",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-02010103",
+                  "title": "Build Footer Component with Links, Social Icons & Copyright",
+                  "priority": "P1",
+                  "dependency": ["TASK-02010101"],
+                  "agent": "UI/UX Designer Agent",
+                  "estimated_effort": "2 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0201010301",
+                      "title": "Create Footer RSC component with sitemap links, social media icons, and copyright text",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0202",
+          "title": "Homepage: Notification Feed with Filters & Pagination",
+          "priority": "P0",
+          "dependency": ["FEAT-0201", "FEAT-0101"],
+          "status": "Pending",
+          "estimated_effort": "5 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-020201",
+              "title": "As a candidate, I want to browse a paginated feed of published exam notifications with filter controls for category, state, and deadline.",
+              "priority": "P0",
+              "status": "Pending",
+              "estimated_effort": "3 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-02020101",
+                  "title": "Create Supabase Data Access Layer for Notifications (lib/data/notifications.ts)",
+                  "priority": "P0",
+                  "dependency": ["TASK-01010102"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0202010101",
+                      "title": "Create getPublishedNotifications(filters, page, limit) function using Supabase client",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0202010102",
+                      "title": "Create Zod schemas for query parameter validation (NotificationFilterSchema)",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0202010103",
+                      "title": "Create TypeScript types/interfaces for Notification, Exam, FilterParams",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-02020102",
+                  "title": "Build NotificationCard RSC Component",
+                  "priority": "P0",
+                  "dependency": ["TASK-02020101"],
+                  "agent": "UI/UX Designer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0202010201",
+                      "title": "Display title, conducting body, total vacancies, application deadline, category badge",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0202010202",
+                      "title": "Add deadline countdown chip (e.g. '5 days left') with color-coded urgency styling",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0202010203",
+                      "title": "Link card to /notification/[slug] detail page",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-02020103",
+                  "title": "Build FilterBar Client Component (Category, State, Deadline Selectors)",
+                  "priority": "P0",
+                  "dependency": ["TASK-02010101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "6 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0202010301",
+                      "title": "Create CategoryFilter pill group with exam_category_enum values",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0202010302",
+                      "title": "Create StateFilter dropdown (Central, Karnataka, Tamil Nadu, etc.)",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0202010303",
+                      "title": "Create DeadlineFilter toggle (Active / Expired / All)",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0202010304",
+                      "title": "Wire filters to URL search params using useSearchParams() and router.push()",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-02020104",
+                  "title": "Build Homepage Route (app/page.tsx) Integrating Feed + Filters + Pagination",
+                  "priority": "P0",
+                  "dependency": ["TASK-02020102", "TASK-02020103"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0202010401",
+                      "title": "Server component data fetch: read searchParams, validate with Zod, query Supabase",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0202010402",
+                      "title": "Render NotificationCard list with Suspense fallback skeleton",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0202010403",
+                      "title": "Build Pagination component with prev/next buttons and page number display",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0203",
+          "title": "Notification Detail Page (/notification/[slug]) with SSR & JSON-LD",
+          "priority": "P0",
+          "dependency": ["FEAT-0202"],
+          "status": "Pending",
+          "estimated_effort": "4 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-020301",
+              "title": "As a candidate, I want to view complete notification details (vacancies, dates, qualifications, PDF download, apply link) on a dedicated SEO-optimized page.",
+              "priority": "P0",
+              "status": "Pending",
+              "estimated_effort": "2.5 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-02030101",
+                  "title": "Build /notification/[slug] Dynamic Route with generateMetadata & generateStaticParams",
+                  "priority": "P0",
+                  "dependency": ["TASK-02020101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "6 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0203010101",
+                      "title": "Create app/notification/[slug]/page.tsx as RSC with Supabase data fetch by slug",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0203010102",
+                      "title": "Implement generateMetadata() for dynamic title, description, canonical URL, OpenGraph image",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0203010103",
+                      "title": "Implement generateStaticParams() to pre-render top published notifications at build time",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-02030102",
+                  "title": "Build NotificationDetail Component with Vacancy Table, Key Dates, Eligibility Section",
+                  "priority": "P0",
+                  "dependency": ["TASK-02030101"],
+                  "agent": "UI/UX Designer Agent",
+                  "estimated_effort": "6 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0203010201",
+                      "title": "Display notification title, conducting body logo, notification number, and status badge",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0203010202",
+                      "title": "Render Key Dates table (application start/end, exam date) with countdown timers",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0203010203",
+                      "title": "Render Eligibility section: qualification, age limits, selection process steps",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0203010204",
+                      "title": "Render action buttons: 'Download Official PDF' and 'Apply Online Now'",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-02030103",
+                  "title": "Inject Google JobPosting & Event JSON-LD Schema Tags",
+                  "priority": "P0",
+                  "dependency": ["TASK-02030101"],
+                  "agent": "SEO Specialist Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0203010301",
+                      "title": "Create lib/seo/json-ld.ts helper to generate JobPosting schema from notification data",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0203010302",
+                      "title": "Create Event schema generator for exam date events",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0203010303",
+                      "title": "Inject <script type='application/ld+json'> block into page head via generateMetadata",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0203010304",
+                      "title": "Validate output with Google Rich Results Test tool",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0204",
+          "title": "Full-Text Search with PostgreSQL FTS & Trigram Fuzzy Matching",
+          "priority": "P0",
+          "dependency": ["FEAT-0101", "FEAT-0202"],
+          "status": "Pending",
+          "estimated_effort": "3 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-020401",
+              "title": "As a candidate, I want to search notifications by keywords (title, conducting body, qualification) with fuzzy matching for misspellings.",
+              "priority": "P0",
+              "status": "Pending",
+              "estimated_effort": "3 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-02040101",
+                  "title": "Enable pg_trgm Extension and Create FTS Indexes in Supabase",
+                  "priority": "P0",
+                  "dependency": ["TASK-01010102"],
+                  "agent": "Solution Architect Agent",
+                  "estimated_effort": "2 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0204010101",
+                      "title": "Execute CREATE EXTENSION IF NOT EXISTS pg_trgm",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0204010102",
+                      "title": "Add generated tsvector column fts_document on notifications table",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0204010103",
+                      "title": "Create GIN index idx_notifications_fts on fts_document",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0204010104",
+                      "title": "Create GIN trigram index idx_notifications_title_trgm on title",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-02040102",
+                  "title": "Build Search API Route (/api/v1/search) with Zod Query Validation",
+                  "priority": "P0",
+                  "dependency": ["TASK-02040101", "TASK-01040102"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0204010201",
+                      "title": "Create app/api/v1/search/route.ts with GET handler",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0204010202",
+                      "title": "Validate query params with Zod SearchQuerySchema (q, category, state, page, limit)",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0204010203",
+                      "title": "Execute Supabase textSearch() or pg_trgm similarity query based on input",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0204010204",
+                      "title": "Apply rate limiter middleware from lib/rate-limit.ts",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-02040103",
+                  "title": "Build Debounced Search Results Client Component",
+                  "priority": "P0",
+                  "dependency": ["TASK-02040102"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0204010301",
+                      "title": "Create SearchResults 'use client' component with 300ms debounced fetch to /api/v1/search",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0204010302",
+                      "title": "Display search results as NotificationCard list with query highlight",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0204010303",
+                      "title": "Show 'No results found' empty state with suggestion prompts",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0205",
+          "title": "Programmatic SEO Landing Pages (Category & State Routes)",
+          "priority": "P0",
+          "dependency": ["FEAT-0203"],
+          "status": "Pending",
+          "estimated_effort": "3 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-020501",
+              "title": "As a search engine crawler, I want to discover dedicated category and state landing pages with unique metadata for optimal indexing.",
+              "priority": "P0",
+              "status": "Pending",
+              "estimated_effort": "2 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-02050101",
+                  "title": "Build /category/[category] Dynamic Route with SSR & Metadata",
+                  "priority": "P0",
+                  "dependency": ["TASK-02020101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0205010101",
+                      "title": "Create app/category/[category]/page.tsx filtering notifications by exam_category_enum value",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0205010102",
+                      "title": "Generate dynamic metadata: 'Civil Services Exam Notifications 2026 | UPA-GURU'",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-02050102",
+                  "title": "Build /state/[state] Dynamic Route with SSR & Metadata",
+                  "priority": "P0",
+                  "dependency": ["TASK-02020101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0205010201",
+                      "title": "Create app/state/[state]/page.tsx filtering notifications by state_or_central value",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0205010202",
+                      "title": "Generate dynamic metadata: 'Karnataka Government Exam Notifications | UPA-GURU'",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-02050103",
+                  "title": "Build /exam/[slug] Exam Hub Route for Exam Series Pages",
+                  "priority": "P1",
+                  "dependency": ["TASK-02020101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0205010301",
+                      "title": "Create app/exam/[slug]/page.tsx listing all notifications for a specific exam series",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0205010302",
+                      "title": "Display exam metadata (conducting body, official website, logo) as hero section",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "story_id": "STORY-020502",
+              "title": "As a search engine crawler, I need a dynamic XML sitemap listing all published routes for fast indexation.",
+              "priority": "P0",
+              "status": "Pending",
+              "estimated_effort": "1 day",
+              "tasks": [
+                {
+                  "task_id": "TASK-02050201",
+                  "title": "Generate Dynamic XML Sitemap at /sitemap.xml",
+                  "priority": "P0",
+                  "dependency": ["TASK-02050101"],
+                  "agent": "SEO Specialist Agent",
+                  "estimated_effort": "3 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0205020101",
+                      "title": "Create app/sitemap.ts using Next.js MetadataRoute.Sitemap type",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0205020102",
+                      "title": "Query all published notification slugs, exam slugs, category values, and state values",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0205020103",
+                      "title": "Generate URL entries with lastModified timestamps and priority scores",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-02050202",
+                  "title": "Create robots.txt with Sitemap Reference",
+                  "priority": "P1",
+                  "dependency": [],
+                  "agent": "SEO Specialist Agent",
+                  "estimated_effort": "30 minutes",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0205020201",
+                      "title": "Create app/robots.ts with Allow: / and Sitemap: https://upaguru.in/sitemap.xml",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "epic_id": "EPIC-03",
+      "title": "Admin HITL Verification Portal & Audit System",
+      "priority": "P0",
+      "status": "Pending",
+      "estimated_effort": "3 weeks",
+      "features": [
+        {
+          "feature_id": "FEAT-0301",
+          "title": "Admin Dashboard Layout & Protected Routes",
+          "priority": "P0",
+          "dependency": ["FEAT-0102"],
+          "status": "Pending",
+          "estimated_effort": "2 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-030101",
+              "title": "As an admin, I want a secure, role-gated dashboard with sidebar navigation for managing notifications, exams, and drafts.",
+              "priority": "P0",
+              "status": "Pending",
+              "estimated_effort": "2 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-03010101",
+                  "title": "Build Admin Layout (app/admin/layout.tsx) with Sidebar Navigation & Auth Gate",
+                  "priority": "P0",
+                  "dependency": ["TASK-01020202"],
+                  "agent": "UI/UX Designer Agent",
+                  "estimated_effort": "6 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0301010101",
+                      "title": "Create admin layout with collapsible sidebar (Dashboard, Draft Review, Exams, Notifications, Audit Logs)",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0301010102",
+                      "title": "Add admin user info display (name, role badge) in sidebar header",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0301010103",
+                      "title": "Implement server-side auth check in layout: redirect non-admin users to /auth/login",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-03010102",
+                  "title": "Build Admin Dashboard Overview Page (/admin)",
+                  "priority": "P1",
+                  "dependency": ["TASK-03010101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0301010201",
+                      "title": "Display stats cards: total published notifications, pending drafts, total exams, active subscriptions",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0301010202",
+                      "title": "Show recent activity feed from audit_logs table",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0302",
+          "title": "Draft Notification HITL Review Dashboard",
+          "priority": "P0",
+          "dependency": ["FEAT-0301"],
+          "status": "Pending",
+          "estimated_effort": "5 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-030201",
+              "title": "As an admin, I want to review AI-extracted draft notifications in a side-by-side view (raw source vs parsed form) with approve/edit/reject actions.",
+              "priority": "P0",
+              "status": "Pending",
+              "estimated_effort": "4 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-03020101",
+                  "title": "Build Draft Queue List Page (/admin/drafts) with Status Filters",
+                  "priority": "P0",
+                  "dependency": ["TASK-03010101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0302010101",
+                      "title": "Query draft_notifications table ordered by created_at DESC, filterable by status enum",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0302010102",
+                      "title": "Display draft list cards with source_name, confidence score badge, and created_at timestamp",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0302010103",
+                      "title": "Color-code confidence badges: green (>=0.85), yellow (0.50-0.84), red (<0.50)",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-03020102",
+                  "title": "Build Side-by-Side HITL Review Page (/admin/drafts/[id]/review)",
+                  "priority": "P0",
+                  "dependency": ["TASK-03020101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "8 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0302010201",
+                      "title": "Left panel: Editable form pre-filled with parsed_json fields (title, dates, vacancies, qualifications, age limits)",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0302010202",
+                      "title": "Right panel: Raw source display (raw_extracted_text or embedded PDF iframe from source_url)",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0302010203",
+                      "title": "Field-level confidence highlighting: yellow outline on fields with low individual confidence",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-03020103",
+                  "title": "Implement Approve & Publish Server Action with Audit Logging",
+                  "priority": "P0",
+                  "dependency": ["TASK-03020102"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "6 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0302010301",
+                      "title": "Create approveDraftAction Server Action: validate form with Zod, insert into notifications, update draft status to 'approved'",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0302010302",
+                      "title": "Generate URL slug from notification title using slugify utility",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0302010303",
+                      "title": "Write audit_log entry: action='PUBLISH_NOTIFICATION', admin_id=auth.uid(), target_entity='notifications', metadata with draft_id and confidence_score",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0302010304",
+                      "title": "Trigger revalidatePath('/notification/[slug]') and revalidateTag('notifications') for ISR cache purge",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-03020104",
+                  "title": "Implement Reject Draft Server Action with Audit Logging",
+                  "priority": "P0",
+                  "dependency": ["TASK-03020102"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "2 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0302010401",
+                      "title": "Create rejectDraftAction: update draft status to 'rejected', write audit_log entry with rejection reason metadata",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0303",
+          "title": "Admin Exam & Notification CRUD Management",
+          "priority": "P0",
+          "dependency": ["FEAT-0301"],
+          "status": "Pending",
+          "estimated_effort": "4 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-030301",
+              "title": "As an admin, I want to manually create, edit, and archive exams and notifications through form interfaces with full validation.",
+              "priority": "P0",
+              "status": "Pending",
+              "estimated_effort": "4 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-03030101",
+                  "title": "Build Exam Management CRUD Pages (/admin/exams)",
+                  "priority": "P0",
+                  "dependency": ["TASK-03010101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "6 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0303010101",
+                      "title": "Create /admin/exams list page with search, pagination, and 'Add Exam' button",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0303010102",
+                      "title": "Create /admin/exams/new page with Zod-validated form: title, slug, conducting_body, category, state_or_central, official_website",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0303010103",
+                      "title": "Create /admin/exams/[id]/edit page pre-filled with existing exam data",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0303010104",
+                      "title": "Create Server Actions: createExamAction, updateExamAction with audit_log writes",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-03030102",
+                  "title": "Build Notification Management CRUD Pages (/admin/notifications)",
+                  "priority": "P0",
+                  "dependency": ["TASK-03030101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "8 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0303010201",
+                      "title": "Create /admin/notifications list page with status filter tabs (Draft, Published, Archived)",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0303010202",
+                      "title": "Create /admin/notifications/new page with multi-field Zod form: exam dropdown, title, dates, vacancies, qualifications[], selection_process[]",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0303010203",
+                      "title": "Create /admin/notifications/[id]/edit page with status change controls (publish, archive)",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0303010204",
+                      "title": "Create Server Actions: createNotificationAction, updateNotificationAction, archiveNotificationAction with audit_log writes and cache revalidation",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0304",
+          "title": "Admin Audit Log Viewer",
+          "priority": "P1",
+          "dependency": ["FEAT-0301"],
+          "status": "Pending",
+          "estimated_effort": "1 day",
+          "user_stories": [
+            {
+              "story_id": "STORY-030401",
+              "title": "As a super admin, I want to view a searchable, filterable audit trail of all admin actions.",
+              "priority": "P1",
+              "status": "Pending",
+              "estimated_effort": "1 day",
+              "tasks": [
+                {
+                  "task_id": "TASK-03040101",
+                  "title": "Build Audit Log Viewer Page (/admin/audit-logs)",
+                  "priority": "P1",
+                  "dependency": ["TASK-03010101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "6 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0304010101",
+                      "title": "Query audit_logs table with pagination, ordered by created_at DESC",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0304010102",
+                      "title": "Display table columns: timestamp, admin name, action, target entity, target ID, expandable metadata JSON",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0304010103",
+                      "title": "Add filter controls: action type dropdown, date range picker, admin user selector",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "epic_id": "EPIC-04",
+      "title": "AI Extraction Engine & Multi-Source Government Scrapers",
+      "priority": "P0",
+      "status": "Pending",
+      "estimated_effort": "4 weeks",
+      "features": [
+        {
+          "feature_id": "FEAT-0401",
+          "title": "Python Scraper Infrastructure & Scheduler",
+          "priority": "P0",
+          "dependency": ["FEAT-0101"],
+          "status": "Pending",
+          "estimated_effort": "5 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-040101",
+              "title": "As a platform operator, I need automated daily web scrapers that crawl government portals and download new notification PDFs.",
+              "priority": "P0",
+              "status": "Pending",
+              "estimated_effort": "5 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-04010101",
+                  "title": "Initialize Python Scraper Project (FastAPI + Playwright + APScheduler)",
+                  "priority": "P0",
+                  "dependency": [],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0401010101",
+                      "title": "Create /scraper directory with pyproject.toml, requirements.txt (fastapi, playwright, apscheduler, supabase-py, google-generativeai)",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0401010102",
+                      "title": "Create Dockerfile for containerized scraper with Playwright Chromium dependencies",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0401010103",
+                      "title": "Configure environment variables: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GEMINI_API_KEY",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-04010102",
+                  "title": "Build KPSC Portal Crawler Module",
+                  "priority": "P0",
+                  "dependency": ["TASK-04010101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "8 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0401010201",
+                      "title": "Navigate to KPSC notification listings page using Playwright headless Chromium",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0401010202",
+                      "title": "Extract notification links and PDF attachment URLs from DOM",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0401010203",
+                      "title": "Check Redis deduplication lock (lock:crawler:kpsc:{pdf_hash}) to skip previously processed PDFs",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0401010204",
+                      "title": "Download new PDF files and upload to Supabase Storage draft-attachments bucket",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-04010103",
+                  "title": "Build UPSC Portal Crawler Module",
+                  "priority": "P0",
+                  "dependency": ["TASK-04010101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "6 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0401010301",
+                      "title": "Navigate to UPSC notifications page, extract new notification PDF links",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0401010302",
+                      "title": "Apply Redis deduplication, download PDFs, upload to draft-attachments",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-04010104",
+                  "title": "Build SSC & RRB Portal Crawler Modules",
+                  "priority": "P1",
+                  "dependency": ["TASK-04010101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "8 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0401010401",
+                      "title": "Build SSC crawler: navigate ssc.nic.in, extract notification links, apply dedup, download",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0401010402",
+                      "title": "Build RRB crawler: navigate regional RRB portal, extract recruitment notification links",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-04010105",
+                  "title": "Configure APScheduler Daily Cron Job for All Crawler Modules",
+                  "priority": "P0",
+                  "dependency": ["TASK-04010102", "TASK-04010103"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "2 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0401010501",
+                      "title": "Schedule daily cron triggers at 06:00 IST and 18:00 IST for all active crawlers",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0401010502",
+                      "title": "Integrate Healthchecks.io ping on successful crawl completion",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0402",
+          "title": "Gemini LLM Structured Extraction Pipeline",
+          "priority": "P0",
+          "dependency": ["FEAT-0401"],
+          "status": "Pending",
+          "estimated_effort": "5 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-040201",
+              "title": "As a platform operator, I need an AI pipeline that parses raw PDF text into structured JSON with confidence scoring.",
+              "priority": "P0",
+              "status": "Pending",
+              "estimated_effort": "5 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-04020101",
+                  "title": "Build PDF Text Extraction Module (OCR Fallback)",
+                  "priority": "P0",
+                  "dependency": ["TASK-04010101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "6 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0402010101",
+                      "title": "Implement primary PDF text extraction using PyPDF2/pdfplumber",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0402010102",
+                      "title": "Implement Tesseract OCR fallback for scanned/image-based PDFs",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-04020102",
+                  "title": "Design & Implement Gemini Structured Output Extraction Prompt",
+                  "priority": "P0",
+                  "dependency": ["TASK-04020101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "8 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0402010201",
+                      "title": "Define Pydantic model for extraction output: title, conducting_body, total_vacancies, dates, qualifications, age limits, selection_process, confidence_score",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0402010202",
+                      "title": "Craft system prompt with few-shot examples of Indian government notification formats",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0402010203",
+                      "title": "Call Gemini API with structured output schema using google-generativeai SDK",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0402010204",
+                      "title": "Validate API response against Pydantic schema, compute confidence score",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-04020103",
+                  "title": "Insert Extracted Results into draft_notifications Table",
+                  "priority": "P0",
+                  "dependency": ["TASK-04020102"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "3 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0402010301",
+                      "title": "Insert record with source_url, source_name, raw_extracted_text, parsed_json, extraction_confidence_score, status='pending_review'",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0402010302",
+                      "title": "Link uploaded PDF attachment URL from draft-attachments bucket",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-04020104",
+                  "title": "Build Extraction Accuracy Benchmark Test Suite",
+                  "priority": "P1",
+                  "dependency": ["TASK-04020102"],
+                  "agent": "QA Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0402010401",
+                      "title": "Curate benchmark set of 20 sample government PDFs with known ground truth JSON",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0402010402",
+                      "title": "Write pytest test comparing extraction output to ground truth (>90% field accuracy target)",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "epic_id": "EPIC-05",
+      "title": "Candidate Subscriptions & Omnichannel Push Alert Engine",
+      "priority": "P1",
+      "status": "Pending",
+      "estimated_effort": "3 weeks",
+      "features": [
+        {
+          "feature_id": "FEAT-0501",
+          "title": "Candidate Subscription Preference Center",
+          "priority": "P1",
+          "dependency": ["FEAT-0102"],
+          "status": "Pending",
+          "estimated_effort": "3 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-050101",
+              "title": "As a candidate, I want to select my preferred exam categories, target states, and alert channels so I receive relevant notifications only.",
+              "priority": "P1",
+              "status": "Pending",
+              "estimated_effort": "3 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-05010101",
+                  "title": "Build Subscription Preference Form Component",
+                  "priority": "P1",
+                  "dependency": ["TASK-01020102"],
+                  "agent": "UI/UX Designer Agent",
+                  "estimated_effort": "6 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0501010101",
+                      "title": "Create multi-select checkboxes for exam categories (exam_category_enum values)",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0501010102",
+                      "title": "Create multi-select for target states (Karnataka, Tamil Nadu, Central, etc.)",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0501010103",
+                      "title": "Create channel toggle switches: Web Push, Telegram, WhatsApp, Email",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0501010104",
+                      "title": "Show conditional input fields: Telegram chat ID input, WhatsApp phone number input",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-05010102",
+                  "title": "Build Subscription Save/Update Server Action with Zod Validation",
+                  "priority": "P1",
+                  "dependency": ["TASK-05010101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0501010201",
+                      "title": "Create saveSubscriptionAction: upsert user_subscriptions row using auth.uid()",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0501010202",
+                      "title": "Validate inputs with Zod SubscriptionSchema (channels[], categories[], states[])",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-05010103",
+                  "title": "Build Subscription API Endpoint for Mobile/External Clients",
+                  "priority": "P2",
+                  "dependency": ["TASK-05010102"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "3 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0501010301",
+                      "title": "Create POST /api/v1/subscriptions route handler with JWT auth and Zod validation",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0502",
+          "title": "FCM Web Push Notification Integration",
+          "priority": "P1",
+          "dependency": ["FEAT-0501"],
+          "status": "Pending",
+          "estimated_effort": "3 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-050201",
+              "title": "As a candidate, I want to receive browser push notifications when new exam notifications matching my preferences are published.",
+              "priority": "P1",
+              "status": "Pending",
+              "estimated_effort": "3 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-05020101",
+                  "title": "Configure Firebase Cloud Messaging (FCM) & VAPID Keys",
+                  "priority": "P1",
+                  "dependency": [],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "2 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0502010101",
+                      "title": "Generate VAPID key pair, store FCM server key in environment variables",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0502010102",
+                      "title": "Create firebase-messaging-sw.js service worker for background push reception",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-05020102",
+                  "title": "Build Push Permission Request & Token Registration Flow",
+                  "priority": "P1",
+                  "dependency": ["TASK-05020101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0502010201",
+                      "title": "Create PushPermissionBanner client component requesting Notification.requestPermission()",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0502010202",
+                      "title": "On grant, retrieve FCM device token and save to user_subscriptions.fcm_device_token",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-05020103",
+                  "title": "Build FCM Push Dispatch Function (Server-Side)",
+                  "priority": "P1",
+                  "dependency": ["TASK-05020102"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0502010301",
+                      "title": "Create lib/push/fcm.ts: send push notification with title, body, icon, click_action URL",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0502010302",
+                      "title": "Query user_subscriptions matching published notification's category/state, batch send to all matching fcm_device_tokens",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0503",
+          "title": "Telegram Bot API Broadcast Engine",
+          "priority": "P1",
+          "dependency": ["FEAT-0501"],
+          "status": "Pending",
+          "estimated_effort": "3 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-050301",
+              "title": "As a candidate using Telegram, I want to receive instant formatted messages in my DM or UPA-GURU channel when notifications matching my preferences are published.",
+              "priority": "P1",
+              "status": "Pending",
+              "estimated_effort": "3 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-05030101",
+                  "title": "Create Telegram Bot & Configure Webhook",
+                  "priority": "P1",
+                  "dependency": [],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "2 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0503010101",
+                      "title": "Register @UpaGuruBot via BotFather, store TELEGRAM_BOT_TOKEN in env vars",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0503010102",
+                      "title": "Create Telegram channel @UpaGuruAlerts and add bot as admin",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-05030102",
+                  "title": "Build Telegram Message Formatter & Broadcast Dispatch",
+                  "priority": "P1",
+                  "dependency": ["TASK-05030101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "6 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0503010201",
+                      "title": "Create lib/push/telegram.ts: format notification into rich Markdown message with title, vacancies, deadline, apply link",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0503010202",
+                      "title": "Broadcast to @UpaGuruAlerts channel via sendMessage API",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0503010203",
+                      "title": "Send targeted DMs to users whose subscribed categories/states match the published notification",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0504",
+          "title": "WhatsApp Business API Alert Connector",
+          "priority": "P2",
+          "dependency": ["FEAT-0503"],
+          "status": "Pending",
+          "estimated_effort": "3 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-050401",
+              "title": "As a candidate using WhatsApp, I want to receive template-based urgent alert messages for critical deadlines and admit card releases.",
+              "priority": "P2",
+              "status": "Pending",
+              "estimated_effort": "3 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-05040101",
+                  "title": "Configure WhatsApp Business Cloud API & Message Templates",
+                  "priority": "P2",
+                  "dependency": [],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0504010101",
+                      "title": "Create Meta Business account, configure WhatsApp Cloud API, store access tokens in env vars",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0504010102",
+                      "title": "Design and submit 'exam_deadline_alert' and 'admit_card_released' message templates for Meta approval",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-05040102",
+                  "title": "Build WhatsApp Template Message Dispatch Function",
+                  "priority": "P2",
+                  "dependency": ["TASK-05040101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "6 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0504010201",
+                      "title": "Create lib/push/whatsapp.ts: send template message with dynamic parameters (exam title, deadline, apply URL)",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0504010202",
+                      "title": "Query user_subscriptions for matching whatsapp_phone_number values, send batch messages",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0505",
+          "title": "Email Digest Service (Resend)",
+          "priority": "P1",
+          "dependency": ["FEAT-0501"],
+          "status": "Pending",
+          "estimated_effort": "2 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-050501",
+              "title": "As a candidate, I want to receive a daily/weekly email digest summarizing new exam notifications matching my preferences.",
+              "priority": "P1",
+              "status": "Pending",
+              "estimated_effort": "2 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-05050101",
+                  "title": "Configure Resend Email Service & Domain Verification",
+                  "priority": "P1",
+                  "dependency": [],
+                  "agent": "DevOps Agent",
+                  "estimated_effort": "2 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0505010101",
+                      "title": "Create Resend account, verify sender domain (alerts@upaguru.in), store RESEND_API_KEY in env vars",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-05050102",
+                  "title": "Build Email Template & Digest Dispatch Function",
+                  "priority": "P1",
+                  "dependency": ["TASK-05050101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "6 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0505010201",
+                      "title": "Create React Email template component for notification digest (title, deadline, vacancies, apply link)",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0505010202",
+                      "title": "Create lib/push/email.ts: aggregate new notifications since last digest, render template, send via Resend API",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0506",
+          "title": "Omnichannel Alert Orchestrator (Event-Driven Dispatch)",
+          "priority": "P1",
+          "dependency": ["FEAT-0502", "FEAT-0503", "FEAT-0505"],
+          "status": "Pending",
+          "estimated_effort": "2 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-050601",
+              "title": "As a platform operator, I need a unified dispatcher that automatically triggers all relevant channel alerts when a notification is published.",
+              "priority": "P1",
+              "status": "Pending",
+              "estimated_effort": "2 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-05060101",
+                  "title": "Create Supabase Database Webhook / Trigger on notifications INSERT/UPDATE (status='published')",
+                  "priority": "P1",
+                  "dependency": ["TASK-01010102"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "3 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0506010101",
+                      "title": "Create PostgreSQL trigger function that fires on INSERT into notifications WHERE status='published'",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0506010102",
+                      "title": "Configure Supabase Database Webhook to call /api/v1/webhooks/notification-published endpoint",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-05060102",
+                  "title": "Build Omnichannel Dispatcher Webhook Handler",
+                  "priority": "P1",
+                  "dependency": ["TASK-05060101", "TASK-05020103", "TASK-05030102", "TASK-05050102"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "6 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0506010201",
+                      "title": "Create /api/v1/webhooks/notification-published route handler",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0506010202",
+                      "title": "Query all user_subscriptions matching notification category/state, group by preferred channel",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0506010203",
+                      "title": "Fan-out async calls to FCM, Telegram, and Email dispatch functions",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "epic_id": "EPIC-06",
+      "title": "File Storage, Caching & CDN Infrastructure",
+      "priority": "P1",
+      "status": "Pending",
+      "estimated_effort": "1 week",
+      "features": [
+        {
+          "feature_id": "FEAT-0601",
+          "title": "Supabase Storage Bucket Configuration & Upload Pipeline",
+          "priority": "P1",
+          "dependency": ["FEAT-0101"],
+          "status": "Pending",
+          "estimated_effort": "2 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-060101",
+              "title": "As a platform operator, I need organized storage buckets for published notification PDFs, draft attachments, and exam logos.",
+              "priority": "P1",
+              "status": "Pending",
+              "estimated_effort": "2 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-06010101",
+                  "title": "Create Supabase Storage Buckets with Access Policies",
+                  "priority": "P1",
+                  "dependency": [],
+                  "agent": "DevOps Agent",
+                  "estimated_effort": "2 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0601010101",
+                      "title": "Create 'public-notifications' bucket: public read, admin write, Cache-Control: max-age=31536000",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0601010102",
+                      "title": "Create 'public-logos' bucket: public read, admin write, Cache-Control: max-age=31536000",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0601010103",
+                      "title": "Create 'draft-attachments' bucket: private, admin-only read/write, 15-minute signed URL expiry",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-06010102",
+                  "title": "Build File Upload Utility for Admin Dashboard (PDF & Logo Upload)",
+                  "priority": "P1",
+                  "dependency": ["TASK-06010101", "TASK-03010101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0601010201",
+                      "title": "Create FileUpload client component with drag-and-drop zone, progress indicator, and file type validation (PDF/PNG/JPG)",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0601010202",
+                      "title": "Create uploadToStorage Server Action: validate file size (50MB max), upload to appropriate bucket, return public URL",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0602",
+          "title": "ISR Revalidation & Edge Cache Purge Workflows",
+          "priority": "P1",
+          "dependency": ["FEAT-0203"],
+          "status": "Pending",
+          "estimated_effort": "1 day",
+          "user_stories": [
+            {
+              "story_id": "STORY-060201",
+              "title": "As a platform operator, I need published notification pages to be instantly cache-purged when an admin edits or archives a notification.",
+              "priority": "P1",
+              "status": "Pending",
+              "estimated_effort": "1 day",
+              "tasks": [
+                {
+                  "task_id": "TASK-06020101",
+                  "title": "Implement On-Demand ISR Revalidation in All Admin Mutation Server Actions",
+                  "priority": "P1",
+                  "dependency": ["TASK-03020103", "TASK-03030102"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "3 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0602010101",
+                      "title": "Call revalidatePath('/notification/[slug]') after every publish/edit/archive Server Action",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0602010102",
+                      "title": "Call revalidateTag('notifications') to purge feed page and sitemap caches",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0602010103",
+                      "title": "Call revalidatePath('/category/[category]') and revalidatePath('/state/[state]') for affected SEO pages",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "epic_id": "EPIC-07",
+      "title": "Observability, Analytics & Error Monitoring",
+      "priority": "P1",
+      "status": "Pending",
+      "estimated_effort": "1 week",
+      "features": [
+        {
+          "feature_id": "FEAT-0701",
+          "title": "Sentry Full-Stack Error Tracking Integration",
+          "priority": "P1",
+          "dependency": ["FEAT-0103"],
+          "status": "Pending",
+          "estimated_effort": "1 day",
+          "user_stories": [
+            {
+              "story_id": "STORY-070101",
+              "title": "As a developer, I need real-time error tracking with full stack traces for both client-side React and server-side Node.js/Python errors.",
+              "priority": "P1",
+              "status": "Pending",
+              "estimated_effort": "1 day",
+              "tasks": [
+                {
+                  "task_id": "TASK-07010101",
+                  "title": "Install & Configure Sentry SDK for Next.js App",
+                  "priority": "P1",
+                  "dependency": ["TASK-01030101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "3 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0701010101",
+                      "title": "Run npx @sentry/wizard@latest -i nextjs, configure sentry.client.config.ts and sentry.server.config.ts",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0701010102",
+                      "title": "Set SENTRY_DSN, SENTRY_AUTH_TOKEN in environment variables",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0701010103",
+                      "title": "Configure 10% sampling rate for performance traces in production",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-07010102",
+                  "title": "Install & Configure Sentry SDK for Python Scraper Service",
+                  "priority": "P1",
+                  "dependency": ["TASK-04010101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "2 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0701010201",
+                      "title": "Install sentry-sdk[fastapi], initialize in scraper main.py with DSN from env vars",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0702",
+          "title": "Google Analytics 4 & PostHog Product Analytics",
+          "priority": "P1",
+          "dependency": ["FEAT-0201"],
+          "status": "Pending",
+          "estimated_effort": "1 day",
+          "user_stories": [
+            {
+              "story_id": "STORY-070201",
+              "title": "As a product manager, I need analytics tracking for candidate search queries, notification views, PDF downloads, and subscription conversions.",
+              "priority": "P1",
+              "status": "Pending",
+              "estimated_effort": "1 day",
+              "tasks": [
+                {
+                  "task_id": "TASK-07020101",
+                  "title": "Integrate GA4 Measurement ID & PostHog Project Key",
+                  "priority": "P1",
+                  "dependency": ["TASK-02010101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "3 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0702010101",
+                      "title": "Add GA4 script tag via next/script with strategy='afterInteractive'",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0702010102",
+                      "title": "Initialize PostHog client with project API key from env vars, configure autocapture",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-07020102",
+                  "title": "Implement Custom Event Tracking Hooks",
+                  "priority": "P1",
+                  "dependency": ["TASK-07020101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0702010201",
+                      "title": "Create lib/analytics/track.ts with typed event functions: trackSearch, trackNotificationView, trackPDFDownload, trackSubscriptionSave",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0702010202",
+                      "title": "Wire event tracking calls into SearchResults, NotificationDetail, and SubscriptionForm components",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0703",
+          "title": "Vercel Speed Insights & Core Web Vitals Monitoring",
+          "priority": "P1",
+          "dependency": ["FEAT-0103"],
+          "status": "Pending",
+          "estimated_effort": "2 hours",
+          "user_stories": [
+            {
+              "story_id": "STORY-070301",
+              "title": "As a developer, I need real-user Core Web Vitals monitoring to continuously verify Lighthouse performance targets.",
+              "priority": "P1",
+              "status": "Pending",
+              "estimated_effort": "2 hours",
+              "tasks": [
+                {
+                  "task_id": "TASK-07030101",
+                  "title": "Enable Vercel Speed Insights & Analytics in next.config.js",
+                  "priority": "P1",
+                  "dependency": ["TASK-01030102"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "1 hour",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0703010101",
+                      "title": "Install @vercel/analytics and @vercel/speed-insights packages",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0703010102",
+                      "title": "Add <Analytics /> and <SpeedInsights /> components to root layout",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0704",
+          "title": "Scraper Heartbeat Monitoring (Healthchecks.io)",
+          "priority": "P1",
+          "dependency": ["FEAT-0401"],
+          "status": "Pending",
+          "estimated_effort": "2 hours",
+          "user_stories": [
+            {
+              "story_id": "STORY-070401",
+              "title": "As a platform operator, I need immediate alerts if any daily scraper job fails or misses its execution window.",
+              "priority": "P1",
+              "status": "Pending",
+              "estimated_effort": "2 hours",
+              "tasks": [
+                {
+                  "task_id": "TASK-07040101",
+                  "title": "Configure Healthchecks.io Checks & Telegram Alert Integration",
+                  "priority": "P1",
+                  "dependency": ["TASK-04010105"],
+                  "agent": "DevOps Agent",
+                  "estimated_effort": "1 hour",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0704010101",
+                      "title": "Create Healthchecks.io checks for each crawler (KPSC, UPSC, SSC, RRB) with 13h grace period",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0704010102",
+                      "title": "Connect Healthchecks.io alert channel to admin Telegram group",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "epic_id": "EPIC-08",
+      "title": "Public REST API & OpenAPI Documentation",
+      "priority": "P1",
+      "status": "Pending",
+      "estimated_effort": "1 week",
+      "features": [
+        {
+          "feature_id": "FEAT-0801",
+          "title": "Public REST API Endpoints (/api/v1/)",
+          "priority": "P1",
+          "dependency": ["FEAT-0202", "FEAT-0204"],
+          "status": "Pending",
+          "estimated_effort": "3 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-080101",
+              "title": "As a third-party developer or mobile app, I need stable, documented REST API endpoints to query published notifications and exams.",
+              "priority": "P1",
+              "status": "Pending",
+              "estimated_effort": "3 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-08010101",
+                  "title": "Build GET /api/v1/notifications Paginated List Endpoint",
+                  "priority": "P1",
+                  "dependency": ["TASK-02020101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0801010101",
+                      "title": "Create route handler with Zod validation for query params (category, state, page, limit)",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0801010102",
+                      "title": "Return RFC 7807 error responses for invalid parameters",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-08010102",
+                  "title": "Build GET /api/v1/notifications/:slug Detail Endpoint",
+                  "priority": "P1",
+                  "dependency": ["TASK-08010101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "2 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0801010201",
+                      "title": "Return full notification payload including exam metadata, PDF URL, application URLs",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-08010103",
+                  "title": "Build GET /api/v1/exams Paginated List Endpoint",
+                  "priority": "P1",
+                  "dependency": ["TASK-02020101"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "2 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0801010301",
+                      "title": "Return exam list with conducting_body, category, state filters",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-08010104",
+                  "title": "Generate OpenAPI 3.0 Specification Document",
+                  "priority": "P2",
+                  "dependency": ["TASK-08010101", "TASK-08010102", "TASK-08010103"],
+                  "agent": "Full Stack Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0801010401",
+                      "title": "Create openapi.yaml spec documenting all /api/v1/* endpoints with request/response schemas",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0801010402",
+                      "title": "Host interactive Swagger UI at /api/docs (optional development-only route)",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "epic_id": "EPIC-09",
+      "title": "Testing, QA & Lighthouse Performance Validation",
+      "priority": "P1",
+      "status": "Pending",
+      "estimated_effort": "2 weeks",
+      "features": [
+        {
+          "feature_id": "FEAT-0901",
+          "title": "Vitest Unit & Integration Test Suite",
+          "priority": "P1",
+          "dependency": ["FEAT-0202", "FEAT-0302"],
+          "status": "Pending",
+          "estimated_effort": "4 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-090101",
+              "title": "As a developer, I need automated unit tests for data access functions, Zod schemas, Server Actions, and utility helpers.",
+              "priority": "P1",
+              "status": "Pending",
+              "estimated_effort": "4 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-09010101",
+                  "title": "Configure Vitest with Next.js & TypeScript",
+                  "priority": "P1",
+                  "dependency": ["TASK-01030101"],
+                  "agent": "QA Engineer Agent",
+                  "estimated_effort": "2 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0901010101",
+                      "title": "Install vitest, @vitejs/plugin-react, create vitest.config.ts with path alias resolution",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-09010102",
+                  "title": "Write Unit Tests for Zod Validation Schemas",
+                  "priority": "P1",
+                  "dependency": ["TASK-09010101", "TASK-02020101"],
+                  "agent": "QA Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0901010201",
+                      "title": "Test NotificationFilterSchema, SearchQuerySchema, SubscriptionSchema with valid and invalid inputs",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-09010103",
+                  "title": "Write Unit Tests for JSON-LD Schema Generator Functions",
+                  "priority": "P1",
+                  "dependency": ["TASK-09010101", "TASK-02030103"],
+                  "agent": "QA Engineer Agent",
+                  "estimated_effort": "3 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0901010301",
+                      "title": "Test generateJobPostingJsonLd() and generateEventJsonLd() output structure and validity",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-09010104",
+                  "title": "Write Integration Tests for Server Actions (Approve, Reject, CRUD)",
+                  "priority": "P1",
+                  "dependency": ["TASK-09010101", "TASK-03020103"],
+                  "agent": "QA Engineer Agent",
+                  "estimated_effort": "6 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0901010401",
+                      "title": "Test approveDraftAction with mock Supabase client, verify audit_log insertion",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0901010402",
+                      "title": "Test rejectDraftAction with rejection reason metadata",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0902",
+          "title": "Playwright End-to-End Test Suite",
+          "priority": "P1",
+          "dependency": ["FEAT-0202", "FEAT-0302"],
+          "status": "Pending",
+          "estimated_effort": "4 days",
+          "user_stories": [
+            {
+              "story_id": "STORY-090201",
+              "title": "As a developer, I need end-to-end tests for critical user flows: homepage browsing, search, notification detail viewing, and admin HITL approval.",
+              "priority": "P1",
+              "status": "Pending",
+              "estimated_effort": "4 days",
+              "tasks": [
+                {
+                  "task_id": "TASK-09020101",
+                  "title": "Configure Playwright with Next.js Dev Server",
+                  "priority": "P1",
+                  "dependency": ["TASK-01030101"],
+                  "agent": "QA Engineer Agent",
+                  "estimated_effort": "2 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0902010101",
+                      "title": "Install @playwright/test, create playwright.config.ts with webServer config pointing to npm run dev",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-09020102",
+                  "title": "Write E2E Tests for Candidate Portal Critical Paths",
+                  "priority": "P1",
+                  "dependency": ["TASK-09020101"],
+                  "agent": "QA Engineer Agent",
+                  "estimated_effort": "6 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0902010201",
+                      "title": "Test homepage loads with notification cards and filter bar",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0902010202",
+                      "title": "Test search flow: type query, verify debounced results appear",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0902010203",
+                      "title": "Test notification detail page loads with correct title, dates, and JSON-LD script tag",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-09020103",
+                  "title": "Write E2E Tests for Admin HITL Approval Flow",
+                  "priority": "P1",
+                  "dependency": ["TASK-09020101"],
+                  "agent": "QA Engineer Agent",
+                  "estimated_effort": "6 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0902010301",
+                      "title": "Test admin login, navigate to draft queue, open review page, edit form, click approve",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0902010302",
+                      "title": "Verify published notification appears on candidate portal after approval",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "feature_id": "FEAT-0903",
+          "title": "Lighthouse Performance & SEO Score Validation",
+          "priority": "P0",
+          "dependency": ["FEAT-0203", "FEAT-0205"],
+          "status": "Pending",
+          "estimated_effort": "1 day",
+          "user_stories": [
+            {
+              "story_id": "STORY-090301",
+              "title": "As a developer, I need to validate that all public pages achieve Lighthouse Mobile SEO & Performance scores >= 95.",
+              "priority": "P0",
+              "status": "Pending",
+              "estimated_effort": "1 day",
+              "tasks": [
+                {
+                  "task_id": "TASK-09030101",
+                  "title": "Run Lighthouse CI Audit on Key Public Pages",
+                  "priority": "P0",
+                  "dependency": ["TASK-02030101", "TASK-02050101"],
+                  "agent": "QA Engineer Agent",
+                  "estimated_effort": "4 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0903010101",
+                      "title": "Install @lhci/cli, create lighthouserc.js with URL list: /, /notification/[sample-slug], /category/civil_services, /state/karnataka",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0903010102",
+                      "title": "Configure assertions: performance >= 0.95, seo >= 0.95, accessibility >= 0.90",
+                      "status": "Pending"
+                    },
+                    {
+                      "subtask_id": "SUB-0903010103",
+                      "title": "Run lhci autorun and document results",
+                      "status": "Pending"
+                    }
+                  ]
+                },
+                {
+                  "task_id": "TASK-09030102",
+                  "title": "Validate Google Rich Results Test for JSON-LD Schemas",
+                  "priority": "P0",
+                  "dependency": ["TASK-02030103"],
+                  "agent": "SEO Specialist Agent",
+                  "estimated_effort": "2 hours",
+                  "status": "Pending",
+                  "subtasks": [
+                    {
+                      "subtask_id": "SUB-0903010201",
+                      "title": "Submit sample /notification/[slug] URLs to Google Rich Results Test, verify zero errors",
+                      "status": "Pending"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
