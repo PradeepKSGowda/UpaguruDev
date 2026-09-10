@@ -51,6 +51,24 @@
       "persistence": "public.profiles & public.user_subscriptions",
       "claims_engine": "custom_access_token_hook injecting role claim",
       "authorization": "PostgreSQL Row Level Security (RLS) & Admin Audit Logging"
+    },
+    {
+      "flow_id": "FLOW-05",
+      "name": "Supabase SSR Client Session Synchronization & Edge Refresh",
+      "browser_layer": "lib/supabase/client.ts (createBrowserClient singleton, PKCE)",
+      "edge_middleware": "lib/supabase/middleware.ts (updateSession, getUser token validation)",
+      "server_layer": "lib/supabase/server.ts (createServerClient with async cookies(), createAdminClient)",
+      "cookie_strategy": "HttpOnly, Secure, SameSite=Lax cookie synchronization between Request and Response",
+      "database_interface": "PostgREST typed via types/database.types.ts with RLS enforcement"
+    },
+    {
+      "flow_id": "FLOW-06",
+      "name": "Auth UI Interactive Flows & OAuth Code Exchange",
+      "entry_routes": ["/auth/login", "/auth/register", "/auth/forgot-password"],
+      "validation_layer": "lib/schemas/auth.ts (Zod loginSchema, registerSchema, forgotPasswordSchema)",
+      "callback_route": "/auth/callback (Route Handler with getSafeRedirectUrl defense)",
+      "oauth_provider": "Google OAuth 2.0 PKCE flow",
+      "state_transition": "Candidate signup -> unconfirmed profile -> email confirmation click -> verified active session"
     }
   ]
 }

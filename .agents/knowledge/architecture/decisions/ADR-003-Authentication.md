@@ -63,4 +63,4 @@ Detailed technical design and DDL migrations:
 
 ## Compliance & Guardrails
 - Complies strictly with `.agents/rules/AGENTS.md` Rule 1 (No Hardcoded Secrets), Rule 2 (No symptom masking), and Rule 3 (Role-Based Access Control & RLS).
-- Implemented via Task [TASK-01020101](file:///d:/Prajna%20Development/Dev%20Projects/upaguru/.agents/knowledge/architecture/auth-provider-design.md).
+- Implemented via Task [TASK-01020101](file:///d:/Prajna%20Development/Dev%20Projects/upaguru/.agents/knowledge/architecture/auth-provider-design.md) (Auth Providers & Schema) and [TASK-01020102](file:///d:/Prajna%20Development/Dev%20Projects/upaguru/.agents/knowledge/architecture/supabase-client-wrappers-design.md) (Next.js 15 Client Wrappers).

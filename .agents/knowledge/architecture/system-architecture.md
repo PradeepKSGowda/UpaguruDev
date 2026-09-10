@@ -98,3 +98,24 @@ UPA-GURU is a high-availability, zero-latency Pan-India exam notification and pr
 * `subscribed_exam_ids` (UUID[])
 * `subscribed_categories` (Text[])
 * `subscribed_states` (Text[])
+
+### 5. `profiles`
+* `id` (UUID, Primary Key -> `auth.users.id`)
+* `email` (Text, Unique)
+* `full_name` (Text, Nullable)
+* `avatar_url` (Text, Nullable)
+* `role` (Enum: `guest`, `candidate`, `moderator`, `admin`, `super_admin`)
+* `email_verified` (Boolean)
+* `auth_provider` (Text: `email`, `google`, `magic_link`)
+* `created_at` / `updated_at` (Timestamp)
+
+## Supabase Client Connectivity Layer (Next.js 15 App Router)
+* **Browser Client (`lib/supabase/client.ts`)**: Singleton `@supabase/ssr` instance with PKCE flow for Client Components (`"use client"`).
+* **Server Client (`lib/supabase/server.ts`)**: Asynchronous cookie-backed client (`await cookies()`) for React Server Components (RSC), Server Actions, and Route Handlers; plus an isolated `createAdminClient()` utilizing `SUPABASE_SERVICE_ROLE_KEY`.
+* **Edge Middleware (`lib/supabase/middleware.ts`)**: Invokes `updateSession(request)` to refresh expired JWTs via `supabase.auth.getUser()` and synchronizes `Set-Cookie` headers between request and response.
+
+## Candidate & Admin Authentication UI Routes (`/auth/*`)
+* **`/auth/login`**: Email/Password form with Zod validation + Google OAuth 2.0 PKCE button.
+* **`/auth/register`**: Candidate registration form with password entropy rules and email verification dispatch.
+* **`/auth/forgot-password`**: Dual-mode recovery supporting password reset email and passwordless Magic Link OTP.
+* **`/auth/callback`**: Next.js Route Handler exchanging OAuth/Magic Link authorization codes for session cookies with open-redirect mitigation (`getSafeRedirectUrl`).

@@ -18,7 +18,7 @@
         "Vercel deployment pipeline functional with preview and production branches",
         "Upstash Redis rate limiter operational on public API routes"
       ],
-      "status": "In Progress",
+      "status": "Completed",
       "features": [
         {
           "feature_id": "FEAT-0101",
@@ -425,7 +425,7 @@
             "Next.js middleware protects /admin/* routes from non-admin users",
             "Session refresh works via cookies-based server client"
           ],
-          "status": "Pending",
+          "status": "Completed",
           "user_stories": [
             {
               "story_id": "STORY-010201",
@@ -441,7 +441,7 @@
                 "Magic Link passwordless login sends email and authenticates on click",
                 "Browser and server Supabase clients share session via cookies"
               ],
-              "status": "Pending",
+              "status": "Completed",
               "tasks": [
                 {
                   "task_id": "TASK-01020101",
@@ -514,7 +514,7 @@
                     "lib/supabase/server.ts exports createServerClient() using cookies()",
                     "lib/supabase/middleware.ts exports updateSession() for Next.js middleware"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0102010201",
@@ -527,7 +527,7 @@
                       "acceptance_criteria": [
                         "Client component can call supabase.auth.getUser() successfully"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0102010202",
@@ -540,7 +540,7 @@
                       "acceptance_criteria": [
                         "Server Component can query database with authenticated user context"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0102010203",
@@ -553,7 +553,7 @@
                       "acceptance_criteria": [
                         "Expired sessions are silently refreshed; users are not logged out unexpectedly"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -573,7 +573,7 @@
                     "/auth/forgot-password page sends Magic Link",
                     "/auth/callback route handler exchanges OAuth code for session"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0102010301",
@@ -586,7 +586,7 @@
                       "acceptance_criteria": [
                         "Form validates, submits, and redirects to / on success"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0102010302",
@@ -599,7 +599,7 @@
                       "acceptance_criteria": [
                         "Form creates user in Supabase and shows email verification prompt"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0102010303",
@@ -612,7 +612,7 @@
                       "acceptance_criteria": [
                         "Reset email sent and user can set new password"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0102010304",
@@ -625,7 +625,7 @@
                       "acceptance_criteria": [
                         "OAuth flow completes without errors; session cookie is set"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 }
@@ -646,7 +646,7 @@
                 "Admin users have role = 'admin' in JWT claims",
                 "/admin/* routes redirect unauthenticated/unauthorized users to /auth/login"
               ],
-              "status": "Pending",
+              "status": "Completed",
               "tasks": [
                 {
                   "task_id": "TASK-01020201",
@@ -662,7 +662,7 @@
                     "Function set_user_role(user_id, role) updates auth.users raw_app_meta_data",
                     "Trigger fires on INSERT to auth.users setting default role = 'candidate'"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0102020101",
@@ -675,7 +675,7 @@
                       "acceptance_criteria": [
                         "Function executes without errors and updates metadata correctly"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0102020102",
@@ -690,7 +690,7 @@
                       "acceptance_criteria": [
                         "New user signup results in JWT containing role = 'candidate'"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -711,7 +711,7 @@
                     "/auth/* routes are publicly accessible",
                     "returnTo query parameter preserves intended destination after login"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0102020201",
@@ -724,7 +724,7 @@
                       "acceptance_criteria": [
                         "Middleware intercepts admin routes and validates JWT role claim"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0102020202",
@@ -739,7 +739,7 @@
                       "acceptance_criteria": [
                         "After login, user is redirected to the original /admin/* page they tried to access"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 }
@@ -762,7 +762,7 @@
             "Security headers (CSP, X-Frame-Options, HSTS) configured in next.config.js",
             ".env.local.example documents all required environment variables"
           ],
-          "status": "Pending",
+          "status": "Completed",
           "user_stories": [
             {
               "story_id": "STORY-010301",
@@ -778,7 +778,7 @@
                 "Production deploys from main branch automatically",
                 "All Supabase/Redis/Sentry env vars set in Vercel dashboard"
               ],
-              "status": "Pending",
+              "status": "Completed",
               "tasks": [
                 {
                   "task_id": "TASK-01030101",
@@ -793,7 +793,7 @@
                     "tsconfig.json has strict: true and path aliases configured",
                     ".env.local.example created with all placeholder variables"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0103010101",
@@ -806,7 +806,7 @@
                       "acceptance_criteria": [
                         "Project directory created with app/ directory structure"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0103010102",
@@ -821,7 +821,7 @@
                       "acceptance_criteria": [
                         "import from '@/lib/...' resolves correctly"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0103010103",
@@ -834,7 +834,7 @@
                       "acceptance_criteria": [
                         "File exists in repo, .env.local is in .gitignore"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -853,7 +853,7 @@
                     "PR creation triggers preview deployment with unique URL",
                     "All env vars populated in Vercel settings for production and preview"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0103010201",
@@ -866,7 +866,7 @@
                       "acceptance_criteria": [
                         "Vercel dashboard shows linked repo with correct branch settings"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0103010202",
@@ -881,7 +881,7 @@
                       "acceptance_criteria": [
                         "Deployed app can connect to Supabase and Redis without errors"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -899,7 +899,7 @@
                     "Response headers include CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy",
                     "CORS allows requests from Supabase and Vercel domains only"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0103010301",
@@ -912,7 +912,7 @@
                       "acceptance_criteria": [
                         "curl -I shows all security headers present"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 }
@@ -935,7 +935,7 @@
             "Rate limiter enforces 60 requests/minute per IP on /api/v1/* routes",
             "Rate-limited requests receive HTTP 429 with Retry-After header"
           ],
-          "status": "Pending",
+          "status": "Completed",
           "user_stories": [
             {
               "story_id": "STORY-010401",
@@ -949,7 +949,7 @@
                 "Rate limiter returns 429 after 60 requests in 60 seconds from same IP",
                 "Rate limiter does not block authenticated admin requests"
               ],
-              "status": "Pending",
+              "status": "Completed",
               "tasks": [
                 {
                   "task_id": "TASK-01040101",
@@ -962,7 +962,7 @@
                   "acceptance_criteria": [
                     "Redis instance responds to ping command via REST API"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0104010101",
@@ -975,7 +975,7 @@
                       "acceptance_criteria": [
                         "Environment variables set in .env.local and Vercel"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -993,7 +993,7 @@
                     "lib/rate-limit.ts exports reusable rateLimit() function",
                     "Rate-exceeded requests return 429 with JSON error body and Retry-After header"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0104010201",
@@ -1006,7 +1006,7 @@
                       "acceptance_criteria": [
                         "Function returns { success: boolean, limit, remaining, reset }"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0104010202",
@@ -1021,7 +1021,7 @@
                       "acceptance_criteria": [
                         "Rapid requests to /api/v1/search receive 429 after limit exceeded"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 }
