@@ -1049,7 +1049,7 @@
         "All pages pass Lighthouse Mobile Performance >= 95 and SEO >= 95",
         "Responsive layouts work across 320px to 1440px viewports"
       ],
-      "status": "Pending",
+      "status": "In Progress",
       "features": [
         {
           "feature_id": "FEAT-0201",
@@ -1068,7 +1068,7 @@
             "Dark mode toggle switches all colors via CSS custom properties",
             "Fonts loaded via next/font/google (Inter and Outfit)"
           ],
-          "status": "Pending",
+          "status": "In Progress",
           "user_stories": [
             {
               "story_id": "STORY-020101",
@@ -1084,7 +1084,7 @@
                 "All navigation links have unique ids for Playwright testing",
                 "Design system CSS variables applied globally"
               ],
-              "status": "Pending",
+              "status": "Completed",
               "tasks": [
                 {
                   "task_id": "TASK-02010101",
@@ -1100,7 +1100,7 @@
                     "Dark mode variables activated by .dark or [data-theme='dark'] class",
                     "Fonts loaded via next/font/google with display swap"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0201010101",
@@ -1113,7 +1113,7 @@
                       "acceptance_criteria": [
                         "Colors defined, contrast ratios >= 4.5:1 for text"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0201010102",
@@ -1126,7 +1126,7 @@
                       "acceptance_criteria": [
                         "Fonts loaded without FOUT; fallback system fonts specified"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0201010103",
@@ -1139,7 +1139,7 @@
                       "acceptance_criteria": [
                         "All tokens defined and documented in globals.css"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -1158,7 +1158,7 @@
                     "Header includes UPA-GURU logo, nav links (Home, Categories, About), and search trigger",
                     "Footer includes copyright, Privacy Policy, and Terms links"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0201010201",
@@ -1171,7 +1171,7 @@
                       "acceptance_criteria": [
                         "Header renders correctly on mobile and desktop viewports"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0201010202",
@@ -1184,7 +1184,7 @@
                       "acceptance_criteria": [
                         "Footer renders on all pages with consistent styling"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0201010203",
@@ -1199,7 +1199,7 @@
                       "acceptance_criteria": [
                         "Menu opens/closes with animation; body scroll locked when open"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 }
@@ -1224,7 +1224,7 @@
             "Empty state displayed when no notifications match filters",
             "Loading skeleton shown during data fetch"
           ],
-          "status": "Pending",
+          "status": "Completed",
           "user_stories": [
             {
               "story_id": "STORY-020201",
@@ -1243,7 +1243,7 @@
                 "Page parameter works: ?page=2 shows next set of results",
                 "NotificationCard shows title, conducting body, vacancies, deadline countdown"
               ],
-              "status": "Pending",
+              "status": "Completed",
               "tasks": [
                 {
                   "task_id": "TASK-02020101",
@@ -1260,7 +1260,7 @@
                     "Supports optional category, state, and search text filters",
                     "Uses Supabase server client for RSC context"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0202010101",
@@ -1273,7 +1273,7 @@
                       "acceptance_criteria": [
                         "Types match schema-v1.sql columns exactly"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0202010102",
@@ -1288,7 +1288,7 @@
                       "acceptance_criteria": [
                         "Function returns correct results with all filter combinations"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -1306,7 +1306,7 @@
                     "Card has unique id and data-testid for Playwright",
                     "Hover effect with shadow transition"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0202010201",
@@ -1319,7 +1319,7 @@
                       "acceptance_criteria": [
                         "Card renders correctly with all states: normal, urgent, expired"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0202010202",
@@ -1334,7 +1334,7 @@
                       "acceptance_criteria": [
                         "Skeleton matches card dimensions to prevent layout shift (CLS)"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -1352,7 +1352,7 @@
                     "Clear filters button resets all params",
                     "URL changes trigger server-side data refetch without full page reload"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0202010301",
@@ -1365,7 +1365,7 @@
                       "acceptance_criteria": [
                         "Clicking pill updates URL and shows active state"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0202010302",
@@ -1380,7 +1380,7 @@
                       "acceptance_criteria": [
                         "State dropdown and clear button work correctly"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -1402,7 +1402,7 @@
                     "Empty state component shown when zero results",
                     "Pagination component shows page numbers and navigates via URL params"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0202010401",
@@ -1415,7 +1415,7 @@
                       "acceptance_criteria": [
                         "Homepage renders complete feed with working filters"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0202010402",
@@ -1428,7 +1428,7 @@
                       "acceptance_criteria": [
                         "Pagination shows correct page count and navigates correctly"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 }
@@ -1454,7 +1454,7 @@
             "Apply Online button links to applyOnlineUrl",
             "Related notifications section shows 3-4 similar notifications"
           ],
-          "status": "Pending",
+          "status": "In Progress",
           "user_stories": [
             {
               "story_id": "STORY-020301",
@@ -1472,7 +1472,7 @@
                 "Breadcrumb navigation shows Home > Category > Notification",
                 "generateStaticParams() pre-renders top 100 notification slugs"
               ],
-              "status": "Pending",
+              "status": "In Progress",
               "tasks": [
                 {
                   "task_id": "TASK-02030101",
@@ -1487,7 +1487,7 @@
                   "acceptance_criteria": [
                     "Function returns NotificationDetail or null for invalid slugs"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0203010101",
@@ -1500,7 +1500,7 @@
                       "acceptance_criteria": [
                         "Returns full notification with embedded exam data"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -1519,7 +1519,7 @@
                     "404 page shown for invalid slugs",
                     "Breadcrumb component with proper heading hierarchy"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0203010201",
@@ -1532,7 +1532,7 @@
                       "acceptance_criteria": [
                         "All sections render with correct data"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0203010202",
@@ -1547,7 +1547,7 @@
                       "acceptance_criteria": [
                         "Buttons link to correct URLs; disabled state if URLs are null"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0203010203",
@@ -1562,7 +1562,7 @@
                       "acceptance_criteria": [
                         "Related notifications show from same category, excluding current"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -1582,7 +1582,7 @@
                     "Canonical URL: https://upaguru.in/notification/{slug}",
                     "JobPosting JSON-LD passes Google Rich Results Test"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0203010301",
@@ -1595,7 +1595,7 @@
                       "acceptance_criteria": [
                         "Page title, description, and OG image rendered correctly in HTML head"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0203010302",
@@ -1608,7 +1608,7 @@
                       "acceptance_criteria": [
                         "JSON-LD passes Google Rich Results Test with zero errors"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -1627,7 +1627,7 @@
                     "Uncached slugs render on-demand and are then cached",
                     "ISR revalidation set to 3600 seconds"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0203010401",
@@ -1640,7 +1640,7 @@
                       "acceptance_criteria": [
                         "Build generates 100 static HTML pages"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 }
@@ -1696,7 +1696,7 @@
                     "GIN index created: idx_notifications_fts using to_tsvector('english', title)",
                     "Supabase .textSearch() returns results for test queries"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0204010101",
@@ -1709,7 +1709,7 @@
                       "acceptance_criteria": [
                         "Index exists and is utilized by search query plan"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -1726,7 +1726,7 @@
                     "Magnifying glass icon and clear button present",
                     "ARIA label and focus management for accessibility"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0204010201",
@@ -1739,7 +1739,7 @@
                       "acceptance_criteria": [
                         "Search input updates URL after 300ms pause in typing"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -1759,7 +1759,7 @@
                     "Empty state prompts user to enter a search term",
                     "No results state shows helpful suggestions"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0204010301",
@@ -1772,7 +1772,7 @@
                       "acceptance_criteria": [
                         "Function returns ranked results matching search query"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0204010302",
@@ -1787,7 +1787,7 @@
                       "acceptance_criteria": [
                         "Page renders search results correctly for all query states"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 }
@@ -1828,7 +1828,7 @@
                 "Sitemap.xml includes all generated URLs",
                 "robots.txt created with sitemap reference and crawl directives"
               ],
-              "status": "Pending",
+              "status": "Completed",
               "tasks": [
                 {
                   "task_id": "TASK-02050101",
@@ -1845,7 +1845,7 @@
                     "Page H1: '{Category Name} Government Exams - UPA-GURU'",
                     "Meta description unique per category"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0205010101",
@@ -1858,7 +1858,7 @@
                       "acceptance_criteria": [
                         "Page renders filtered notifications for selected category"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -1876,7 +1876,7 @@
                     "generateStaticParams() returns all 28 states and 8 UTs",
                     "Page lists state-specific notifications"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0205010201",
@@ -1889,7 +1889,7 @@
                       "acceptance_criteria": [
                         "Page renders state-filtered results with correct metadata"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -1907,7 +1907,7 @@
                     "Page shows exam info header and list of all its notifications",
                     "generateStaticParams() returns all exam slugs"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0205010301",
@@ -1920,7 +1920,7 @@
                       "acceptance_criteria": [
                         "Exam page shows all related notifications grouped"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -1941,7 +1941,7 @@
                     "Each URL includes lastModified timestamp",
                     "/robots.txt references /sitemap.xml and allows Googlebot"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0205010401",
@@ -1954,7 +1954,7 @@
                       "acceptance_criteria": [
                         "Sitemap includes all public URLs with correct changeFrequency"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0205010402",
@@ -1967,7 +1967,7 @@
                       "acceptance_criteria": [
                         "robots.txt accessible and correctly formatted"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 }

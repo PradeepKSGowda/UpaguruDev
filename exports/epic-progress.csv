@@ -1,6 +1,6 @@
 "Epic_ID","Epic_Title","Total_Tasks","Completed_Tasks","Progress_Percentage"
 "EPIC-01","Foundation: Database, Auth & Hosting Infrastructure","16","16","100%"
-"EPIC-02","Candidate Portal: Notification Feed, Detail Pages & Search","17","0","0%"
+"EPIC-02","Candidate Portal: Notification Feed, Detail Pages & Search","17","17","100%"
 "EPIC-03","Admin HITL Verification Portal & Audit System","9","0","0%"
 "EPIC-04","AI Extraction Engine & Multi-Source Government Scrapers","7","0","0%"
 "EPIC-05","Candidate Subscriptions & Omnichannel Push Alert Engine","9","0","0%"

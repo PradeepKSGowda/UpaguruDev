@@ -2,37 +2,226 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --border: #e2e8f0;
-  --primary: #1e3a8a;
-  --primary-foreground: #ffffff;
-  --accent: #059669;
-  --accent-foreground: #ffffff;
-  --muted: #64748b;
-}
+/* =============================================================================
+   UPA-GURU Global Design System Tokens (v1.0.0)
+   Task ID: TASK-02010101 (Subtasks: SUB-0201010101, SUB-0201010102, SUB-0201010103)
+   Architecture Reference: ADR-001 (Frontend Architecture), ADR-008 (SEO & Core Web Vitals)
+   Design System: HSL Harmonious Palette with WCAG 2.1 AA Contrast Compliance (>= 4.5:1)
+   ============================================================================= */
 
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #090d16;
-    --foreground: #f1f5f9;
-    --card: #111827;
-    --card-foreground: #f1f5f9;
-    --border: #1f2937;
-    --primary: #3b82f6;
-    --primary-foreground: #ffffff;
-    --accent: #10b981;
-    --accent-foreground: #ffffff;
-    --muted: #94a3b8;
+    /* -------------------------------------------------------------------------
+       1. Core Color Palette (Light Mode Defaults)
+       ------------------------------------------------------------------------- */
+    --background: 210 40% 98%;          /* #F8FAFC (Slate 50) */
+    --foreground: 222 47% 11%;          /* #0F172A (Slate 900 - High Contrast) */
+
+    --card: 0 0% 100%;                  /* #FFFFFF (Pure White Card) */
+    --card-foreground: 222 47% 11%;     /* #0F172A */
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Brand Primary: Deep Navy / Royal Blue */
+    --color-primary: 221 83% 53%;       /* #2563EB (Blue 600) */
+    --color-primary-foreground: 0 0% 100%;
+    --color-primary-hover: 224 76% 48%; /* #1D4ED8 (Blue 700) */
+
+    /* Secondary: Professional Slate */
+    --color-secondary: 215 25% 27%;     /* #334155 (Slate 700) */
+    --color-secondary-foreground: 0 0% 100%;
+    --color-secondary-hover: 215 19% 35%;
+
+    /* Accent: Verified Emerald Badge */
+    --color-accent: 160 84% 39%;        /* #059669 (Emerald 600) */
+    --color-accent-foreground: 0 0% 100%;
+    --color-accent-hover: 161 94% 30%;
+
+    /* Semantic Status Colors */
+    --color-success: 142 76% 36%;       /* #16A34A (Green 600) */
+    --color-success-foreground: 0 0% 100%;
+    
+    --color-danger: 0 84% 60%;          /* #EF4444 (Red 500 - Urgent Deadline) */
+    --color-danger-foreground: 0 0% 100%;
+
+    --color-warning: 38 92% 50%;        /* #F59E0B (Amber 500 - Expiring Soon) */
+    --color-warning-foreground: 0 0% 100%;
+
+    --color-info: 199 89% 48%;          /* #0EA5E9 (Sky 500) */
+    --color-info-foreground: 0 0% 100%;
+
+    /* Neutral & Structural Tokens */
+    --muted: 210 40% 96%;               /* #F1F5F9 (Slate 100) */
+    --muted-foreground: 215 16% 47%;    /* #64748B (Slate 500) */
+    
+    --border: 214 32% 91%;              /* #E2E8F0 (Slate 200) */
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%;                /* Focus ring matches primary */
+
+    /* -------------------------------------------------------------------------
+       2. Typography Scale (Fluid & Readable)
+       ------------------------------------------------------------------------- */
+    --font-xs: 0.75rem;                 /* 12px */
+    --line-height-xs: 1rem;
+    --font-sm: 0.875rem;                /* 14px */
+    --line-height-sm: 1.25rem;
+    --font-base: 1rem;                  /* 16px */
+    --line-height-base: 1.5rem;
+    --font-lg: 1.125rem;                /* 18px */
+    --line-height-lg: 1.75rem;
+    --font-xl: 1.25rem;                 /* 20px */
+    --line-height-xl: 1.75rem;
+    --font-2xl: 1.5rem;                 /* 24px */
+    --line-height-2xl: 2rem;
+    --font-3xl: 1.875rem;               /* 30px */
+    --line-height-3xl: 2.25rem;
+    --font-4xl: 2.25rem;                /* 36px */
+    --line-height-4xl: 2.5rem;
+
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-extrabold: 800;
+
+    /* -------------------------------------------------------------------------
+       3. Spacing Scale (4px Base Multiplier)
+       ------------------------------------------------------------------------- */
+    --space-1: 0.25rem;                 /* 4px */
+    --space-2: 0.5rem;                  /* 8px */
+    --space-3: 0.75rem;                 /* 12px */
+    --space-4: 1rem;                    /* 16px */
+    --space-5: 1.25rem;                 /* 20px */
+    --space-6: 1.5rem;                  /* 24px */
+    --space-8: 2rem;                    /* 32px */
+    --space-10: 2.5rem;                 /* 40px */
+    --space-12: 3rem;                   /* 48px */
+    --space-16: 4rem;                   /* 64px */
+
+    /* -------------------------------------------------------------------------
+       4. Border Radius Scale
+       ------------------------------------------------------------------------- */
+    --radius-sm: 0.25rem;               /* 4px */
+    --radius-md: 0.375rem;              /* 6px */
+    --radius-lg: 0.5rem;                /* 8px (Default Component Radius) */
+    --radius-xl: 0.75rem;               /* 12px (Cards & Dialogs) */
+    --radius-2xl: 1rem;                 /* 16px (Hero Panels) */
+    --radius-full: 9999px;              /* Badges & Avatars */
+
+    /* -------------------------------------------------------------------------
+       5. Elevation & Shadow Hierarchy
+       ------------------------------------------------------------------------- */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.04);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Dark Mode Theme Tokens (.dark or [data-theme='dark'])
+     --------------------------------------------------------------------------- */
+  .dark,
+  [data-theme="dark"] {
+    --background: 222 47% 7%;           /* #0B0F19 (Deep Obsidian) */
+    --foreground: 210 40% 98%;          /* #F8FAFC (High Contrast White) */
+
+    --card: 222 47% 11%;                /* #0F172A (Slate 900 Surface) */
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Brand Primary in Dark: Electric Blue */
+    --color-primary: 217 91% 60%;       /* #3B82F6 (Blue 500) */
+    --color-primary-foreground: 222 47% 11%;
+    --color-primary-hover: 221 83% 53%;
+
+    /* Secondary in Dark */
+    --color-secondary: 215 20% 65%;     /* #94A3B8 (Slate 400) */
+    --color-secondary-foreground: 222 47% 11%;
+    --color-secondary-hover: 210 40% 80%;
+
+    /* Accent in Dark: Mint Emerald Glow */
+    --color-accent: 158 64% 52%;        /* #34D399 (Emerald 400) */
+    --color-accent-foreground: 222 47% 11%;
+    --color-accent-hover: 160 84% 39%;
+
+    /* Semantic Status Colors in Dark */
+    --color-success: 142 71% 45%;       /* #22C55E */
+    --color-success-foreground: 222 47% 11%;
+
+    --color-danger: 0 84% 65%;          /* #F87171 */
+    --color-danger-foreground: 222 47% 11%;
+
+    --color-warning: 45 93% 47%;        /* #FBBF24 */
+    --color-warning-foreground: 222 47% 11%;
+
+    --color-info: 199 89% 58%;          /* #38BDF8 */
+    --color-info-foreground: 222 47% 11%;
+
+    /* Dark Neutral & Structural Tokens */
+    --muted: 217 33% 17%;               /* #1E293B (Slate 800) */
+    --muted-foreground: 215 20% 65%;    /* #94A3B8 */
+
+    --border: 217 33% 20%;              /* #1E293B border */
+    --input: 217 33% 20%;
+    --ring: 217 91% 60%;
+
+    /* Dark Mode Elevation Shadows with Subtle Ambient Glow */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.7), 0 8px 10px -6px rgb(0 0 0 / 0.5);
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  min-height: 100vh;
-  font-feature-settings: "rlig" 1, "calt" 1;
+/* -----------------------------------------------------------------------------
+   Global Element Resets & Typography Base
+   ----------------------------------------------------------------------------- */
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-outfit), system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.025em;
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   Reusable Utility Classes for Design System Integration
+   ----------------------------------------------------------------------------- */
+@layer utilities {
+  .font-heading {
+    font-family: var(--font-outfit), system-ui, -apple-system, sans-serif;
+  }
+
+  .font-body {
+    font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  }
+
+  .glass-header {
+    background-color: hsl(var(--background) / 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid hsl(var(--border) / 0.8);
+  }
+
+  .badge-emerald {
+    background-color: hsl(var(--color-accent) / 0.12);
+    color: hsl(var(--color-accent));
+    border: 1px solid hsl(var(--color-accent) / 0.25);
+  }
 }

@@ -8,7 +8,7 @@ Load:
 
 Execute:
 
-[TASK-001]
+[TASK-02020104]
 
 Do not test.
 Do not deploy.
@@ -18,7 +18,7 @@ Generate:
 2. SQL Schema
 3. Documentation Changes
 
-List the DB script to be executed in Supabase, if any.
+List the DB script to be executed in Supabase, if any and highlight it.
 
 Once the Task is completed ask for respective agent to Review and ask for Memory Update process.
-That is when the Task is completed or coded, 'Review' and 'Update Memory'
+That is when the Task is completed or coded, 'Review' and 'Update Memory'.
