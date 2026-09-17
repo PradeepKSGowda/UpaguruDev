@@ -114,3 +114,32 @@ lib/
 types/
 └── database.types.ts   # Full PostgreSQL 15 schema TypeScript definitions
 ```
+
+---
+
+## 6. Supabase PostgREST Client TypeScript Contract Pattern
+
+During `TASK-03020103`, a critical constraint in `@supabase/supabase-js` (v2.48+) and `@supabase/ssr` was analyzed and resolved:
+
+### The Problem
+When performing mutations (`.insert()` or `.update()`), Supabase PostgREST applies `RejectExcessProperties` against `Relation$1['Insert']` or `Relation$1['Update']`. If any foreign key relationship in `types/database.types.ts` omits `referencedColumns: string[]` or `isOneToOne: boolean`, the schema fails `GenericTable` validation. This causes `Schema` to evaluate to `never`, collapsing all `.insert()` and `.update()` argument types to `never` or `never[]`.
+
+### The Resolution Pattern
+1. **Strict GenericTable Contract**:
+   Every table defined in `types/database.types.ts` must have complete `Relationships` adhering to `GenericRelationship`:
+   ```ts
+   Relationships: [
+     {
+       foreignKeyName: "table_fk_name";
+       columns: ["local_col"];
+       isOneToOne: boolean;
+       referencedRelation: "foreign_table";
+       referencedColumns: ["id"];
+     }
+   ];
+   ```
+2. **Explicit ServerClient Typing**:
+   In `lib/supabase/server.ts`, export `type ServerClient = SupabaseClient<Database>`, and cast the return of `createSupabaseServerClient` to `as unknown as ServerClient`. This avoids generic parameter offset issues between `@supabase/ssr` (3 parameters) and `@supabase/supabase-js` (5 parameters).
+3. **Literal Enum Precision**:
+   Mutation payloads must declare literal enum values using `as const` (e.g. `status: "approved" as const`) to prevent widening to `string`.
+

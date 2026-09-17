@@ -16,6 +16,7 @@
  */
 
 import { createServerClient as createSupabaseServerClient, type CookieOptions } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import type { Database } from "../../types/database.types";
 
@@ -39,7 +40,7 @@ function getServerEnv(): { supabaseUrl: string; supabaseAnonKey: string } {
   return { supabaseUrl, supabaseAnonKey };
 }
 
-type ServerClient = ReturnType<typeof createSupabaseServerClient<Database>>;
+export type ServerClient = SupabaseClient<Database>;
 
 /**
  * Creates a strongly-typed Supabase client for Next.js 15 Server Components, Server Actions,
@@ -103,7 +104,7 @@ export async function createServerClient(): Promise<ServerClient> {
         },
       },
     }
-  );
+  ) as unknown as ServerClient;
 }
 
 /**
@@ -157,7 +158,7 @@ export function createAdminClient(): ServerClient {
         },
       },
     }
-  );
+  ) as unknown as ServerClient;
 }
 
 export default createServerClient;

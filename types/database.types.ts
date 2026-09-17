@@ -46,7 +46,7 @@ export type DraftStatusEnum =
   | "approved"
   | "rejected";
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       profiles: {
@@ -87,8 +87,9 @@ export interface Database {
           {
             foreignKeyName: "profiles_id_fkey";
             columns: ["id"];
+            isOneToOne: true;
             referencedRelation: "users";
-            referencedSchema: "auth";
+            referencedColumns: ["id"];
           }
         ];
       };
@@ -205,8 +206,9 @@ export interface Database {
           {
             foreignKeyName: "notifications_exam_id_fkey";
             columns: ["exam_id"];
+            isOneToOne: false;
             referencedRelation: "exams";
-            referencedSchema: "public";
+            referencedColumns: ["id"];
           }
         ];
       };
@@ -242,6 +244,54 @@ export interface Database {
           updated_at?: string;
         };
         Relationships: [];
+      };
+      draft_verification_sessions: {
+        Row: {
+          id: string;
+          draft_id: string;
+          admin_id: string;
+          verification_action: string;
+          rejection_reason: string | null;
+          fields_modified: Json;
+          duration_seconds: number;
+          verified_at: string;
+        };
+        Insert: {
+          id?: string;
+          draft_id: string;
+          admin_id: string;
+          verification_action?: string;
+          rejection_reason?: string | null;
+          fields_modified?: Json;
+          duration_seconds?: number;
+          verified_at?: string;
+        };
+        Update: {
+          id?: string;
+          draft_id?: string;
+          admin_id?: string;
+          verification_action?: string;
+          rejection_reason?: string | null;
+          fields_modified?: Json;
+          duration_seconds?: number;
+          verified_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "draft_verification_sessions_draft_id_fkey";
+            columns: ["draft_id"];
+            isOneToOne: false;
+            referencedRelation: "draft_notifications";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "draft_verification_sessions_admin_id_fkey";
+            columns: ["admin_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       user_subscriptions: {
         Row: {
@@ -287,8 +337,9 @@ export interface Database {
           {
             foreignKeyName: "user_subscriptions_user_id_fkey";
             columns: ["user_id"];
+            isOneToOne: false;
             referencedRelation: "users";
-            referencedSchema: "auth";
+            referencedColumns: ["id"];
           }
         ];
       };
@@ -324,8 +375,9 @@ export interface Database {
           {
             foreignKeyName: "audit_logs_admin_id_fkey";
             columns: ["admin_id"];
+            isOneToOne: false;
             referencedRelation: "users";
-            referencedSchema: "auth";
+            referencedColumns: ["id"];
           }
         ];
       };

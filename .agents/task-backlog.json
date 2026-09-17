@@ -1997,7 +1997,7 @@
         "All admin actions logged in audit_logs table",
         "Audit log viewer displays chronological admin activity history"
       ],
-      "status": "Pending",
+      "status": "Completed",
       "features": [
         {
           "feature_id": "FEAT-0301",
@@ -2015,7 +2015,7 @@
             "Sidebar links: Dashboard, Draft Queue, Exams, Notifications, Audit Logs",
             "Collapsible sidebar for smaller screens"
           ],
-          "status": "Pending",
+          "status": "Completed",
           "user_stories": [
             {
               "story_id": "STORY-030101",
@@ -2032,7 +2032,7 @@
                 "Admin layout renders sidebar, main content, and header",
                 "Stats cards query real data from Supabase"
               ],
-              "status": "Pending",
+              "status": "Completed",
               "tasks": [
                 {
                   "task_id": "TASK-03010101",
@@ -2047,7 +2047,7 @@
                   "acceptance_criteria": [
                     "Layout renders sidebar and main content area; sidebar collapses on mobile"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0301010101",
@@ -2060,7 +2060,7 @@
                       "acceptance_criteria": [
                         "All nav links render with active state indication"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0301010102",
@@ -2073,7 +2073,7 @@
                       "acceptance_criteria": [
                         "Header displays admin identity; logout redirects to /auth/login"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -2091,7 +2091,7 @@
                     "Stats cards display real-time counts from Supabase queries",
                     "Quick action buttons link to Draft Queue and Create Exam"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0301010201",
@@ -2104,7 +2104,7 @@
                       "acceptance_criteria": [
                         "Cards show accurate counts"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 }
@@ -2130,7 +2130,7 @@
             "Approve action creates notification record and logs audit entry",
             "Reject action requires reason text and logs audit entry"
           ],
-          "status": "Pending",
+          "status": "Completed",
           "user_stories": [
             {
               "story_id": "STORY-030201",
@@ -2148,7 +2148,7 @@
                 "Approve triggers publishNotificationAction and redirects to queue",
                 "Reject marks draft as rejected and redirects to queue"
               ],
-              "status": "Pending",
+              "status": "In Progress",
               "tasks": [
                 {
                   "task_id": "TASK-03020101",
@@ -2163,7 +2163,7 @@
                   "acceptance_criteria": [
                     "Function returns DraftNotification[] sorted by confidence_score ASC"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0302010101",
@@ -2176,7 +2176,7 @@
                       "acceptance_criteria": [
                         "Returns correct drafts with all fields including parsed_json"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -2195,7 +2195,7 @@
                     "Low confidence (< 0.85) shows amber warning badge",
                     "Each card links to /admin/drafts/[id] review page"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0302010201",
@@ -2208,7 +2208,7 @@
                       "acceptance_criteria": [
                         "Badge colors match confidence thresholds"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0302010202",
@@ -2223,7 +2223,7 @@
                       "acceptance_criteria": [
                         "Queue page renders correctly with zero, one, and many drafts"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -2243,7 +2243,7 @@
                     "Admin can modify extracted values before approving",
                     "Approve and Reject buttons trigger respective Server Actions"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0302010301",
@@ -2256,7 +2256,7 @@
                       "acceptance_criteria": [
                         "Text renders with scroll; long texts do not break layout"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0302010302",
@@ -2269,7 +2269,7 @@
                       "acceptance_criteria": [
                         "Form fields match schema; validation errors shown inline"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0302010303",
@@ -2284,7 +2284,7 @@
                       "acceptance_criteria": [
                         "Both actions complete, log audit entry, and redirect to queue"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -2302,7 +2302,7 @@
                     "publishNotificationAction: validates input, inserts notification, updates draft status to 'approved', writes audit log, revalidates cache",
                     "rejectDraftAction: validates input including rejection reason, updates draft status to 'rejected', writes audit log"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0302010401",
@@ -2315,7 +2315,7 @@
                       "acceptance_criteria": [
                         "Action creates notification, updates draft, logs audit, and invalidates cache"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0302010402",
@@ -2328,7 +2328,7 @@
                       "acceptance_criteria": [
                         "Action marks draft as rejected with reason and logs audit entry"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 }
@@ -2352,7 +2352,7 @@
             "All CRUD operations log audit entries",
             "Forms validate with Zod schemas"
           ],
-          "status": "Pending",
+          "status": "Completed",
           "user_stories": [
             {
               "story_id": "STORY-030301",
@@ -2386,7 +2386,7 @@
                     "Create exam form validates and inserts record",
                     "Edit exam form loads existing data and updates"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0303010101",
@@ -2399,7 +2399,7 @@
                       "acceptance_criteria": [
                         "Table renders with sortable columns and action buttons"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0303010102",
@@ -2412,7 +2412,7 @@
                       "acceptance_criteria": [
                         "Form validates with Zod, creates/updates exam, and logs audit"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -2431,7 +2431,7 @@
                     "Edit form loads existing notification data",
                     "All mutations log audit entries"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0303010201",
@@ -2444,7 +2444,7 @@
                       "acceptance_criteria": [
                         "Form creates/updates notification with correct exam linkage"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 }
@@ -2467,7 +2467,7 @@
             "Filters by admin user, action type, and date range work",
             "Each log entry shows admin name, action, target entity, timestamp, and metadata"
           ],
-          "status": "Pending",
+          "status": "Completed",
           "user_stories": [
             {
               "story_id": "STORY-030401",
@@ -2501,7 +2501,7 @@
                     "Filters for date range and action type work",
                     "Pagination handles large log volumes"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0304010101",
@@ -2514,7 +2514,7 @@
                       "acceptance_criteria": [
                         "Function returns typed AuditLogEntry[] with admin email joined"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0304010102",
@@ -2529,7 +2529,7 @@
                       "acceptance_criteria": [
                         "Table renders correctly with all columns and pagination"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 }
