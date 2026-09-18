@@ -2558,7 +2558,7 @@
         "APScheduler runs daily crawl schedules without manual intervention",
         "All errors reported to Sentry and Healthchecks.io"
       ],
-      "status": "Pending",
+      "status": "Completed",
       "features": [
         {
           "feature_id": "FEAT-0401",
@@ -2577,7 +2577,7 @@
             "Crawler modules for KPSC, UPSC, SSC, RRB extract PDF links",
             "Redis deduplication locks prevent duplicate processing"
           ],
-          "status": "Pending",
+          "status": "Completed",
           "user_stories": [
             {
               "story_id": "STORY-040101",
@@ -2594,7 +2594,7 @@
                 "RRB crawler handles multiple regional RRB sites",
                 "Each crawler logs detected PDFs and deduplication status"
               ],
-              "status": "Pending",
+              "status": "Completed",
               "tasks": [
                 {
                   "task_id": "TASK-04010101",
@@ -2607,7 +2607,7 @@
                   "acceptance_criteria": [
                     "FastAPI boots; GET /health returns 200 with status OK"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0401010101",
@@ -2620,7 +2620,7 @@
                       "acceptance_criteria": [
                         "uvicorn main:app runs without errors"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0401010102",
@@ -2635,7 +2635,7 @@
                       "acceptance_criteria": [
                         "Docker container builds and /health returns 200"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -2654,7 +2654,7 @@
                     "PDFs downloaded and text extracted via PyPDF2/pdfplumber",
                     "Extracted text returned as string for Gemini processing"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0401010201",
@@ -2667,7 +2667,7 @@
                       "acceptance_criteria": [
                         "Script returns list of PDF URLs from current KPSC page"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0401010202",
@@ -2682,7 +2682,7 @@
                       "acceptance_criteria": [
                         "Text extracted from downloaded PDF; OCR fallback for scanned docs"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -2700,7 +2700,7 @@
                     "Each crawler successfully navigates its target portal",
                     "PDF links detected and text extracted for each source"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0401010301",
@@ -2713,7 +2713,7 @@
                       "acceptance_criteria": [
                         "Crawler extracts PDF links from upsc.gov.in"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0401010302",
@@ -2726,7 +2726,7 @@
                       "acceptance_criteria": [
                         "Crawler extracts PDF links from ssc.nic.in"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0401010303",
@@ -2739,7 +2739,7 @@
                       "acceptance_criteria": [
                         "Crawler handles multiple regional RRB sites"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -2757,7 +2757,7 @@
                     "Same PDF is never processed twice (Redis lock check)",
                     "APScheduler runs crawl jobs at configured times daily"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0401010401",
@@ -2770,7 +2770,7 @@
                       "acceptance_criteria": [
                         "Duplicate PDFs are skipped with log message"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0401010402",
@@ -2785,7 +2785,7 @@
                       "acceptance_criteria": [
                         "Scheduler triggers crawl functions at correct times"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 }
@@ -2810,7 +2810,7 @@
             "Extracted data inserted into draft_notifications table",
             "Temperature set to 0.1 for deterministic extraction"
           ],
-          "status": "Pending",
+          "status": "Completed",
           "user_stories": [
             {
               "story_id": "STORY-040201",
@@ -2827,7 +2827,7 @@
                 "Confidence score reflects completeness of extracted fields",
                 "Drafts appear in admin HITL queue after extraction"
               ],
-              "status": "Pending",
+              "status": "Completed",
               "tasks": [
                 {
                   "task_id": "TASK-04020101",
@@ -2840,7 +2840,7 @@
                   "acceptance_criteria": [
                     "Pydantic model validates all required extraction fields"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0402010101",
@@ -2853,7 +2853,7 @@
                       "acceptance_criteria": [
                         "Model validates sample JSON correctly"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -2872,7 +2872,7 @@
                     "Gemini API key read from os.environ['GEMINI_API_KEY']",
                     "Structured Output mode enforces JSON compliance"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0402010201",
@@ -2885,7 +2885,7 @@
                       "acceptance_criteria": [
                         "API returns valid JSON matching schema"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     },
                     {
                       "subtask_id": "SUB-0402010202",
@@ -2900,7 +2900,7 @@
                       "acceptance_criteria": [
                         "Score accurately reflects extraction completeness"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -2918,7 +2918,7 @@
                     "Pipeline inserts draft with parsed_json, confidence_score, source_url, raw_text",
                     "Low confidence drafts (< 0.85) flagged with priority review status"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0402010301",
@@ -2931,7 +2931,7 @@
                       "acceptance_criteria": [
                         "Draft appears in admin queue with all fields populated"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 }

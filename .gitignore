@@ -40,3 +40,17 @@ coverage/
 .playwright/
 test-results/
 playwright-report/
+
+# Python & Scraper Microservice
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+env/
+venv/
+ENV/
+.pytest_cache/
+temp_pdf_cache/
+scraper/.env
+

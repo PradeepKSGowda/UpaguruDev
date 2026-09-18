@@ -1,0 +1,47 @@
+# ==============================================================================
+# UPA-GURU Government Portal Configuration: KPSC
+# Karnataka Public Service Commission
+# ==============================================================================
+
+portal_code: "KPSC"
+portal_name: "Karnataka Public Service Commission"
+conducting_body: "KPSC"
+state_or_central: "Karnataka"
+official_website: "https://kpsc.kar.nic.in"
+notifications_url: "https://kpsc.kar.nic.in/notifications.html"
+
+# Crawl Engine Configuration
+engine: "playwright" # "playwright" for JS dynamic rendering, "httpx" for static HTML
+headless: true
+timeout_seconds: 30
+request_delay_seconds: 2.0
+max_retries: 3
+max_pages: 5
+
+# DOM Extraction Selectors
+wait_selector: "table, a[href$='.pdf'], .notification-list"
+selectors:
+  container: "table tbody tr, .content-area tr, ul.list-group li"
+  pdf_link: "a[href$='.pdf'], a[href*='.pdf'], a[href*='PDF']"
+  title: "td:nth-child(2), a, .title"
+  publish_date: "td:nth-child(1), td:nth-child(3), .date"
+  notification_number: "td:nth-child(1), .notif-no"
+
+# URL Canonicalization Rules
+base_url: "https://kpsc.kar.nic.in"
+relative_url_prefix: "https://kpsc.kar.nic.in/"
+
+# Keyword Filters (Only process recruitment-related PDFs, ignore syllabus/results if separate)
+include_keywords:
+  - "recruitment"
+  - "notification"
+  - "advt"
+  - "advertisement"
+  - "examination"
+  - "post"
+  - "applications"
+exclude_keywords:
+  - "tender"
+  - "quotation"
+  - "transfer"
+  - "seniority list"

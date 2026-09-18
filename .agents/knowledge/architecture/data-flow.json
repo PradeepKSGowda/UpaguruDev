@@ -69,6 +69,18 @@
       "callback_route": "/auth/callback (Route Handler with getSafeRedirectUrl defense)",
       "oauth_provider": "Google OAuth 2.0 PKCE flow",
       "state_transition": "Candidate signup -> unconfirmed profile -> email confirmation click -> verified active session"
+    },
+    {
+      "flow_id": "FLOW-07",
+      "name": "Python Scraper Microservice Ingestion & Deduplication Pipeline",
+      "trigger": "APScheduler Cron Job / Manual Trigger Endpoint (/api/trigger)",
+      "crawler_layer": "scraper/crawlers/* (Playwright Chromium Headless & HTTPX)",
+      "deduplication_engine": "Streaming SHA-256 Digest against public.pdf_documents.sha256_hash",
+      "parsing_engine": "PyPDF2 / pdfplumber fallback text extraction",
+      "ai_layer": "Gemini Structured Outputs via ExtractionProvider interface",
+      "validation_layer": "Pydantic V2 NotificationExtractedData schema",
+      "quarantine_destination": "public.draft_notifications (status = pending_review, priority_review boolean)",
+      "telemetry": "public.crawl_runs (run_id, pdfs_found, pdfs_new, logs)"
     }
   ]
 }

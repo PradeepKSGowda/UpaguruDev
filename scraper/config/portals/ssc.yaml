@@ -1,0 +1,53 @@
+# ==============================================================================
+# UPA-GURU Government Portal Configuration: SSC
+# Staff Selection Commission
+# ==============================================================================
+
+portal_code: "SSC"
+portal_name: "Staff Selection Commission"
+conducting_body: "SSC"
+state_or_central: "Central"
+official_website: "https://ssc.gov.in"
+notifications_url: "https://ssc.gov.in/notices"
+
+# Crawl Engine Configuration
+engine: "playwright"
+headless: true
+timeout_seconds: 45
+request_delay_seconds: 2.0
+max_retries: 3
+max_pages: 3
+
+# DOM Extraction Selectors
+wait_selector: "table, .notice-board, .table-responsive, a[href$='.pdf']"
+selectors:
+  container: "table tbody tr, .notice-item, .card-body tr"
+  pdf_link: "a[href*='.pdf'], a[href*='PDF'], a[href*='download'], a[href*='blob']"
+  title: "td:nth-child(2), .notice-title, a"
+  publish_date: "td:nth-child(1), .notice-date"
+  notification_number: "td:nth-child(3), .notice-number"
+
+# URL Canonicalization Rules
+base_url: "https://ssc.gov.in"
+relative_url_prefix: "https://ssc.gov.in/"
+
+# Keyword Filters
+include_keywords:
+  - "notice of examination"
+  - "combined graduate level"
+  - "cgl"
+  - "chsl"
+  - "multi tasking"
+  - "mts"
+  - "constable"
+  - "sub-inspector"
+  - "junior engineer"
+  - "je"
+  - "phase-"
+  - "recruitment"
+exclude_keywords:
+  - "tentative answer key"
+  - "final answer key"
+  - "declaration of result"
+  - "marks of candidates"
+  - "cancellation notice"

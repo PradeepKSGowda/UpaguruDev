@@ -1,0 +1,60 @@
+# ==============================================================================
+# UPA-GURU Government Portal Configuration: RRB
+# Railway Recruitment Boards (Indian Railways)
+# ==============================================================================
+
+portal_code: "RRB"
+portal_name: "Railway Recruitment Boards"
+conducting_body: "RRB"
+state_or_central: "Central"
+official_website: "https://www.rrbapply.gov.in"
+notifications_url: "https://www.rrbbnc.gov.in/notifications.html"
+
+# Regional Portals Directory
+regional_portals:
+  - name: "RRB Bangalore"
+    url: "https://www.rrbbnc.gov.in/notifications.html"
+  - name: "RRB Chandigarh"
+    url: "https://www.rrbcdg.gov.in/"
+  - name: "RRB Mumbai"
+    url: "https://www.rrbmumbai.gov.in/"
+
+# Crawl Engine Configuration
+engine: "playwright"
+headless: true
+timeout_seconds: 35
+request_delay_seconds: 2.0
+max_retries: 3
+max_pages: 3
+
+# DOM Extraction Selectors
+wait_selector: "table, .cen-list, a[href$='.pdf']"
+selectors:
+  container: "table tbody tr, .content-area tr, ul li"
+  pdf_link: "a[href*='.pdf'], a[href*='PDF'], a[href*='CEN']"
+  title: "td:nth-child(2), a, span.title"
+  publish_date: "td:nth-child(1), .date"
+  notification_number: "td:nth-child(1), .cen-no"
+
+# URL Canonicalization Rules
+base_url: "https://www.rrbbnc.gov.in"
+relative_url_prefix: "https://www.rrbbnc.gov.in/"
+
+# Keyword Filters
+include_keywords:
+  - "cen"
+  - "centralized employment notice"
+  - "ntpc"
+  - "alp"
+  - "assistant loco pilot"
+  - "technician"
+  - "group d"
+  - "paramedical"
+  - "junior engineer"
+  - "recruitment"
+exclude_keywords:
+  - "document verification schedule"
+  - "medical examination"
+  - "replacement panel"
+  - "standby panel"
+  - "cancellation"
