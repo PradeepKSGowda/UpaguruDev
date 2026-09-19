@@ -3,7 +3,7 @@
 import os
 from functools import lru_cache
 from typing import Optional
-from pydantic import Field
+from pydantic import Field, AliasChoices
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     """Immutable application settings validated at boot time."""
 
     model_config = SettingsConfigDict(
-        env_file=os.getenv("ENV_FILE", ".env"),
+        env_file=(".env", ".env.local", "scraper/.env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )
@@ -22,11 +22,23 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO", description="Logging level: DEBUG, INFO, WARNING, ERROR")
 
     # Supabase Configuration
-    supabase_url: str = Field(default="", description="Supabase project URL")
-    supabase_service_role_key: str = Field(default="", description="Supabase service role key for administrative access")
+    supabase_url: str = Field(
+        default="",
+        validation_alias=AliasChoices("SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_URL"),
+        description="Supabase project URL",
+    )
+    supabase_service_role_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_SERVICE_KEY"),
+        description="Supabase service role key for administrative access",
+    )
 
     # Google Gemini AI Configuration
-    gemini_api_key: str = Field(default="", description="API key for Google Gemini structured extraction")
+    gemini_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("GEMINI_API_KEY", "GOOGLE_API_KEY"),
+        description="API key for Google Gemini structured extraction",
+    )
     gemini_model: str = Field(default="gemini-1.5-pro", description="Gemini model identifier")
 
     # Upstash Redis Cache & Locks

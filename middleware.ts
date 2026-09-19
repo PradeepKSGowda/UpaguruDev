@@ -55,8 +55,11 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       return NextResponse.redirect(loginUrl);
     }
 
-    // Extract authoritative role from JWT app_metadata
-    const userRole = (user.app_metadata?.role as string) || "candidate";
+    // Extract authoritative role from JWT app_metadata with fallback
+    const userRole =
+      (user.app_metadata?.role as string) ||
+      (user.user_metadata?.role as string) ||
+      "candidate";
 
     // Authenticated user lacks administrative privileges -> Redirect to homepage
     if (!ADMIN_ROLES.has(userRole)) {

@@ -35,6 +35,19 @@ async def run_crawl_job(portal_code: str) -> None:
     try:
         crawler = crawler_cls()
         result = await crawler.crawl()
+        # Hand off newly downloaded PDFs to AI extraction pipeline
+        try:
+            from scraper.extraction import process_crawled_item_async
+            for item in result.items:
+                if not item.is_duplicate and item.raw_text:
+                    try:
+                        logger.info("Handing off new document to AI extraction", url=item.pdf_url)
+                        await process_crawled_item_async(item)
+                    except Exception as ext_err:
+                        logger.warning("AI extraction error for crawled notice", url=item.pdf_url, error=str(ext_err))
+        except Exception as pipe_err:
+            logger.warning("Extraction pipeline module unavailable or error occurred", error=str(pipe_err))
+
         logger.info(
             "Scheduled crawl job finished",
             portal=portal_code,

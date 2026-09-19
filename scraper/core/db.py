@@ -105,6 +105,8 @@ def insert_draft_notification(draft_payload: dict[str, Any]) -> dict[str, Any]:
     """
     client = get_supabase_client()
     draft_payload["status"] = "pending_review"
+    if not draft_payload.get("source_name"):
+        draft_payload["source_name"] = "Official Notification"
 
     try:
         response = client.table("draft_notifications").insert(draft_payload).execute()

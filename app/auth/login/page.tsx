@@ -67,7 +67,7 @@ function LoginForm() {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
         email: validation.data.email,
         password: validation.data.password,
       });
@@ -84,9 +84,15 @@ function LoginForm() {
         return;
       }
 
-      // Safe navigation to intended route
-      router.push(returnTo);
-      router.refresh();
+      // Resolve destination: admins without a custom returnTo land directly in /admin
+      const userRole =
+        (authData.user?.app_metadata?.role as string) ||
+        (authData.user?.user_metadata?.role as string) ||
+        "candidate";
+      const isAdmin = userRole === "admin" || userRole === "super_admin";
+      const targetDestination = isAdmin && (!returnTo || returnTo === "/") ? "/admin" : returnTo;
+
+      window.location.href = targetDestination;
     } catch {
       setAuthError("An unexpected network error occurred. Please check your internet connection.");
       setIsSubmitting(false);

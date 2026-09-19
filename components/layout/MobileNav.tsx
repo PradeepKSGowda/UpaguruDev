@@ -2,8 +2,8 @@
 
 /**
  * @file components/layout/MobileNav.tsx
- * @description Slide-out mobile navigation drawer for UPA-GURU.
- * Provides accessible overlay navigation, body scroll locking, and smooth transitions.
+ * @description Slide-out mobile navigation drawer for UPA-GURU with reactive auth session state,
+ * Admin Dashboard trigger, user identity badge, and sign-out controls.
  * 
  * Task ID: TASK-02010102 (Subtask: SUB-0201010203)
  * Architecture Reference: ADR-001 (Frontend Architecture)
@@ -11,14 +11,29 @@
 
 import React, { useEffect } from "react";
 import Link from "next/link";
-import { X, Search, Bell, BookOpen, ShieldCheck, ArrowRight, Home } from "lucide-react";
+import { X, Search, Bell, BookOpen, ShieldCheck, ArrowRight, Home, Shield, LogOut } from "lucide-react";
+
+interface AuthUserState {
+  email?: string;
+  role?: string;
+  fullName?: string;
+}
 
 interface MobileNavProps {
   isOpen: boolean;
   onClose: () => void;
+  user?: AuthUserState | null;
+  isAdmin?: boolean;
+  onSignOut?: () => void;
 }
 
-export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
+export default function MobileNav({
+  isOpen,
+  onClose,
+  user,
+  isAdmin = false,
+  onSignOut,
+}: MobileNavProps) {
   // Lock body scrolling when the mobile drawer is active
   useEffect(() => {
     if (isOpen) {
@@ -80,8 +95,55 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
             </button>
           </div>
 
+          {/* User Status Card (when authenticated) */}
+          {user && (
+            <div className="mt-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80">
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-slate-900 dark:text-white truncate max-w-[170px]">
+                    {user.fullName || (user.email ? user.email.split("@")[0] : "User")}
+                  </span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[170px]">
+                    {user.email}
+                  </span>
+                </div>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
+                  isAdmin 
+                    ? "bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300"
+                    : "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300"
+                }`}>
+                  {isAdmin ? "Admin" : "Candidate"}
+                </span>
+              </div>
+
+              {/* Admin Console Shortcut in Mobile Drawer */}
+              {isAdmin && (
+                <Link
+                  id="nav-mobile-admin-dashboard-btn"
+                  href="/admin"
+                  onClick={onClose}
+                  className="mt-2.5 w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition shadow-sm"
+                >
+                  <Shield className="h-3.5 w-3.5" />
+                  <span>Admin Dashboard</span>
+                </Link>
+              )}
+
+              {/* Alert Preferences Shortcut */}
+              <Link
+                id="nav-mobile-preferences-btn"
+                href="/preferences"
+                onClick={onClose}
+                className="mt-2 w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 hover:bg-blue-100 transition"
+              >
+                <Bell className="h-3.5 w-3.5" />
+                <span>Alert Preferences</span>
+              </Link>
+            </div>
+          )}
+
           {/* Quick Search Trigger */}
-          <div className="mt-6">
+          <div className="mt-4">
             <Link
               id="nav-mobile-search-btn"
               href="/search"
@@ -94,7 +156,7 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
           </div>
 
           {/* Navigation Links */}
-          <nav className="mt-6 flex flex-col gap-1.5" aria-label="Mobile Navigation">
+          <nav className="mt-4 flex flex-col gap-1.5" aria-label="Mobile Navigation">
             <Link
               id="nav-mobile-home-link"
               href="/"
@@ -139,24 +201,40 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
 
         {/* Bottom Auth CTA Buttons */}
         <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2.5">
-          <Link
-            id="nav-mobile-login-btn"
-            href="/auth/login"
-            onClick={onClose}
-            className="w-full text-center py-2.5 px-4 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
-          >
-            Candidate Sign In
-          </Link>
+          {user ? (
+            <button
+              id="nav-mobile-signout-btn"
+              onClick={() => {
+                onSignOut?.();
+                onClose();
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Sign Out</span>
+            </button>
+          ) : (
+            <>
+              <Link
+                id="nav-mobile-login-btn"
+                href="/auth/login"
+                onClick={onClose}
+                className="w-full text-center py-2.5 px-4 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+              >
+                Candidate Sign In
+              </Link>
 
-          <Link
-            id="nav-mobile-register-btn"
-            href="/auth/register"
-            onClick={onClose}
-            className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition"
-          >
-            <span>Get Free Alerts</span>
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+              <Link
+                id="nav-mobile-register-btn"
+                href="/auth/register"
+                onClick={onClose}
+                className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition"
+              >
+                <span>Get Free Alerts</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </div>

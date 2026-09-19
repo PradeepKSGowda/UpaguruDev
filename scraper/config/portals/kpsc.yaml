@@ -8,7 +8,7 @@ portal_name: "Karnataka Public Service Commission"
 conducting_body: "KPSC"
 state_or_central: "Karnataka"
 official_website: "https://kpsc.kar.nic.in"
-notifications_url: "https://kpsc.kar.nic.in/notifications.html"
+notifications_url: "https://kpsc.kar.nic.in/notification.html"
 
 # Crawl Engine Configuration
 engine: "playwright" # "playwright" for JS dynamic rendering, "httpx" for static HTML
@@ -38,6 +38,7 @@ include_keywords:
   - "advt"
   - "advertisement"
   - "examination"
+  - "corrigendum"
   - "post"
   - "applications"
 exclude_keywords:

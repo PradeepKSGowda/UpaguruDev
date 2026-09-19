@@ -131,8 +131,12 @@ class KPSCCrawler(BaseCrawler):
 
             delay = self.config.get("request_delay_seconds", 2.0)
 
-            # 4. Process each detected PDF
-            for item in detected_items:
+            # 4. Process each detected PDF (respect max_items per cycle)
+            max_items = self.config.get("max_items", 10)
+            items_to_process = detected_items[:max_items] if max_items else detected_items
+            logger.info("Processing detected PDF batch", count=len(items_to_process), total=len(detected_items))
+
+            for item in items_to_process:
                 pdf_url = item["pdf_url"]
                 title = item["title"]
 
@@ -159,7 +163,7 @@ class KPSCCrawler(BaseCrawler):
                     # 5. Extract text from new PDF
                     extracted = PDFTextExtractor.extract(downloaded.file_bytes or b"")
 
-                    # 6. Save new document record to Supabase
+                    # 6. Save new document record to Supabase pdf_documents
                     doc_record: dict[str, Any] = {
                         "sha256_hash": downloaded.sha256_hash,
                         "source_portal": self.portal_code,
@@ -170,9 +174,11 @@ class KPSCCrawler(BaseCrawler):
                         "extracted_text": extracted.text,
                     }
 
+                    doc_id: Optional[str] = None
                     try:
-                        insert_pdf_document(doc_record)
-                        logger.info("Inserted new pdf_document record", hash=downloaded.sha256_hash)
+                        inserted_doc = insert_pdf_document(doc_record)
+                        doc_id = inserted_doc.get("id")
+                        logger.info("Inserted new pdf_document record", hash=downloaded.sha256_hash, doc_id=doc_id)
                     except Exception as exc:
                         logger.warning("Failed to insert pdf_document to database", error=str(exc))
 
@@ -193,6 +199,18 @@ class KPSCCrawler(BaseCrawler):
 
                     result.new_processed += 1
                     result.items.append(crawled_item)
+
+                    # 7. Insert into draft_notifications for Admin HITL Review Queue
+                    try:
+                        from scraper.extraction import process_crawled_item_async
+                        await process_crawled_item_async(
+                            item=crawled_item,
+                            pdf_document_id=doc_id,
+                            run_id=run_id,
+                        )
+                        logger.info("Successfully queued notification in public.draft_notifications", title=title[:60])
+                    except Exception as ext_err:
+                        logger.warning("Draft insertion pipeline encountered error", url=pdf_url, error=str(ext_err))
 
                     # Respectful crawl delay
                     await asyncio.sleep(delay)
