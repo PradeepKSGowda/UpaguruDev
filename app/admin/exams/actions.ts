@@ -11,6 +11,7 @@
  */
 
 import { revalidatePath } from "next/cache";
+import { revalidateExam } from "@/lib/cache";
 import { createServerClient } from "@/lib/supabase/server";
 import { examInputSchema } from "@/lib/schemas/exams";
 import { Json } from "@/types/database.types";
@@ -123,10 +124,12 @@ export async function createExamAction(
       console.warn("[createExamAction] Audit logging failed:", auditError);
     }
 
-    // 5. Invalidate edge caches
-    revalidatePath("/admin/exams");
-    revalidatePath("/exams");
-    revalidatePath("/");
+    // 5. Invalidate edge caches via centralized revalidation engine
+    await revalidateExam({
+      slug: insertedExam.slug,
+      category: validatedData.category,
+      state: validatedData.state_or_central,
+    });
 
     return {
       success: true,
@@ -250,14 +253,14 @@ export async function updateExamAction(
       console.warn("[updateExamAction] Audit logging failed:", auditError);
     }
 
-    // 6. Invalidate caches
-    revalidatePath("/admin/exams");
+    // 6. Invalidate edge caches via centralized revalidation engine
+    await revalidateExam({
+      slug: validatedData.slug,
+      previousSlug: currentExam.slug !== validatedData.slug ? currentExam.slug : undefined,
+      category: validatedData.category,
+      state: validatedData.state_or_central,
+    });
     revalidatePath(`/admin/exams/${id}/edit`);
-    revalidatePath("/exams");
-    revalidatePath(`/exams/${validatedData.slug}`);
-    if (currentExam.slug !== validatedData.slug) {
-      revalidatePath(`/exams/${currentExam.slug}`);
-    }
 
     return {
       success: true,
@@ -339,10 +342,16 @@ export async function deleteExamAction(id: string): Promise<ActionResponse> {
       console.warn("[deleteExamAction] Audit logging failed:", auditError);
     }
 
-    // 5. Invalidate caches
-    revalidatePath("/admin/exams");
-    revalidatePath("/exams");
-    revalidatePath("/");
+    // 5. Invalidate caches via centralized revalidation engine
+    if (examToDelete?.slug) {
+      await revalidateExam({
+        slug: examToDelete.slug,
+      });
+    } else {
+      revalidatePath("/admin/exams");
+      revalidatePath("/exams");
+      revalidatePath("/");
+    }
 
     return { success: true };
   } catch (err: unknown) {

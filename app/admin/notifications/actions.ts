@@ -13,6 +13,7 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { createServerClient } from "@/lib/supabase/server";
 import { adminNotificationInputSchema } from "@/lib/schemas/admin-notifications";
+import { revalidateNotification } from "@/lib/cache";
 import { Json } from "@/types/database.types";
 
 export interface ActionResponse<T = unknown> {
@@ -154,17 +155,12 @@ export async function createNotificationAction(
       console.warn("[createNotificationAction] Audit logging failed:", auditError);
     }
 
-    // 6. Invalidate edge caches
-    revalidatePath("/admin/notifications");
-    revalidatePath("/notifications");
-    revalidatePath(`/notification/${insertedNotification.slug}`);
-    revalidatePath("/admin");
-    revalidatePath("/");
-    try {
-      revalidateTag("notifications");
-    } catch {
-      // ignore in test or unsupported context
-    }
+    // 6. Invalidate edge caches via centralized revalidation engine
+    await revalidateNotification({
+      slug: insertedNotification.slug,
+      category: parentExam.category,
+      reason: "notification_update",
+    });
 
     return {
       success: true,
@@ -301,21 +297,13 @@ export async function updateNotificationAction(
       console.warn("[updateNotificationAction] Audit logging failed:", auditError);
     }
 
-    // 6. Invalidate caches
-    revalidatePath("/admin/notifications");
+    // 6. Invalidate edge caches via centralized revalidation engine
+    await revalidateNotification({
+      slug: validatedData.slug,
+      previousSlug: currentNotif.slug !== validatedData.slug ? currentNotif.slug : undefined,
+      reason: isTransitioningToPublished ? "status_change" : "notification_update",
+    });
     revalidatePath(`/admin/notifications/${id}/edit`);
-    revalidatePath("/notifications");
-    revalidatePath(`/notification/${validatedData.slug}`);
-    if (currentNotif.slug !== validatedData.slug) {
-      revalidatePath(`/notification/${currentNotif.slug}`);
-    }
-    revalidatePath("/admin");
-    revalidatePath("/");
-    try {
-      revalidateTag("notifications");
-    } catch {
-      // ignore
-    }
 
     return {
       success: true,
@@ -379,15 +367,21 @@ export async function deleteNotificationAction(id: string): Promise<ActionRespon
       console.warn("[deleteNotificationAction] Audit logging failed:", auditError);
     }
 
-    // 4. Invalidate caches
-    revalidatePath("/admin/notifications");
-    revalidatePath("/notifications");
-    revalidatePath("/admin");
-    revalidatePath("/");
-    try {
-      revalidateTag("notifications");
-    } catch {
-      // ignore
+    // 4. Invalidate caches via centralized revalidation engine
+    if (notifToDelete?.slug) {
+      await revalidateNotification({
+        slug: notifToDelete.slug,
+        reason: "status_change",
+      });
+    } else {
+      revalidatePath("/admin/notifications");
+      revalidatePath("/notifications");
+      revalidatePath("/");
+      try {
+        revalidateTag("notifications");
+      } catch {
+        // ignore
+      }
     }
 
     return { success: true };
@@ -397,3 +391,79 @@ export async function deleteNotificationAction(id: string): Promise<ActionRespon
     return { success: false, error: message };
   }
 }
+
+/**
+ * Archive an existing notification record (status -> 'archived').
+ * Guarantees atomic status update, audit trail insertion, and complete edge cache invalidation.
+ */
+export async function archiveNotificationAction(id: string): Promise<ActionResponse> {
+  try {
+    const { supabase, user } = await requireAdminSession();
+
+    if (!id || typeof id !== "string") {
+      return { success: false, error: "Invalid notification identifier provided" };
+    }
+
+    // 1. Fetch current record
+    const { data: currentNotif, error: fetchError } = await supabase
+      .from("notifications")
+      .select("id, title, slug, status")
+      .eq("id", id)
+      .single();
+
+    if (fetchError || !currentNotif) {
+      return { success: false, error: "Target notification not found" };
+    }
+
+    const now = new Date().toISOString();
+
+    // 2. Set status to archived
+    const { error: updateError } = await supabase
+      .from("notifications")
+      .update({
+        status: "archived",
+        updated_at: now,
+      })
+      .eq("id", id);
+
+    if (updateError) {
+      console.error("[archiveNotificationAction] Database update error:", updateError);
+      return {
+        success: false,
+        error: `Failed to archive notification: ${updateError.message}`,
+      };
+    }
+
+    // 3. Record in audit_logs
+    const { error: auditError } = await supabase.from("audit_logs").insert({
+      admin_id: user.id,
+      action: "archive_notification",
+      target_entity: "notification",
+      target_id: id,
+      metadata: {
+        title: currentNotif.title,
+        slug: currentNotif.slug,
+        previous_status: currentNotif.status,
+        new_status: "archived",
+        archived_at: now,
+      } as unknown as Json,
+    });
+
+    if (auditError) {
+      console.warn("[archiveNotificationAction] Audit logging failed:", auditError);
+    }
+
+    // 4. Invalidate edge caches via centralized revalidation engine
+    await revalidateNotification({
+      slug: currentNotif.slug,
+      reason: "status_change",
+    });
+
+    return { success: true };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unexpected internal server error";
+    console.error("[archiveNotificationAction] Exception:", err);
+    return { success: false, error: message };
+  }
+}
+

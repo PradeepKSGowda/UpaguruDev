@@ -17,7 +17,7 @@
 
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateCandidatePreferences } from "@/lib/cache";
 import { createServerClient } from "@/lib/supabase/server";
 import { subscriptionPreferencesSchema } from "@/lib/schemas/subscriptions";
 import type { SubscriptionActionResponse, SubscriptionFormData } from "@/types/subscriptions";
@@ -142,8 +142,8 @@ export async function updateSubscriptionPreferences(
       persistedRecord = inserted;
     }
 
-    // 4. Revalidate preferences route cache
-    revalidatePath("/preferences");
+    // 4. Revalidate preferences route cache and tags
+    revalidateCandidatePreferences(user.id);
 
     return {
       success: true,

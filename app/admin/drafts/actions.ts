@@ -11,7 +11,7 @@
  * Rules: AGENTS.md Rule 1 (Zod validation), Rule 3 (Audit trail & Mandatory RLS), Rule 4 (Edge Caching)
  */
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidateNotification, revalidateDraft } from "../../../lib/cache";
 import { createServerClient } from "../../../lib/supabase/server";
 import {
   draftParsedFieldsSchema,
@@ -275,18 +275,12 @@ export async function publishNotificationAction(
     }
 
     // 9. Edge cache invalidation across candidate and administrative routes
-    revalidatePath("/");
-    revalidatePath("/notifications");
-    revalidatePath(`/notification/${insertedNotification.slug}`);
-    revalidatePath("/admin");
-    revalidatePath("/admin/drafts");
-    revalidatePath(`/admin/drafts/${draftId}`);
-
-    try {
-      revalidateTag("notifications");
-    } catch {
-      // Safe no-op if tag cache is handled elsewhere
-    }
+    await revalidateNotification({
+      slug: insertedNotification.slug,
+      category: validatedData.category,
+      reason: "status_change",
+    });
+    revalidateDraft(draftId);
 
     return {
       success: true,
@@ -419,9 +413,7 @@ export async function rejectDraftAction(
     }
 
     // 6. Revalidate cache tags and route paths
-    revalidatePath("/admin");
-    revalidatePath("/admin/drafts");
-    revalidatePath(`/admin/drafts/${draftId}`);
+    revalidateDraft(draftId);
 
     return {
       success: true,
