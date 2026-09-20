@@ -1,15 +1,15 @@
 /**
- * @file app/api/v1/notifications/route.ts
- * @module NotificationsApiRoute
- * @description Public REST API endpoint returning paginated published exam notifications.
+ * @file app/api/v1/exams/route.ts
+ * @module ExamsApiRoute
+ * @description Public REST API endpoint returning paginated government exam entities.
  * Features:
  * - Upstash Redis sliding window rate limiting (60 req/min per IP)
  * - Strict Zod query parameter validation (limit, offset, category, state, sort, search)
  * - RFC 7807 problem details error responses on validation and runtime failures
- * - Supabase PostgreSQL query with exact count, related exam details, and range pagination
- * - Edge CDN cache headers (s-maxage=300, stale-while-revalidate=600)
+ * - Supabase PostgreSQL query with exact count, linked notification counts, and range pagination
+ * - Edge CDN cache headers (s-maxage=600, stale-while-revalidate=1200)
  * 
- * Task ID: TASK-08010101 (Subtask: SUB-0801010101)
+ * Task ID: TASK-08010102 (Subtask: SUB-0801010201)
  * Architecture Reference: ADR-001 (Frontend), ADR-002 (Database), ADR-010 (Caching), ADR-013 (Security), ADR-014 (API Design)
  * Complies with: AGENTS.md (Rule 1: Zod Input Validation & Architecture Compliance)
  */
@@ -18,24 +18,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { createServerClient } from "@/lib/supabase/server";
 import {
-  notificationQueryParamsSchema,
+  examQueryParamsSchema,
   formatRfc7807ValidationError,
-  type ApiNotificationItem,
-  type ApiNotificationsResponse,
+  type ApiExamItem,
+  type ApiExamsResponse,
 } from "@/lib/schemas/api";
 
 export const dynamic = "force-dynamic";
 
 /**
- * GET /api/v1/notifications
+ * GET /api/v1/exams
  * 
  * Query parameters:
  * - `limit`: Number of records to return (1-100, default: 20)
  * - `offset`: Number of records to skip (min: 0, default: 0)
  * - `category`: Exam category filter (all, civil_services, banking, railways, defense, state_psc, teaching, police, other)
  * - `state`: State or Central filter (substring match or "all")
- * - `sort`: Sort ordering (published_desc, published_asc, deadline_asc, deadline_desc, vacancies_desc, title_asc)
- * - `search`: Free text search term across title and notification_number
+ * - `sort`: Sort ordering (title_asc, title_desc, created_desc, created_asc)
+ * - `search`: Free text search term across title, conducting_body, and slug
  * 
  * @param {NextRequest} request Incoming HTTP request
  * @returns {Promise<NextResponse>} JSON response envelope or RFC 7807 error
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     rawParams[key] = value;
   });
 
-  const parseResult = notificationQueryParamsSchema.safeParse(rawParams);
+  const parseResult = examQueryParamsSchema.safeParse(rawParams);
 
   // 3. Return RFC 7807 Problem Details if validation fails
   if (!parseResult.success) {
@@ -80,80 +80,54 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // 5. Build query with exact count for pagination calculation
     let query = supabase
-      .from("notifications")
+      .from("exams")
       .select(
         `
           id,
-          exam_id,
           slug,
           title,
-          notification_number,
-          total_vacancies,
-          application_start_date,
-          application_end_date,
-          exam_date,
-          qualification_required,
-          age_limit_min,
-          age_limit_max,
-          official_pdf_url,
-          apply_online_url,
-          syllabus_summary,
-          selection_process,
-          status,
-          published_at,
+          conducting_body,
+          category,
+          state_or_central,
+          official_website,
+          logo_url,
           created_at,
           updated_at,
-          exams!inner (
-            id,
-            slug,
-            title,
-            conducting_body,
-            category,
-            state_or_central,
-            official_website,
-            logo_url
-          )
+          notifications(count)
         `,
         { count: "exact" }
-      )
-      .eq("status", "published");
+      );
 
     // Filter by exam category
     if (category && category !== "all") {
-      query = query.eq("exams.category", category);
+      query = query.eq("category", category);
     }
 
     // Filter by state or central jurisdiction
     if (state && state !== "all") {
-      query = query.ilike("exams.state_or_central", `%${state}%`);
+      query = query.ilike("state_or_central", `%${state}%`);
     }
 
-    // Filter by search query across title and notification_number
+    // Filter by search query across title, conducting_body, and slug
     if (search && search.trim().length > 0) {
       const sanitized = search.trim().replace(/[%_]/g, "\\$&");
-      query = query.or(`title.ilike.%${sanitized}%,notification_number.ilike.%${sanitized}%`);
+      query = query.or(`title.ilike.%${sanitized}%,conducting_body.ilike.%${sanitized}%,slug.ilike.%${sanitized}%`);
     }
 
     // Apply sorting
     switch (sort) {
-      case "published_asc":
-        query = query.order("published_at", { ascending: true, nullsFirst: false });
+      case "title_desc":
+        query = query.order("title", { ascending: false });
         break;
-      case "deadline_asc":
-        query = query.order("application_end_date", { ascending: true, nullsFirst: false });
+      case "created_desc":
+        query = query.order("created_at", { ascending: false });
         break;
-      case "deadline_desc":
-        query = query.order("application_end_date", { ascending: false, nullsFirst: false });
-        break;
-      case "vacancies_desc":
-        query = query.order("total_vacancies", { ascending: false, nullsFirst: false });
+      case "created_asc":
+        query = query.order("created_at", { ascending: true });
         break;
       case "title_asc":
-        query = query.order("title", { ascending: true, nullsFirst: false });
-        break;
-      case "published_desc":
       default:
-        query = query.order("published_at", { ascending: false, nullsFirst: false });
+        query = query.order("title", { ascending: true });
         break;
     }
 
@@ -164,12 +138,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const { data: rows, count, error } = await query;
 
     if (error) {
-      console.error("[GET /api/v1/notifications] Database query error:", error);
+      console.error("[GET /api/v1/exams] Database query error:", error);
       const problemDetails = {
         type: "https://upaguru.in/errors/internal-server-error",
         title: "Internal Server Error",
         status: 500,
-        detail: "An unexpected database error occurred while retrieving exam notifications.",
+        detail: "An unexpected database error occurred while retrieving exams.",
         instance: request.nextUrl.pathname,
       };
 
@@ -187,44 +161,29 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const hasMore = offset + recordsReturned < total;
 
     // 7. Format records into API contract schema
-    const formattedData: ApiNotificationItem[] = (rows ?? []).map((row) => {
-      const examRaw = row.exams;
-      const exam = Array.isArray(examRaw) ? examRaw[0] : examRaw;
+    const formattedData: ApiExamItem[] = (rows ?? []).map((row: any) => {
+      let activeNotificationsCount = 0;
+      if (Array.isArray(row.notifications) && row.notifications[0]) {
+        activeNotificationsCount = Number(row.notifications[0].count) || 0;
+      }
 
       return {
         id: row.id,
         slug: row.slug,
         title: row.title,
-        notification_number: row.notification_number,
-        total_vacancies: row.total_vacancies,
-        application_start_date: row.application_start_date,
-        application_end_date: row.application_end_date,
-        exam_date: row.exam_date,
-        qualification_required: row.qualification_required ?? [],
-        age_limit_min: row.age_limit_min,
-        age_limit_max: row.age_limit_max,
-        official_pdf_url: row.official_pdf_url,
-        apply_online_url: row.apply_online_url,
-        syllabus_summary: row.syllabus_summary,
-        selection_process: row.selection_process ?? [],
-        published_at: row.published_at,
+        conducting_body: row.conducting_body,
+        category: row.category,
+        state_or_central: row.state_or_central,
+        official_website: row.official_website,
+        logo_url: row.logo_url,
+        active_notifications_count: activeNotificationsCount,
         created_at: row.created_at,
         updated_at: row.updated_at,
-        exam: {
-          id: exam?.id ?? "",
-          slug: exam?.slug ?? "",
-          title: exam?.title ?? "",
-          conducting_body: exam?.conducting_body ?? "",
-          category: exam?.category ?? "",
-          state_or_central: exam?.state_or_central ?? "",
-          official_website: exam?.official_website ?? "",
-          logo_url: exam?.logo_url ?? null,
-        },
       };
     });
 
     // 8. Construct response payload
-    const responsePayload: ApiNotificationsResponse = {
+    const responsePayload: ApiExamsResponse = {
       data: formattedData,
       pagination: {
         total,
@@ -240,11 +199,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       status: 200,
       headers: {
         "Content-Type": "application/json",
-        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        "Cache-Control": "public, s-maxage=600, stale-while-revalidate=1200",
       },
     });
   } catch (err) {
-    console.error("[GET /api/v1/notifications] Unhandled exception:", err);
+    console.error("[GET /api/v1/exams] Unhandled exception:", err);
     const problemDetails = {
       type: "https://upaguru.in/errors/internal-server-error",
       title: "Internal Server Error",

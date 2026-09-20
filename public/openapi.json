@@ -1,0 +1,909 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "UPA-GURU Public REST API",
+    "description": "# UPA-GURU Competitive Exam & Notification API\nThe UPA-GURU Public REST API allows third-party developers, academic portals, and career services\nto programmatically query real-time, verified government competitive exam notifications,\napplication deadlines, vacancy metrics, and official authority metadata.\n\n### Key Features\n- **Standardized Payloads**: Strict JSON contracts across all endpoints.\n- **Rate Limiting**: Sliding window rate limiter enforcing 60 requests/minute per IP address.\n- **RFC 7807 Error Handling**: Granular, machine-readable Problem Details (`application/problem+json`) on validation and runtime failures.\n- **Edge CDN Caching**: Pre-cached at the edge with dynamic `Cache-Control` headers for sub-50ms latency.\n",
+    "version": "1.0.0",
+    "contact": {
+      "name": "UPA-GURU Engineering Team",
+      "url": "https://upaguru.in",
+      "email": "api-support@upaguru.in"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://upaguru.in",
+      "description": "Production API Server"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Local Development Environment"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Notifications",
+      "description": "Access published recruitment notifications and application windows."
+    },
+    {
+      "name": "Exams",
+      "description": "Query canonical competitive exam entities and conducting commissions."
+    },
+    {
+      "name": "Search",
+      "description": "Full-text search engine with lexeme normalization and relevance ranking."
+    }
+  ],
+  "paths": {
+    "/api/v1/notifications": {
+      "get": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "List Published Notifications",
+        "description": "Returns a paginated list of published government exam notifications.\nSupports filtering by domain category, state/central jurisdiction, free-text search, and multiple sorting strategies.\n",
+        "operationId": "getNotifications",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of records to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Number of records to skip from the beginning of the result set.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "description": "Filter notifications by recruitment exam category.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "civil_services",
+                "banking",
+                "railways",
+                "defense",
+                "state_psc",
+                "teaching",
+                "police",
+                "other"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "Filter by state or central jurisdiction (e.g. Karnataka, Maharashtra, Central).",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "default": "all"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Order of returned notifications.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "published_desc",
+                "published_asc",
+                "deadline_asc",
+                "deadline_desc",
+                "vacancies_desc",
+                "title_asc"
+              ],
+              "default": "published_desc"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Case-insensitive search keyword across notification title and notification number.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "default": ""
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved notifications.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "example": "public, s-maxage=300, stale-while-revalidate=600"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query parameters.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (Max 60 requests per minute).",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "example": 45
+                }
+              },
+              "X-RateLimit-Limit": {
+                "schema": {
+                  "type": "integer",
+                  "example": 60
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "schema": {
+                  "type": "integer",
+                  "example": 0
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exams": {
+      "get": {
+        "tags": [
+          "Exams"
+        ],
+        "summary": "List Competitive Exams",
+        "description": "Returns a paginated catalog of all canonical competitive exam entities (e.g., UPSC Civil Services,\nKPSC Gazetted Probationers, SSC CGL) along with conducting authority details and active notification counts.\n",
+        "operationId": "getExams",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of exam records to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Number of exam records to skip.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "description": "Filter exams by category.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "civil_services",
+                "banking",
+                "railways",
+                "defense",
+                "state_psc",
+                "teaching",
+                "police",
+                "other"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "Filter by state or central jurisdiction.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "default": "all"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Order of returned exams.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "title_asc",
+                "title_desc",
+                "created_desc",
+                "created_asc"
+              ],
+              "default": "title_asc"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search term matching exam title, conducting authority, or slug.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "default": ""
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved exams catalog.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "example": "public, s-maxage=600, stale-while-revalidate=1200"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query parameters.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/search": {
+      "get": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Search Notifications",
+        "description": "Executes full-text keyword search across published notifications with PostgreSQL GIN index acceleration.\nSupports keyword stemming, multi-word matching, and category filtering.\n",
+        "operationId": "searchNotifications",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Search keyword or phrase (e.g., \"Civil Services\", \"Inspector\", \"Engineer\").",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of search results to return.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Number of search results to skip.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "description": "Filter search results by exam category.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "civil_services",
+                "banking",
+                "railways",
+                "defense",
+                "state_psc",
+                "teaching",
+                "police",
+                "other"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "Filter search results by jurisdiction.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "default": "all"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Ranking or ordering criteria.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "relevance",
+                "published_desc",
+                "deadline_asc",
+                "vacancies_desc"
+              ],
+              "default": "relevance"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search executed successfully.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "example": "public, s-maxage=60, stale-while-revalidate=300"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid search parameters (e.g. missing 'q').",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PaginationMetadata": {
+        "type": "object",
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "has_more"
+        ],
+        "properties": {
+          "total": {
+            "type": "integer",
+            "example": 142,
+            "description": "Total number of matching records across all pages."
+          },
+          "limit": {
+            "type": "integer",
+            "example": 20,
+            "description": "Maximum number of records requested."
+          },
+          "offset": {
+            "type": "integer",
+            "example": 0,
+            "description": "Number of records skipped."
+          },
+          "has_more": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether additional pages exist beyond the current offset + limit."
+          }
+        }
+      },
+      "ExamSummary": {
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "conducting_body",
+          "category",
+          "state_or_central",
+          "official_website"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "4955b252-47ba-4b21-a1e4-39958ee42f21"
+          },
+          "slug": {
+            "type": "string",
+            "example": "kpsc-gazetted-probationers"
+          },
+          "title": {
+            "type": "string",
+            "example": "Karnataka Administrative Services (KAS)"
+          },
+          "conducting_body": {
+            "type": "string",
+            "example": "Karnataka Public Service Commission"
+          },
+          "category": {
+            "type": "string",
+            "example": "state_psc"
+          },
+          "state_or_central": {
+            "type": "string",
+            "example": "Karnataka"
+          },
+          "official_website": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://kpsc.kar.nic.in"
+          },
+          "logo_url": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true,
+            "example": "https://upaguru.in/logos/kpsc.png"
+          }
+        }
+      },
+      "NotificationItem": {
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "total_vacancies",
+          "application_start_date",
+          "application_end_date",
+          "qualification_required",
+          "selection_process",
+          "published_at",
+          "created_at",
+          "updated_at",
+          "exam"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "c1f10928-8d26-4fa2-938b-cf98b1eb7e10"
+          },
+          "slug": {
+            "type": "string",
+            "example": "kpsc-gazetted-probationers-2026"
+          },
+          "title": {
+            "type": "string",
+            "example": "KPSC Gazetted Probationers Examination 2026 (Group A & B)"
+          },
+          "notification_number": {
+            "type": "string",
+            "nullable": true,
+            "example": "PSC 01 E(A)/2026"
+          },
+          "total_vacancies": {
+            "type": "integer",
+            "example": 384
+          },
+          "application_start_date": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-03-01T00:00:00Z"
+          },
+          "application_end_date": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-04-15T23:59:59Z"
+          },
+          "exam_date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2026-06-21T00:00:00Z"
+          },
+          "qualification_required": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "Bachelor's Degree from a recognized University"
+            ]
+          },
+          "age_limit_min": {
+            "type": "integer",
+            "nullable": true,
+            "example": 21
+          },
+          "age_limit_max": {
+            "type": "integer",
+            "nullable": true,
+            "example": 38
+          },
+          "official_pdf_url": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true,
+            "example": "https://kpsc.kar.nic.in/notif_2026.pdf"
+          },
+          "apply_online_url": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true,
+            "example": "https://kpsc.kar.nic.in/apply"
+          },
+          "syllabus_summary": {
+            "type": "object",
+            "nullable": true,
+            "example": {
+              "prelims": "General Studies Paper 1 & 2",
+              "mains": "Compulsory Kannada, English, and 4 GS papers"
+            }
+          },
+          "selection_process": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "Preliminary Examination",
+              "Main Examination",
+              "Personality Test"
+            ]
+          },
+          "published_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2026-03-01T06:00:00Z"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-03-01T06:00:00Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-03-01T06:00:00Z"
+          },
+          "exam": {
+            "$ref": "#/components/schemas/ExamSummary"
+          }
+        }
+      },
+      "NotificationsResponse": {
+        "type": "object",
+        "required": [
+          "data",
+          "pagination",
+          "timestamp"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationItem"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationMetadata"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-20T12:00:00.000Z"
+          }
+        }
+      },
+      "ExamItem": {
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "conducting_body",
+          "category",
+          "state_or_central",
+          "official_website",
+          "active_notifications_count",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "4955b252-47ba-4b21-a1e4-39958ee42f21"
+          },
+          "slug": {
+            "type": "string",
+            "example": "kpsc-gazetted-probationers"
+          },
+          "title": {
+            "type": "string",
+            "example": "Karnataka Administrative Services (KAS)"
+          },
+          "conducting_body": {
+            "type": "string",
+            "example": "Karnataka Public Service Commission"
+          },
+          "category": {
+            "type": "string",
+            "example": "state_psc"
+          },
+          "state_or_central": {
+            "type": "string",
+            "example": "Karnataka"
+          },
+          "official_website": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://kpsc.kar.nic.in"
+          },
+          "logo_url": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true,
+            "example": "https://upaguru.in/logos/kpsc.png"
+          },
+          "active_notifications_count": {
+            "type": "integer",
+            "example": 3,
+            "description": "Number of active published notifications currently associated with this exam."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-01-01T00:00:00Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-01-01T00:00:00Z"
+          }
+        }
+      },
+      "ExamsResponse": {
+        "type": "object",
+        "required": [
+          "data",
+          "pagination",
+          "timestamp"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExamItem"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationMetadata"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-20T12:00:00.000Z"
+          }
+        }
+      },
+      "SearchResponse": {
+        "type": "object",
+        "required": [
+          "query",
+          "data",
+          "pagination",
+          "timestamp"
+        ],
+        "properties": {
+          "query": {
+            "type": "string",
+            "example": "civil services"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationItem"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationMetadata"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-20T12:00:00.000Z"
+          }
+        }
+      },
+      "InvalidParam": {
+        "type": "object",
+        "required": [
+          "name",
+          "reason"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "limit"
+          },
+          "reason": {
+            "type": "string",
+            "example": "Limit cannot exceed 100"
+          }
+        }
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "required": [
+          "type",
+          "title",
+          "status",
+          "detail",
+          "instance"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://upaguru.in/errors/invalid-parameters"
+          },
+          "title": {
+            "type": "string",
+            "example": "Invalid Query Parameters"
+          },
+          "status": {
+            "type": "integer",
+            "example": 400
+          },
+          "detail": {
+            "type": "string",
+            "example": "The request query parameters failed validation: limit (Limit cannot exceed 100)"
+          },
+          "instance": {
+            "type": "string",
+            "example": "/api/v1/notifications"
+          },
+          "invalid_params": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvalidParam"
+            }
+          }
+        }
+      }
+    }
+  }
+}
