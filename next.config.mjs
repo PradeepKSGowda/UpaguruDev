@@ -3,9 +3,11 @@
  * @description Next.js 15 configuration for UPA-GURU Pan-India Government Exam Notification Portal.
  * Enforces React strict mode, disables server fingerprinting, and implements OWASP-compliant security headers.
  * 
- * Task Reference: TASK-01030103 (SUB-0103010301)
+ * Task Reference: TASK-01030103 (SUB-0103010301), TASK-07010101 (SUB-0701010102)
  * Architecture Reference: ADR-001, ADR-005, ADR-013
  */
+
+import { withSentryConfig } from '@sentry/nextjs';
 
 /**
  * Content Security Policy directives
@@ -114,4 +116,21 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+/**
+ * Sentry Build and Source Map Upload Configuration
+
+ * - Uploads source maps during CI/production builds
+ * - Hides source maps from public client bundles (prevents IP/code leakage)
+ * - Automatically instruments server actions and route handlers
+ */
+const sentryOptions = {
+  org: process.env.SENTRY_ORG || 'upa-guru',
+  project: process.env.SENTRY_PROJECT || 'upa-guru-web',
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  hideSourceMaps: true,
+  disableLogger: true,
+  automaticVercelMonitors: true,
+};
+
+export default withSentryConfig(nextConfig, sentryOptions);

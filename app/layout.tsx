@@ -12,7 +12,9 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Outfit } from "next/font/google";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
 import "./globals.css";
+
 
 /**
  * Inter font configuration for body text and general interface typography.
@@ -58,10 +60,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`h-full ${inter.variable} ${outfit.variable}`}>
       <body className="min-h-full flex flex-col font-sans antialiased bg-background text-foreground">
+        <AnalyticsProvider />
         <Header />
         <main className="flex-1 w-full flex flex-col">{children}</main>
         <Footer />
       </body>
+
     </html>
   );
 }

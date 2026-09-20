@@ -5,6 +5,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from scraper.core.logging import get_logger
+from scraper.core.sentry import capture_scraper_exception
 from scraper.crawlers.kpsc import KPSCCrawler
 from scraper.crawlers.upsc import UPSCCrawler
 from scraper.crawlers.ssc import SSCCrawler
@@ -24,17 +25,27 @@ CRAWLER_REGISTRY = {
 }
 
 
+from scraper.alerts.healthchecks import (
+    send_start_ping,
+    send_success_ping,
+    send_failure_ping,
+)
+
 async def run_crawl_job(portal_code: str) -> None:
-    """Execute scheduled portal crawl job and log outcome."""
+    """Execute scheduled portal crawl job, hand off notices to AI, and ping Healthchecks.io."""
     logger.info("Triggering scheduled crawl job", portal=portal_code)
     crawler_cls = CRAWLER_REGISTRY.get(portal_code.upper())
     if not crawler_cls:
         logger.error("Unknown crawler portal code", portal=portal_code)
         return
 
+    # Signal execution start to Healthchecks.io (measures job execution duration)
+    await send_start_ping(portal_code)
+
     try:
         crawler = crawler_cls()
         result = await crawler.crawl()
+
         # Hand off newly downloaded PDFs to AI extraction pipeline
         try:
             from scraper.extraction import process_crawled_item_async
@@ -56,8 +67,28 @@ async def run_crawl_job(portal_code: str) -> None:
             skipped=result.duplicates_skipped,
             failed=result.failed,
         )
+
+        summary_text = (
+            f"found={result.total_found}, new={result.new_processed}, "
+            f"skipped={result.duplicates_skipped}, failed={result.failed}"
+        )
+
+        # Ping Healthchecks.io outcome
+        if result.failed > 0 and result.total_found == 0:
+            # Fatal crawl outcome
+            error_details = "; ".join(result.errors) if result.errors else "Zero notices detected and failures reported"
+            await send_failure_ping(portal_code, f"Partial or total crawl failure: {error_details}")
+        else:
+            await send_success_ping(portal_code, summary=summary_text)
+
     except Exception as exc:
         logger.error("Scheduled crawl job encountered an unhandled error", portal=portal_code, error=str(exc))
+        # 1. Capture in Sentry
+        capture_scraper_exception(exc, crawler_id=portal_code, extra={"source": "apscheduler_cron"})
+        # 2. Ping Healthchecks.io /fail and dispatch instant Telegram operator alert
+        await send_failure_ping(portal_code, str(exc))
+
+
 
 
 def configure_scheduler_jobs() -> None:

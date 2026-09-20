@@ -56,6 +56,62 @@ class Settings(BaseSettings):
     pdf_download_timeout_seconds: int = Field(default=45, description="HTTP timeout for PDF binary downloads")
     headless_browser: bool = Field(default=True, description="Run Playwright in headless mode")
 
+    # Sentry Observability & Error Tracking (TASK-07010102)
+    sentry_dsn: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("SENTRY_DSN", "SCRAPER_SENTRY_DSN"),
+        description="Sentry DSN for Python scraper microservice error telemetry",
+    )
+    sentry_traces_sample_rate: float = Field(
+        default=0.1,
+        description="Performance tracing sample rate (0.0 to 1.0)",
+    )
+    sentry_profiles_sample_rate: float = Field(
+        default=0.1,
+        description="Continuous profiling sample rate (0.0 to 1.0)",
+    )
+
+    # Healthchecks.io Dead-Man's Switch Monitoring (TASK-07030101)
+    healthchecks_base_url: str = Field(
+        default="https://hc-ping.com",
+        description="Healthchecks.io base ping endpoint",
+    )
+    healthchecks_ping_key: Optional[str] = Field(
+        default=None,
+        description="Healthchecks.io project ping key for slug-based pings",
+    )
+    healthchecks_kpsc_uuid: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("HEALTHCHECKS_KPSC_UUID", "HC_PING_KPSC"),
+        description="UUID or slug for KPSC crawler heartbeat",
+    )
+    healthchecks_upsc_uuid: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("HEALTHCHECKS_UPSC_UUID", "HC_PING_UPSC"),
+        description="UUID or slug for UPSC crawler heartbeat",
+    )
+    healthchecks_ssc_uuid: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("HEALTHCHECKS_SSC_UUID", "HC_PING_SSC"),
+        description="UUID or slug for SSC crawler heartbeat",
+    )
+    healthchecks_rrb_uuid: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("HEALTHCHECKS_RRB_UUID", "HC_PING_RRB"),
+        description="UUID or slug for RRB crawler heartbeat",
+    )
+
+    # Telegram Scraper Alert Channel (TASK-07030101)
+    telegram_bot_token: Optional[str] = Field(
+        default=None,
+        description="Telegram bot token for crawler failure alerts",
+    )
+    telegram_admin_chat_id: Optional[str] = Field(
+        default=None,
+        description="Telegram admin chat ID to receive immediate crawler crash alerts",
+    )
+
+
 
 @lru_cache()
 def get_settings() -> Settings:

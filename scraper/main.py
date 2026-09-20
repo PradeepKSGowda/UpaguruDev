@@ -15,10 +15,14 @@ from scraper.core.logging import configure_logging, get_logger
 from scraper.core.storage import ensure_cache_directory
 from scraper.scheduler.cron import start_scheduler, stop_scheduler
 from scraper.api import api_router
+from scraper.core.sentry import init_sentry
 
 # Configure structured logging at import time
 configure_logging()
 logger = get_logger("scraper.main")
+
+# Initialize Sentry SDK before FastAPI app creation
+init_sentry()
 
 
 @asynccontextmanager
@@ -79,7 +83,9 @@ async def health_check() -> dict[str, Any]:
         "environment": settings.environment,
         "database_configured": bool(settings.supabase_url and settings.supabase_service_role_key),
         "ai_engine_configured": bool(settings.gemini_api_key),
+        "sentry_configured": bool(settings.sentry_dsn),
     }
+
 
 
 @app.get(
