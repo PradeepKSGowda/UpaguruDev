@@ -4187,7 +4187,7 @@
                   "acceptance_criteria": [
                     "vitest runs with zero config errors"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0901010101",
@@ -4200,7 +4200,7 @@
                       "acceptance_criteria": [
                         "Sample test runs successfully"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -4217,7 +4217,7 @@
                   "acceptance_criteria": [
                     "All schemas tested with edge cases and error message assertions"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0901010201",
@@ -4230,7 +4230,7 @@
                       "acceptance_criteria": [
                         "Each schema has >= 5 test cases covering valid/invalid inputs"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -4247,7 +4247,7 @@
                   "acceptance_criteria": [
                     "JSON-LD output validated against required Schema.org properties"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0901010301",
@@ -4260,7 +4260,7 @@
                       "acceptance_criteria": [
                         "Output contains all required properties"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 }
@@ -4310,7 +4310,7 @@
                   "acceptance_criteria": [
                     "Candidate E2E test suite passes on Chromium"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0902010101",
@@ -4323,7 +4323,7 @@
                       "acceptance_criteria": [
                         "Test navigates through candidate flow without errors"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -4340,7 +4340,7 @@
                   "acceptance_criteria": [
                     "Admin E2E test suite passes; approved notification visible on homepage"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0902010201",
@@ -4353,7 +4353,7 @@
                       "acceptance_criteria": [
                         "Full admin flow completes without errors"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 }
@@ -4402,7 +4402,7 @@
                   "acceptance_criteria": [
                     "lhci autorun passes with all assertions met"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0903010101",
@@ -4415,7 +4415,7 @@
                       "acceptance_criteria": [
                         "Config file created with correct URLs and thresholds"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 },
@@ -4432,7 +4432,7 @@
                   "acceptance_criteria": [
                     "Validation guide documented with screenshots of passing results"
                   ],
-                  "status": "Pending",
+                  "status": "Completed",
                   "subtasks": [
                     {
                       "subtask_id": "SUB-0903010201",
@@ -4445,7 +4445,7 @@
                       "acceptance_criteria": [
                         "Guide created; initial test passes"
                       ],
-                      "status": "Pending"
+                      "status": "Completed"
                     }
                   ]
                 }

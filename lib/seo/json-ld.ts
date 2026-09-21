@@ -285,3 +285,10 @@ export function generateAllNotificationSchemas(notification: NotificationDetail)
 
   return schemas;
 }
+
+/**
+ * Aliases for schema generators
+ */
+export const generateJobPostingJsonLd = generateJobPostingSchema;
+export const generateEventJsonLd = generateEventSchema;
+export const generateBreadcrumbJsonLd = generateBreadcrumbSchema;
