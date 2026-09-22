@@ -17,12 +17,11 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { loginSchema, type LoginInput } from "@/lib/schemas/auth";
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const returnTo = searchParams.get("returnTo") || "/";
 
@@ -131,7 +130,7 @@ function LoginForm() {
   };
 
   return (
-    <div id="login-page-root" className="space-y-6">
+    <div id="login-page-root" data-testid="login-card" className="space-y-6">
       <div className="text-center">
         <h1
           id="login-heading"

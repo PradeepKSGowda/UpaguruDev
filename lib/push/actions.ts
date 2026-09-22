@@ -44,27 +44,28 @@ export async function saveDeviceTokenAction(token: string): Promise<SaveTokenRes
       return { success: false, message: "User must be authenticated to register device token." };
     }
 
-    const { data: existingRows } = await supabase
-      .table("user_subscriptions")
+    const { data: existingSub } = await supabase
+      .from("user_subscriptions")
       .select("id, preferred_channels")
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false })
-      .limit(1);
+      .limit(1)
+      .maybeSingle();
 
-    if (existingRows && existingRows.length > 0) {
-      const currentChannels = existingRows[0].preferred_channels || [];
+    if (existingSub) {
+      const currentChannels = existingSub.preferred_channels || [];
       const updatedChannels = Array.from(new Set([...currentChannels, "web_push"]));
 
       await supabase
-        .table("user_subscriptions")
+        .from("user_subscriptions")
         .update({
           fcm_device_token: token.trim(),
           preferred_channels: updatedChannels,
           updated_at: new Date().toISOString(),
         })
-        .eq("id", existingRows[0].id);
+        .eq("id", existingSub.id);
     } else {
-      await supabase.table("user_subscriptions").insert({
+      await supabase.from("user_subscriptions").insert({
         user_id: user.id,
         fcm_device_token: token.trim(),
         preferred_channels: ["web_push"],

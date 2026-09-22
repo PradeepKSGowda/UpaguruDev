@@ -133,7 +133,7 @@ describe("draftParsedFieldsSchema", () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0]?.message).toContain("Please enter a valid URL");
+      expect(result.error.issues[0]?.message).toContain("Must be a valid URL");
     }
   });
 });

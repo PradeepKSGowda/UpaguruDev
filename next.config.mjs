@@ -9,6 +9,8 @@
 
 import { withSentryConfig } from '@sentry/nextjs';
 
+const isDev = process.env.NODE_ENV !== 'production';
+
 /**
  * Content Security Policy directives
  */
@@ -18,11 +20,11 @@ const cspHeader = `
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   img-src 'self' blob: data: https://*.supabase.co https://lh3.googleusercontent.com https://*.google-analytics.com;
   font-src 'self' data: https://fonts.gstatic.com;
-  connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.upstash.io https://*.sentry.io https://*.posthog.com https://*.google-analytics.com;
+  connect-src 'self' ${isDev ? 'ws://localhost:* http://localhost:*' : ''} https://*.supabase.co wss://*.supabase.co https://*.upstash.io https://*.sentry.io https://*.posthog.com https://*.google-analytics.com;
   frame-ancestors 'none';
   base-uri 'self';
   form-action 'self';
-  upgrade-insecure-requests;
+  ${isDev ? '' : 'upgrade-insecure-requests;'}
 `.replace(/\s{2,}/g, ' ').trim();
 
 /**
@@ -45,10 +47,14 @@ const securityHeaders = [
     key: 'Referrer-Policy',
     value: 'strict-origin-when-cross-origin',
   },
-  {
-    key: 'Strict-Transport-Security',
-    value: 'max-age=63072000; includeSubDomains; preload',
-  },
+  ...(!isDev
+    ? [
+        {
+          key: 'Strict-Transport-Security',
+          value: 'max-age=63072000; includeSubDomains; preload',
+        },
+      ]
+    : []),
   {
     key: 'Permissions-Policy',
     value: 'camera=(), microphone=(), geolocation=(), browsing-topics=()',

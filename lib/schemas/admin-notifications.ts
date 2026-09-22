@@ -33,7 +33,6 @@ export const adminNotificationInputSchema = z.object({
   slug: z
     .string()
     .trim()
-    .toLowerCase()
     .min(3, "Slug must be at least 3 characters")
     .max(120, "Slug cannot exceed 120 characters")
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must contain only lowercase alphanumeric characters and hyphens (e.g. upsc-cse-2026)"),

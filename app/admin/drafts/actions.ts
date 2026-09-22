@@ -277,7 +277,7 @@ export async function publishNotificationAction(
     // 9. Edge cache invalidation across candidate and administrative routes
     await revalidateNotification({
       slug: insertedNotification.slug,
-      category: validatedData.category,
+      category: validatedData.category ?? undefined,
       reason: "status_change",
     });
     revalidateDraft(draftId);

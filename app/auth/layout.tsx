@@ -41,6 +41,7 @@ export default function AuthLayout({
       <main className="sm:mx-auto sm:w-full sm:max-w-md">
         <div
           id="auth-card"
+          data-testid="auth-card"
           className="bg-white dark:bg-slate-900 py-8 px-6 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200/80 dark:border-slate-800 rounded-2xl sm:px-10 transition-all"
         >
           {children}

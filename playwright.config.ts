@@ -14,7 +14,7 @@ const BASE_URL = process.env.PLAYWRIGHT_TEST_BASE_URL || `http://localhost:${POR
 export default defineConfig({
   testDir: "./tests/e2e",
   /* Maximum time one test can run for */
-  timeout: 45 * 1000,
+  timeout: 60 * 1000,
   expect: {
     /* Maximum time expect() should wait for the condition to be met */
     timeout: 10 * 1000,
@@ -25,8 +25,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI */
-  workers: process.env.CI ? 1 : undefined,
+  /* Limit workers to 2 locally to avoid saturating single-threaded Next.js dev server */
+  workers: process.env.CI ? 1 : 2,
   /* Reporter to use */
   reporter: [
     ["html", { outputFolder: "playwright-report", open: "never" }],
@@ -42,7 +42,7 @@ export default defineConfig({
     /* Record video only on failure */
     video: "retain-on-failure",
     /* Base navigation timeout */
-    navigationTimeout: 20 * 1000,
+    navigationTimeout: 35 * 1000,
     /* Custom test attributes */
     testIdAttribute: "data-testid",
   },

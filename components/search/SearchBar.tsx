@@ -189,9 +189,18 @@ export default function SearchBar({
           spellCheck="false"
           placeholder={placeholder}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              updateUrlQuery(query);
+            }
+          }}
           className="w-full bg-transparent text-text font-medium placeholder:text-text-muted/70 focus:outline-none"
           aria-label="Search notifications by title or conducting body"
         />
+        <button type="submit" className="hidden" aria-hidden="true" tabIndex={-1}>
+          Search
+        </button>
 
         {/* Clear Button & Keyboard Shortcut Badge */}
         <div className="flex items-center gap-1.5 shrink-0 ml-2">

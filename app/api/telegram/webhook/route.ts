@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
   // 3. Command Routing
   if (text.startsWith("/start")) {
     const parts = text.split(" ");
-    const startPayload = parts.length > 1 ? parts[1].trim() : "";
+    const startPayload = parts.length > 1 ? (parts[1]?.trim() ?? "") : "";
 
     // Check if /start was invoked via a deep-link: /start link_<userId> or /start <userId>
     let boundUserId: string | null = null;
@@ -75,24 +75,24 @@ export async function POST(request: NextRequest) {
       // Bind Telegram Chat ID to the candidate's account
       try {
         const supabase = createAdminClient();
-        const { data: existingRows } = await supabase
-          .table("user_subscriptions")
+        const { data: existingSub } = await supabase
+          .from("user_subscriptions")
           .select("id, preferred_channels")
           .eq("user_id", boundUserId)
-          .limit(1);
+          .maybeSingle();
 
-        if (existingRows && existingRows.length > 0) {
-          const channels = existingRows[0].preferred_channels || [];
+        if (existingSub) {
+          const channels = existingSub.preferred_channels || [];
           const updatedChannels = Array.from(new Set([...channels, "telegram"]));
 
           await supabase
-            .table("user_subscriptions")
+            .from("user_subscriptions")
             .update({
               telegram_chat_id: chatId,
               preferred_channels: updatedChannels,
               updated_at: new Date().toISOString(),
             })
-            .eq("id", existingRows[0].id);
+            .eq("id", existingSub.id);
 
           await sendTelegramMessage({
             chat_id: chatId,
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
     try {
       const supabase = createAdminClient();
       const { data: subscription } = await supabase
-        .table("user_subscriptions")
+        .from("user_subscriptions")
         .select("subscribed_categories, subscribed_states, preferred_channels")
         .eq("telegram_chat_id", chatId)
         .order("updated_at", { ascending: false })
@@ -212,7 +212,7 @@ export async function POST(request: NextRequest) {
     try {
       const supabase = createAdminClient();
       await supabase
-        .table("user_subscriptions")
+        .from("user_subscriptions")
         .update({
           telegram_chat_id: null,
           updated_at: new Date().toISOString(),

@@ -144,7 +144,7 @@ describe("adminNotificationInputSchema", () => {
     const payload = {
       ...validPayload,
       official_pdf_url: "ftp//not-a-valid-http-url",
-      apply_online_url: "htp:bad-url",
+      apply_online_url: "not-a-valid-http-url",
     };
     const result = adminNotificationInputSchema.safeParse(payload);
     expect(result.success).toBe(false);

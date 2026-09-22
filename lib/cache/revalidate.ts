@@ -22,11 +22,11 @@ export interface RevalidateNotificationOptions {
   /** Notification URL slug (e.g. 'kpsc-gazetted-probationers-2026') */
   slug: string;
   /** Exam category for programmatic SEO page purging (e.g. 'civil_services') */
-  category?: string;
+  category?: string | null;
   /** Indian state or 'Central' for programmatic state route purging */
-  state?: string;
+  state?: string | null;
   /** Prior slug if the notification title/slug was modified */
-  previousSlug?: string;
+  previousSlug?: string | null;
   /** Trigger reason for telemetry tracking */
   reason?: "notification_update" | "status_change" | "manual_admin" | "scheduled_purge";
 }
@@ -35,11 +35,11 @@ export interface RevalidateExamOptions {
   /** Master examination series URL slug */
   slug: string;
   /** Exam category (e.g. 'state_psc') */
-  category?: string;
+  category?: string | null;
   /** State or Central jurisdiction */
-  state?: string;
+  state?: string | null;
   /** Prior slug if updated */
-  previousSlug?: string;
+  previousSlug?: string | null;
 }
 
 /**
@@ -202,9 +202,9 @@ export function revalidateDraft(draftId?: string): void {
 /**
  * Revalidates candidate alert preferences page
  * 
- * @param userId - Optional candidate user ID
+ * @param _userId - Optional candidate user ID
  */
-export function revalidateCandidatePreferences(userId?: string): void {
+export function revalidateCandidatePreferences(_userId?: string): void {
   revalidatePath("/preferences");
 
   try {

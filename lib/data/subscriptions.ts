@@ -67,7 +67,7 @@ export async function getUserSubscription(userId: string): Promise<UserSubscript
   try {
     const supabase = await createServerClient();
     const { data, error } = await supabase
-      .table("user_subscriptions")
+      .from("user_subscriptions")
       .select("*")
       .eq("user_id", userId)
       .order("updated_at", { ascending: false })

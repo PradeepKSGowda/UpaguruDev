@@ -86,12 +86,13 @@ export async function updateSubscriptionPreferences(
     };
 
     // 3. Query existing subscription record for this candidate
-    const { data: existingRows, error: checkError } = await supabase
-      .table("user_subscriptions")
+    const { data: existingSub, error: checkError } = await supabase
+      .from("user_subscriptions")
       .select("id")
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false })
-      .limit(1);
+      .limit(1)
+      .maybeSingle();
 
     if (checkError) {
       console.error("[SubscriptionActions] Error checking existing subscription:", checkError.message);
@@ -103,11 +104,11 @@ export async function updateSubscriptionPreferences(
 
     let persistedRecord;
 
-    if (existingRows && existingRows.length > 0) {
+    if (existingSub) {
       // Update existing record
-      const existingId = existingRows[0].id;
+      const existingId = existingSub.id;
       const { data: updated, error: updateError } = await supabase
-        .table("user_subscriptions")
+        .from("user_subscriptions")
         .update(dbPayload)
         .eq("id", existingId)
         .select()
@@ -124,7 +125,7 @@ export async function updateSubscriptionPreferences(
     } else {
       // Insert new record
       const { data: inserted, error: insertError } = await supabase
-        .table("user_subscriptions")
+        .from("user_subscriptions")
         .insert({
           ...dbPayload,
           created_at: new Date().toISOString(),

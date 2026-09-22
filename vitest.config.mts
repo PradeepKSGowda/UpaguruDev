@@ -21,11 +21,11 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
     include: [
-      "tests/**/*.test.ts",
-      "tests/**/*.test.tsx",
-      "**/*.spec.ts",
+      "tests/unit/**/*.test.ts",
+      "tests/unit/**/*.test.tsx",
     ],
     exclude: [
+      "tests/e2e/**",
       "node_modules",
       ".next",
       "scraper",

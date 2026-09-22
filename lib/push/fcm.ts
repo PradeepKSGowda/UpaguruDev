@@ -15,7 +15,7 @@
  * - Isolated per-channel failure containment (FCM errors do not fail parent publication transactions)
  */
 
-import { getFirebaseServerKey, isFirebaseConfigured } from "./firebase-config";
+import { getFirebaseServerKey } from "./firebase-config";
 import { createAdminClient } from "@/lib/supabase";
 
 export interface FcmPushOptions {
@@ -59,7 +59,7 @@ export async function pruneInvalidFcmTokens(invalidTokens: string[]): Promise<nu
   try {
     const supabaseAdmin = createAdminClient();
     const { error, count } = await supabaseAdmin
-      .table("user_subscriptions")
+      .from("user_subscriptions")
       .update({
         fcm_device_token: null,
         updated_at: new Date().toISOString(),
@@ -211,8 +211,8 @@ export async function sendFcmPush(options: FcmPushOptions): Promise<FcmPushResul
       // Analyze individual token results
       if (Array.isArray(data.results)) {
         data.results.forEach((tokenResult: { error?: string }, index: number) => {
-          if (tokenResult.error) {
-            const failedToken = batch[index];
+          const failedToken = batch[index];
+          if (tokenResult.error && failedToken) {
             const errorReason = tokenResult.error;
 
             result.errors.push({

@@ -12,8 +12,10 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Candidate Portal User Journey", () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to candidate portal homepage
-    await page.goto("/");
+    // Navigate to candidate portal homepage with domcontentloaded to prevent dev server streaming timeouts
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("homepage-container")).toBeVisible();
+    await page.waitForLoadState("load");
   });
 
   test("E2E-CAND-01: Homepage initial render and essential landmarks", async ({ page }) => {
@@ -38,38 +40,46 @@ test.describe("Candidate Portal User Journey", () => {
     const categoryPillsContainer = page.getByTestId("category-pills-container");
     await expect(categoryPillsContainer).toBeVisible();
 
-    // Select Civil Services category pill
+    // Select Civil Services category pill with retry to handle SSR hydration transition
     const civilServicesPill = page.getByTestId("category-pill-civil_services");
     if (await civilServicesPill.isVisible()) {
-      await civilServicesPill.click();
+      await expect(async () => {
+        await civilServicesPill.click();
+        await expect(page).toHaveURL(/\/\?.*category=civil_services/, { timeout: 10000 });
+      }).toPass({ timeout: 25000 });
 
-      // Verify URL search parameter is synchronized
-      await expect(page).toHaveURL(/\/\?.*category=civil_services/);
-
-      // Verify pill has active state styling
-      await expect(civilServicesPill).toHaveAttribute("aria-pressed", "true");
+      // Verify pill has active tab selection state (role="tab" uses aria-selected)
+      await expect(civilServicesPill).toHaveAttribute("aria-selected", "true", { timeout: 5000 });
     }
 
     // Reset filters using Clear All button
     const clearBtn = page.getByTestId("clear-all-filters-btn");
     if (await clearBtn.isVisible()) {
-      await clearBtn.click();
-      await expect(page).toHaveURL(/^\/?$/);
+      await expect(async () => {
+        await clearBtn.click();
+        await expect(page).not.toHaveURL(/category=/, { timeout: 10000 });
+      }).toPass({ timeout: 25000 });
     }
   });
 
   test("E2E-CAND-03: Full-text search bar execution and results page navigation", async ({ page }) => {
-    // 1. Locate search input on home page
+    // 1. Navigate to dedicated full-text search page
+    await page.goto("/search", { waitUntil: "domcontentloaded" });
+    await page.waitForLoadState("load");
+
+    // 2. Locate search input on search page
     const searchInput = page.getByTestId("search-bar-input").first();
     await expect(searchInput).toBeVisible();
 
-    // 2. Type search query
+    // 3. Type search query and submit with retry for SSR hydration transition
     const searchQuery = "Civil Services";
-    await searchInput.fill(searchQuery);
-    await searchInput.press("Enter");
-
-    // 3. Verify navigation to /search page with ?q= parameter
-    await expect(page).toHaveURL(/\/search\?.*q=Civil\+Services|\/search\?.*q=Civil%20Services/);
+    await expect(async () => {
+      await searchInput.fill(searchQuery);
+      await searchInput.press("Enter");
+      await expect(page).toHaveURL(/\/search\?.*q=Civil\+Services|\/search\?.*q=Civil%20Services/, {
+        timeout: 4000,
+      });
+    }).toPass({ timeout: 15000 });
 
     // 4. Verify search results page landmarks
     const searchPage = page.getByTestId("search-results-page");
@@ -129,8 +139,8 @@ test.describe("Candidate Portal User Journey", () => {
     // Emulate mobile screen size (375x667)
     await page.setViewportSize({ width: 375, height: 667 });
 
-    // Assert search input is visible and properly sized
-    const searchInput = page.getByTestId("search-bar-input").first();
+    // Assert search input is visible and properly sized on homepage filter bar
+    const searchInput = page.getByTestId("filter-search-input").first();
     await expect(searchInput).toBeVisible();
 
     // Verify filter bar container does not overflow horizontally

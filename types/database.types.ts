@@ -381,6 +381,42 @@ export type Database = {
           }
         ];
       };
+      isr_revalidation_queue: {
+        Row: {
+          id: string;
+          route_path: string;
+          slug: string;
+          reason: string;
+          status: string;
+          attempts: number;
+          last_error: string | null;
+          created_at: string;
+          revalidated_at: string;
+        };
+        Insert: {
+          id?: string;
+          route_path: string;
+          slug: string;
+          reason: string;
+          status?: string;
+          attempts?: number;
+          last_error?: string | null;
+          created_at?: string;
+          revalidated_at?: string;
+        };
+        Update: {
+          id?: string;
+          route_path?: string;
+          slug?: string;
+          reason?: string;
+          status?: string;
+          attempts?: number;
+          last_error?: string | null;
+          created_at?: string;
+          revalidated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -397,6 +433,21 @@ export type Database = {
           admin_note?: string;
         };
         Returns: undefined;
+      };
+      match_notification_subscribers: {
+        Args: {
+          p_exam_id?: string | null;
+          p_category?: string | null;
+          p_state?: string | null;
+        };
+        Returns: {
+          user_id: string;
+          preferred_channels: string[];
+          fcm_device_token: string | null;
+          telegram_chat_id: string | null;
+          whatsapp_phone_number: string | null;
+          email: string | null;
+        }[];
       };
     };
     Enums: {

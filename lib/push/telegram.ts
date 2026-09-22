@@ -154,7 +154,7 @@ export async function pruneInvalidTelegramChats(invalidChatIds: string[]): Promi
   try {
     const supabase = createAdminClient();
     const { error, count } = await supabase
-      .table("user_subscriptions")
+      .from("user_subscriptions")
       .update({
         telegram_chat_id: null,
         updated_at: new Date().toISOString(),

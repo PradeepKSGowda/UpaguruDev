@@ -32,6 +32,7 @@ declare module "@playwright/test" {
   export interface Page {
     goto(url: string, options?: { timeout?: number; waitUntil?: "load" | "domcontentloaded" | "networkidle" | "commit" }): Promise<unknown>;
     waitForURL(url: string | RegExp, options?: { timeout?: number; waitUntil?: "load" | "domcontentloaded" | "networkidle" | "commit" }): Promise<unknown>;
+    waitForLoadState(state?: "load" | "domcontentloaded" | "networkidle", options?: { timeout?: number }): Promise<void>;
     url(): string;
     locator(selector: string): Locator;
     getByTestId(testId: string): Locator;
@@ -73,6 +74,44 @@ declare module "@playwright/test" {
     only(title: string, testFunction: (fixtures: PlaywrightTestArgs) => Promise<void> | void): void;
   }
 
+  export interface Project {
+    name: string;
+    use?: Record<string, unknown>;
+    testMatch?: string | RegExp | Array<string | RegExp>;
+    testIgnore?: string | RegExp | Array<string | RegExp>;
+  }
+
+  export interface PlaywrightTestConfig {
+    testDir?: string;
+    timeout?: number;
+    expect?: {
+      timeout?: number;
+    };
+    fullyParallel?: boolean;
+    forbidOnly?: boolean;
+    retries?: number;
+    workers?: number | string | undefined;
+    reporter?: unknown;
+    use?: Record<string, unknown>;
+    projects?: Project[];
+    webServer?: {
+      command: string;
+      url: string;
+      reuseExistingServer?: boolean;
+      timeout?: number;
+      stdout?: string;
+      stderr?: string;
+    };
+    [key: string]: unknown;
+  }
+
+  export interface AsyncExpectMatcher {
+    toPass(options?: { timeout?: number; intervals?: number[] }): Promise<void>;
+  }
+
   export const test: TestType;
+  export function expect(actual: () => Promise<void> | void): AsyncExpectMatcher;
   export function expect(actual: unknown): ExpectMatcher;
+  export function defineConfig(config: PlaywrightTestConfig): PlaywrightTestConfig;
+  export const devices: Record<string, Record<string, unknown>>;
 }

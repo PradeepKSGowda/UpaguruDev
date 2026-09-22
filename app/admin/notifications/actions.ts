@@ -69,7 +69,7 @@ export async function createNotificationAction(
     // 2. Verify parent exam exists
     const { data: parentExam, error: examError } = await supabase
       .from("exams")
-      .select("id, title")
+      .select("id, title, category")
       .eq("id", validatedData.exam_id)
       .single();
 
