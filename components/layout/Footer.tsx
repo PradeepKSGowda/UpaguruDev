@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * @file components/layout/Footer.tsx
  * @description Global footer component containing brand details, categorized exam links,
@@ -9,9 +11,17 @@
 
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ShieldCheck, Bell, Sparkles } from "lucide-react";
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  // Hide the public consumer footer when browsing administrative routes (/admin/*).
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   const currentYear = new Date().getFullYear();
 
   return (

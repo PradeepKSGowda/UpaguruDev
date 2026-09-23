@@ -4454,6 +4454,78 @@
           ]
         }
       ]
+    },
+    {
+      "epic_id": "EPIC-10",
+      "title": "Role-Based Administration & User Profile Management System (ENH-0008)",
+      "description": "Enterprise-grade extensible RBAC administration, User Directory, Admin Settings, and Candidate Personal Workspace (/dashboard) tracking profile readiness, bookmarks, notes, application milestones, and contact verification.",
+      "priority": "P1",
+      "dependencies": [
+        "EPIC-01",
+        "EPIC-02",
+        "EPIC-03"
+      ],
+      "assigned_agent": "Product Architect Agent",
+      "estimated_effort": "2 weeks",
+      "acceptance_criteria": [
+        "Dynamic roles, permissions, user_roles, user_profiles, admin_profiles, bookmarks, exam_notes, user_exam_tracking tables with RLS",
+        "Admin user directory with pagination, search, role filters, block/unblock, and role assignment",
+        "Candidate workspace (/dashboard) with profile readiness score gauge, bookmarks, notes, and application tracking",
+        "Privilege escalation guards preventing admins from promoting users to super_admin or blocking super_admin",
+        "100% Vitest unit tests passing across RBAC and validation schemas"
+      ],
+      "status": "Completed",
+      "features": [
+        {
+          "feature_id": "FEAT-1001",
+          "title": "RBAC Database Subsystem & Server-side Authorization",
+          "description": "PostgreSQL schema, RLS policies, permissions taxonomy, and getUserAuthContext context resolver.",
+          "priority": "P1",
+          "dependencies": [],
+          "assigned_agent": "RBAC Security Agent",
+          "estimated_effort": "3 days",
+          "acceptance_criteria": [
+            "10 tables created with RLS enabled",
+            "has_permission SQL function deployed",
+            "assertPermission Server Action guard operational"
+          ],
+          "status": "Completed"
+        },
+        {
+          "feature_id": "FEAT-1002",
+          "title": "Admin User Management Directory & KPI Dashboard",
+          "description": "User Directory, Role assignment modal, User Block/Reactivate, and User KPI metric cards.",
+          "priority": "P1",
+          "dependencies": [
+            "FEAT-1001"
+          ],
+          "assigned_agent": "Frontend Engineer",
+          "estimated_effort": "4 days",
+          "acceptance_criteria": [
+            "Paginated User Directory table functional with search and filters",
+            "RoleBadge visual indicator deployed",
+            "User KPI cards displaying total, active, verified, blocked metrics"
+          ],
+          "status": "Completed"
+        },
+        {
+          "feature_id": "FEAT-1003",
+          "title": "Candidate Personal Workspace & Application Tracker",
+          "description": "Candidate dashboard (/dashboard) tracking profile readiness, KYC form, bookmarks, notes, and milestones.",
+          "priority": "P1",
+          "dependencies": [
+            "FEAT-1001"
+          ],
+          "assigned_agent": "Frontend Engineer",
+          "estimated_effort": "5 days",
+          "acceptance_criteria": [
+            "DashboardNav tab bar functional",
+            "ProfileCompletionBar rendering weighted score",
+            "Bookmarks, Notes, and Application Tracker interfaces operational with Server Actions"
+          ],
+          "status": "Completed"
+        }
+      ]
     }
   ],
   "source_references": [

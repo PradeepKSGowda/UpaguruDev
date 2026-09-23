@@ -69,7 +69,19 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   }
 
   // ---------------------------------------------------------------------------
-  // 2. Authenticated Session Redirect from Auth Pages (/auth/login, /auth/register)
+  // 2. Candidate Workspace Protection: /dashboard/*
+  // ---------------------------------------------------------------------------
+  if (pathname.startsWith("/dashboard")) {
+    if (!user && process.env.NODE_ENV !== "development") {
+      const loginUrl = new URL("/auth/login", request.url);
+      const destination = `${pathname}${search}`;
+      loginUrl.searchParams.set("returnTo", destination);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 3. Authenticated Session Redirect from Auth Pages (/auth/login, /auth/register)
   // ---------------------------------------------------------------------------
   if (user && (pathname === "/auth/login" || pathname === "/auth/register")) {
     const returnTo = request.nextUrl.searchParams.get("returnTo");

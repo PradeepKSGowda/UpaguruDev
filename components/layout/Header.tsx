@@ -12,6 +12,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, Search, ArrowRight, Shield, LogOut, User as UserIcon, Bell } from "lucide-react";
 import { createBrowserClient } from "@/lib/supabase/client";
 import MobileNav from "./MobileNav";
@@ -23,11 +24,16 @@ interface AuthUserState {
 }
 
 export default function Header() {
+  const pathname = usePathname();
+  const isAdminRoute = pathname?.startsWith("/admin");
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<AuthUserState | null>(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   useEffect(() => {
+    if (isAdminRoute) return;
+
     const supabase = createBrowserClient();
 
     async function checkSession() {
@@ -90,6 +96,12 @@ export default function Header() {
   };
 
   const isAdmin = user?.role === "admin" || user?.role === "super_admin";
+
+  // Hide the public consumer header when browsing administrative routes (/admin/*).
+  // The Admin portal provides its own dedicated AdminHeader and AdminSidebar.
+  if (isAdminRoute) {
+    return null;
+  }
 
   return (
     <>
@@ -195,6 +207,17 @@ export default function Header() {
                         <span>Admin Dashboard</span>
                       </Link>
                     )}
+
+                    {/* Candidate Workspace Trigger */}
+                    <Link
+                      id="header-workspace-btn"
+                      href="/dashboard"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-lg text-slate-700 dark:text-slate-200 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                      title="Candidate Workspace"
+                    >
+                      <UserIcon className="h-3.5 w-3.5 text-blue-600" />
+                      <span>My Workspace</span>
+                    </Link>
 
                     {/* Alert Preferences Trigger */}
                     <Link

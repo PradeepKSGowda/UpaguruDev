@@ -417,6 +417,414 @@ export type Database = {
         };
         Relationships: [];
       };
+      crawl_runs: {
+        Row: {
+          id: string;
+          portal_code: string;
+          started_at: string;
+          finished_at: string | null;
+          status: string;
+          pdfs_found: number;
+          pdfs_new: number;
+          pdfs_failed: number;
+          error_message: string | null;
+          logs: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          portal_code: string;
+          started_at?: string;
+          finished_at?: string | null;
+          status?: string;
+          pdfs_found?: number;
+          pdfs_new?: number;
+          pdfs_failed?: number;
+          error_message?: string | null;
+          logs?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          portal_code?: string;
+          started_at?: string;
+          finished_at?: string | null;
+          status?: string;
+          pdfs_found?: number;
+          pdfs_new?: number;
+          pdfs_failed?: number;
+          error_message?: string | null;
+          logs?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      crawler_heartbeat_logs: {
+        Row: {
+          id: string;
+          crawler_name: string;
+          status: string;
+          active_tasks_count: number;
+          last_heartbeat_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          crawler_name: string;
+          status?: string;
+          active_tasks_count?: number;
+          last_heartbeat_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          crawler_name?: string;
+          status?: string;
+          active_tasks_count?: number;
+          last_heartbeat_at?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      roles: {
+        Row: {
+          id: string;
+          code: string;
+          name: string;
+          description: string | null;
+          is_system_role: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          code: string;
+          name: string;
+          description?: string | null;
+          is_system_role?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          code?: string;
+          name?: string;
+          description?: string | null;
+          is_system_role?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      permissions: {
+        Row: {
+          id: string;
+          code: string;
+          module: string;
+          description: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          code: string;
+          module: string;
+          description?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          code?: string;
+          module?: string;
+          description?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      role_permissions: {
+        Row: {
+          role_id: string;
+          permission_id: string;
+          created_at: string;
+        };
+        Insert: {
+          role_id: string;
+          permission_id: string;
+          created_at?: string;
+        };
+        Update: {
+          role_id?: string;
+          permission_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      user_roles: {
+        Row: {
+          user_id: string;
+          role_id: string;
+          assigned_by: string | null;
+          assigned_at: string;
+        };
+        Insert: {
+          user_id: string;
+          role_id: string;
+          assigned_by?: string | null;
+          assigned_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          role_id?: string;
+          assigned_by?: string | null;
+          assigned_at?: string;
+        };
+        Relationships: [];
+      };
+      user_profiles: {
+        Row: {
+          id: string;
+          first_name: string | null;
+          last_name: string | null;
+          alternate_email: string | null;
+          is_alternate_email_verified: boolean;
+          phone: string | null;
+          is_phone_verified: boolean;
+          alternate_phone: string | null;
+          gender: string | null;
+          date_of_birth: string | null;
+          category: string | null;
+          address_line: string | null;
+          state: string | null;
+          district: string | null;
+          pincode: string | null;
+          avatar_url: string | null;
+          language_preference: string;
+          profile_completion_percentage: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          first_name?: string | null;
+          last_name?: string | null;
+          alternate_email?: string | null;
+          is_alternate_email_verified?: boolean;
+          phone?: string | null;
+          is_phone_verified?: boolean;
+          alternate_phone?: string | null;
+          gender?: string | null;
+          date_of_birth?: string | null;
+          category?: string | null;
+          address_line?: string | null;
+          state?: string | null;
+          district?: string | null;
+          pincode?: string | null;
+          avatar_url?: string | null;
+          language_preference?: string;
+          profile_completion_percentage?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          first_name?: string | null;
+          last_name?: string | null;
+          alternate_email?: string | null;
+          is_alternate_email_verified?: boolean;
+          phone?: string | null;
+          is_phone_verified?: boolean;
+          alternate_phone?: string | null;
+          gender?: string | null;
+          date_of_birth?: string | null;
+          category?: string | null;
+          address_line?: string | null;
+          state?: string | null;
+          district?: string | null;
+          pincode?: string | null;
+          avatar_url?: string | null;
+          language_preference?: string;
+          profile_completion_percentage?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      admin_profiles: {
+        Row: {
+          id: string;
+          department: string | null;
+          employee_id: string | null;
+          two_factor_enabled: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          department?: string | null;
+          employee_id?: string | null;
+          two_factor_enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          department?: string | null;
+          employee_id?: string | null;
+          two_factor_enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      bookmarks: {
+        Row: {
+          id: string;
+          user_id: string;
+          entity_type: string;
+          entity_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          entity_type: string;
+          entity_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          entity_type?: string;
+          entity_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      exam_notes: {
+        Row: {
+          id: string;
+          user_id: string;
+          exam_id: string | null;
+          notification_id: string | null;
+          title: string;
+          content: string;
+          tags: string[];
+          is_archived: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          exam_id?: string | null;
+          notification_id?: string | null;
+          title: string;
+          content: string;
+          tags?: string[];
+          is_archived?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          exam_id?: string | null;
+          notification_id?: string | null;
+          title?: string;
+          content?: string;
+          tags?: string[];
+          is_archived?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      user_exam_tracking: {
+        Row: {
+          id: string;
+          user_id: string;
+          notification_id: string;
+          application_submitted: boolean;
+          application_number: string | null;
+          fee_paid: boolean;
+          fee_amount: number | null;
+          hall_ticket_downloaded: boolean;
+          exam_attended: boolean;
+          result_status: string;
+          custom_notes: string | null;
+          personal_reminders: string[];
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          notification_id: string;
+          application_submitted?: boolean;
+          application_number?: string | null;
+          fee_paid?: boolean;
+          fee_amount?: number | null;
+          hall_ticket_downloaded?: boolean;
+          exam_attended?: boolean;
+          result_status?: string;
+          custom_notes?: string | null;
+          personal_reminders?: string[];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          notification_id?: string;
+          application_submitted?: boolean;
+          application_number?: string | null;
+          fee_paid?: boolean;
+          fee_amount?: number | null;
+          hall_ticket_downloaded?: boolean;
+          exam_attended?: boolean;
+          result_status?: string;
+          custom_notes?: string | null;
+          personal_reminders?: string[];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      verification_requests: {
+        Row: {
+          id: string;
+          user_id: string;
+          target_type: string;
+          target_value: string;
+          token_hash: string;
+          attempts: number;
+          expires_at: string;
+          verified_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          target_type: string;
+          target_value: string;
+          token_hash: string;
+          attempts?: number;
+          expires_at: string;
+          verified_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          target_type?: string;
+          target_value?: string;
+          token_hash?: string;
+          attempts?: number;
+          expires_at?: string;
+          verified_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

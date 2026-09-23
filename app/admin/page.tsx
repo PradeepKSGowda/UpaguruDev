@@ -23,8 +23,9 @@ import {
   FileSearch,
   Sparkles,
 } from "lucide-react";
-import { StatsCard } from "../../components/admin";
+import { StatsCard, ScraperTable } from "../../components/admin";
 import { getAdminDashboardStats } from "../../lib/data/admin-dashboard";
+import { getScraperManagementData } from "../../lib/data/scrapers";
 
 export const metadata: Metadata = {
   title: "Dashboard Overview | Admin Portal - UPA-GURU",
@@ -55,7 +56,10 @@ function formatConfidenceScore(score: number): { label: string; bg: string; text
 }
 
 export default async function AdminDashboardPage() {
-  const stats = await getAdminDashboardStats();
+  const [stats, scraperOverview] = await Promise.all([
+    getAdminDashboardStats(),
+    getScraperManagementData(),
+  ]);
 
   const formattedDate = new Intl.DateTimeFormat("en-IN", {
     dateStyle: "medium",
@@ -200,7 +204,34 @@ export default async function AdminDashboardPage() {
         </div>
       </section>
 
-      {/* 4. Recent Pending Review Drafts Preview */}
+      {/* 4. Examination Scrapers & Crawlers (Dynamic Discovery & Manual Extraction) */}
+      <section aria-label="Examination Scrapers" className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-heading font-bold text-slate-900 dark:text-white">
+              Recruitment Portals & Scrapers
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Live crawler status, recent extraction timestamps, and manual trigger controls.
+            </p>
+          </div>
+          <Link
+            id="admin-view-all-scrapers-link"
+            href="/admin/scrapers"
+            className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1 group"
+          >
+            <span>Dedicated Scrapers View</span>
+            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+        </div>
+
+        <ScraperTable
+          scrapers={scraperOverview.scrapers}
+          lastUpdated={scraperOverview.lastUpdated}
+        />
+      </section>
+
+      {/* 5. Recent Pending Review Drafts Preview */}
       <section aria-label="Recent Pending Drafts" className="space-y-4">
         <div className="flex items-center justify-between">
           <div>

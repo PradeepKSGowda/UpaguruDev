@@ -44,5 +44,9 @@ export type { NotificationFormProps } from "./NotificationForm";
 export { default as AuditLogsTable } from "./AuditLogsTable";
 export type { AuditLogsTableProps } from "./AuditLogsTable";
 
+export { default as ScraperTable } from "./ScraperTable";
+export type { ScraperTableProps } from "./ScraperTable";
 
-
+export { default as RoleBadge } from "./RoleBadge";
+export { default as UserKpiCards } from "./UserKpiCards";
+export { default as UserDirectoryTable } from "./UserDirectoryTable";

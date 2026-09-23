@@ -129,6 +129,17 @@ export default function MobileNav({
                 </Link>
               )}
 
+              {/* Candidate Workspace Shortcut */}
+              <Link
+                id="nav-mobile-workspace-btn"
+                href="/dashboard"
+                onClick={onClose}
+                className="mt-2 w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 transition shadow-sm"
+              >
+                <BookOpen className="h-3.5 w-3.5" />
+                <span>My Candidate Workspace</span>
+              </Link>
+
               {/* Alert Preferences Shortcut */}
               <Link
                 id="nav-mobile-preferences-btn"

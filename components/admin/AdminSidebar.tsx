@@ -14,6 +14,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
+  Bot,
   ClipboardCheck,
   GraduationCap,
   Bell,
@@ -21,6 +22,8 @@ import {
   ExternalLink,
   X,
   ShieldCheck,
+  Users,
+  UserCog,
 } from "lucide-react";
 
 export interface AdminSidebarProps {
@@ -47,6 +50,18 @@ const NAV_ITEMS: NavItem[] = [
     exactMatch: true,
   },
   {
+    name: "Users Directory",
+    href: "/admin/users",
+    icon: Users,
+    id: "admin-nav-users",
+  },
+  {
+    name: "Scrapers",
+    href: "/admin/scrapers",
+    icon: Bot,
+    id: "admin-nav-scrapers",
+  },
+  {
     name: "Draft Queue",
     href: "/admin/drafts",
     icon: ClipboardCheck,
@@ -69,6 +84,12 @@ const NAV_ITEMS: NavItem[] = [
     href: "/admin/audit-logs",
     icon: ShieldAlert,
     id: "admin-nav-audit-logs",
+  },
+  {
+    name: "My Profile & Security",
+    href: "/admin/settings/profile",
+    icon: UserCog,
+    id: "admin-nav-profile-settings",
   },
 ];
 

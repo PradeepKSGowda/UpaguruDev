@@ -54,21 +54,21 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       <section
         id="homepage-hero-section"
         data-testid="homepage-hero"
-        className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-8 text-center"
+        className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-8 text-center flex flex-col items-center"
       >
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-4">
-          <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-semibold mb-4">
+          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
           <span>Real-Time Government Recruitment Feed • 2026</span>
         </div>
 
-        <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold text-text-primary tracking-tight leading-tight mb-4">
-          Official Government Exam{" "}
-          <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+        <h1 className="w-full text-center font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight mb-4">
+          <span className="block sm:inline">Official Government Exam</span>{" "}
+          <span className="block sm:inline bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 dark:from-blue-400 dark:via-indigo-400 dark:to-emerald-400 bg-clip-text text-transparent">
             Notifications & Deadlines
           </span>
         </h1>
 
-        <p className="max-w-3xl mx-auto text-sm sm:text-base text-text-secondary leading-relaxed mb-6">
+        <p className="max-w-3xl mx-auto text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed mb-6 text-center">
           Direct, authenticated notices from UPSC, SSC, IBPS, Railways, and State PSCs.
           Verified vacancies, application deadlines, syllabus outlines, and official PDFs with zero AI hallucinations.
         </p>
