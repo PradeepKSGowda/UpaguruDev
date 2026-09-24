@@ -14,6 +14,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
+  Target,
   UserCheck,
   Bookmark,
   FileText,
@@ -30,6 +31,7 @@ interface NavTab {
 
 const TABS: NavTab[] = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard, exact: true },
+  { name: "Eligible Exams", href: "/dashboard/eligibility", icon: Target },
   { name: "Profile & KYC", href: "/dashboard/profile", icon: UserCheck },
   { name: "Saved Circulars", href: "/dashboard/bookmarks", icon: Bookmark },
   { name: "Exam Notes", href: "/dashboard/notes", icon: FileText },

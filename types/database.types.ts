@@ -825,6 +825,95 @@ export type Database = {
         };
         Relationships: [];
       };
+      candidate_eligibility_preferences: {
+        Row: {
+          id: string;
+          user_id: string;
+          qualifications: string[];
+          include_all_india_exams: boolean;
+          include_state_exams: boolean;
+          preferred_categories: string[];
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          qualifications?: string[];
+          include_all_india_exams?: boolean;
+          include_state_exams?: boolean;
+          preferred_categories?: string[];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          qualifications?: string[];
+          include_all_india_exams?: boolean;
+          include_state_exams?: boolean;
+          preferred_categories?: string[];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "candidate_eligibility_preferences_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      eligibility_matches: {
+        Row: {
+          id: string;
+          user_id: string;
+          notification_id: string;
+          overall_score: number;
+          is_eligible: boolean;
+          dimension_details: Json;
+          matched_at: string;
+          expires_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          notification_id: string;
+          overall_score: number;
+          is_eligible?: boolean;
+          dimension_details?: Json;
+          matched_at?: string;
+          expires_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          notification_id?: string;
+          overall_score?: number;
+          is_eligible?: boolean;
+          dimension_details?: Json;
+          matched_at?: string;
+          expires_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "eligibility_matches_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "eligibility_matches_notification_id_fkey";
+            columns: ["notification_id"];
+            isOneToOne: false;
+            referencedRelation: "notifications";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
     };
     Views: {
       [_ in never]: never;

@@ -12,9 +12,11 @@ import {
   PERMISSIONS,
   STANDARD_ROLES,
   ROLE_DEFAULT_PERMISSIONS,
+  ROLE_PERMISSION_SETS,
   isRoleAuthorized,
   canAssignRole,
 } from "@/lib/rbac/permissions";
+import { invalidateUserAuthCache } from "@/lib/rbac/rbac-service";
 
 describe("RBAC Permissions & Roles Matrix", () => {
   it("defines standard system roles correctly", () => {
@@ -84,5 +86,19 @@ describe("RBAC Permissions & Roles Matrix", () => {
 
     // Candidate cannot assign any role
     expect(canAssignRole(STANDARD_ROLES.CANDIDATE, STANDARD_ROLES.CANDIDATE)).toBe(false);
+  });
+
+  it("precomputes ROLE_PERMISSION_SETS as Set objects for O(1) membership checks (PERF-01)", () => {
+    Object.keys(STANDARD_ROLES).forEach((key) => {
+      const role = STANDARD_ROLES[key as keyof typeof STANDARD_ROLES];
+      const permSet = ROLE_PERMISSION_SETS[role];
+      expect(permSet).toBeInstanceOf(Set);
+      expect(permSet.size).toBe(ROLE_DEFAULT_PERMISSIONS[role].length);
+    });
+  });
+
+  it("supports in-memory cache invalidation without throwing errors (PERF-02)", () => {
+    expect(() => invalidateUserAuthCache("test-user-id")).not.toThrow();
+    expect(() => invalidateUserAuthCache()).not.toThrow();
   });
 });

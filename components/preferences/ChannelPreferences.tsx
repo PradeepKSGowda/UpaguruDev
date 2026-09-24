@@ -16,9 +16,22 @@
 
 "use client";
 
-import React from "react";
-import { Bell, Send, MessageSquare, Mail, Info, Smartphone, ExternalLink } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import {
+  Bell,
+  Send,
+  MessageSquare,
+  Mail,
+  Info,
+  Smartphone,
+  ExternalLink,
+  CheckCircle2,
+} from "lucide-react";
 import type { NotificationChannel, ChannelMetadata } from "@/types/subscriptions";
+import {
+  getTelegramConnectLinkAction,
+  disconnectTelegramAction,
+} from "@/app/preferences/actions";
 
 const CHANNELS_CONFIG: ChannelMetadata[] = [
   {
@@ -76,6 +89,27 @@ export default function ChannelPreferences({
   onWhatsappPhoneNumberChange,
   errors = {},
 }: ChannelPreferencesProps) {
+  const [connectUrl, setConnectUrl] = useState<string | null>(null);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
+
+  useEffect(() => {
+    getTelegramConnectLinkAction().then((res) => {
+      if (res.success && res.connectUrl) {
+        setConnectUrl(res.connectUrl);
+        if (res.chatId && !telegramChatId) {
+          onTelegramChatIdChange(res.chatId);
+        }
+      }
+    });
+  }, []);
+
+  const handleDisconnectTelegram = async () => {
+    setIsDisconnecting(true);
+    await disconnectTelegramAction();
+    onTelegramChatIdChange("");
+    setIsDisconnecting(false);
+  };
+
   const toggleChannel = (channelId: NotificationChannel) => {
     if (preferredChannels.includes(channelId)) {
       // Must maintain at least one channel
@@ -173,35 +207,74 @@ export default function ChannelPreferences({
 
               {/* Extra input for Telegram */}
               {channel.id === "telegram" && isEnabled && (
-                <div className="mt-3.5 pt-3 border-t border-purple-100/80">
-                  <label
-                    htmlFor="input-telegram-chat-id"
-                    className="block text-xs font-semibold text-gray-700"
-                  >
-                    Telegram Chat ID or Username
-                  </label>
-                  <div className="mt-1 relative rounded-md shadow-2xs">
-                    <input
-                      type="text"
-                      id="input-telegram-chat-id"
-                      value={telegramChatId}
-                      onChange={(e) => onTelegramChatIdChange(e.target.value)}
-                      placeholder={channel.inputPlaceholder}
-                      className="block w-full text-xs rounded-lg border border-gray-300 px-3 py-2 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 bg-white"
-                    />
-                  </div>
-                  <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-gray-500">
-                    <Info className="w-3 h-3 text-sky-500 flex-shrink-0" />
-                    <span>{channel.inputHelpText}</span>
-                    <a
-                      href="https://t.me/UpaguruBot"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-0.5 text-sky-600 hover:underline font-medium ml-1"
+                <div className="mt-3.5 pt-3 border-t border-purple-100/80 space-y-3">
+                  {telegramChatId ? (
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-sky-500/10 text-sky-600 flex items-center justify-center">
+                          <CheckCircle2 className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-sky-900 dark:text-sky-200">
+                            Telegram Account Connected
+                          </p>
+                          <p className="text-[11px] text-sky-700 dark:text-sky-400">
+                            Chat ID: {telegramChatId}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={isDisconnecting}
+                        onClick={handleDisconnectTelegram}
+                        className="text-xs text-rose-600 hover:text-rose-700 font-semibold hover:underline disabled:opacity-50"
+                      >
+                        {isDisconnecting ? "Disconnecting..." : "Disconnect"}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {connectUrl && (
+                        <a
+                          href={connectUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-2 w-full py-2.5 px-4 text-xs font-bold text-white bg-sky-500 hover:bg-sky-600 rounded-xl shadow-xs transition-colors"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          <span>1-Click Connect to @UpaguruBot</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                      <div className="flex items-center gap-1.5 text-[11px] text-gray-500">
+                        <Info className="w-3 h-3 text-sky-500 flex-shrink-0" />
+                        <span>
+                          Click above to launch @UpaguruBot. It will automatically bind your account and enable instant recruitment alerts.
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Fallback Manual Chat ID input */}
+                  <div>
+                    <label
+                      htmlFor="input-telegram-chat-id"
+                      className="block text-[11px] font-semibold text-gray-600"
                     >
-                      Open Bot <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
+                      Or enter Chat ID manually:
+                    </label>
+                    <div className="mt-1 relative rounded-md shadow-2xs">
+                      <input
+                        type="text"
+                        id="input-telegram-chat-id"
+                        value={telegramChatId}
+                        onChange={(e) => onTelegramChatIdChange(e.target.value)}
+                        placeholder="e.g. 123456789"
+                        className="block w-full text-xs rounded-lg border border-gray-300 px-3 py-2 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 bg-white"
+                      />
+                    </div>
                   </div>
+
                   {errors.telegramChatId && (
                     <p className="text-xs text-red-600 mt-1 font-medium" role="alert">
                       {errors.telegramChatId[0]}

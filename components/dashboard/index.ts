@@ -11,3 +11,6 @@ export { default as BookmarksList } from "./BookmarksList";
 export { default as NotesList } from "./NotesList";
 export { default as ApplicationTrackerList } from "./ApplicationTrackerList";
 export { default as CandidateProfileForm } from "./CandidateProfileForm";
+export { default as EligibilityMatchesList } from "./EligibilityMatchesList";
+export { default as SyllabusMasteryTracker } from "./SyllabusMasteryTracker";
+export { default as ExamLifecycleTimeline } from "./ExamLifecycleTimeline";

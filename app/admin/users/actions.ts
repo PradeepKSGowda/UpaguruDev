@@ -11,8 +11,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createServerClient } from "../../../lib/supabase/server";
-import { assertPermission } from "../../../lib/rbac/rbac-service";
-import { PERMISSIONS } from "../../../lib/rbac/permissions";
+import { assertPermission, invalidateUserAuthCache } from "../../../lib/rbac/rbac-service";
+import { PERMISSIONS, canAssignRole } from "../../../lib/rbac/permissions";
 import {
   userFilterSchema,
   userBlockStatusSchema,
@@ -72,7 +72,11 @@ export async function getUsersDirectory(
   let query = supabase.from("profiles").select("*", { count: "exact" });
 
   if (params.query) {
-    query = query.or(`email.ilike.%${params.query}%,full_name.ilike.%${params.query}%`);
+    // Sanitize query to prevent PostgREST .or() filter injection (SEC-01)
+    const sanitized = params.query.replace(/[%_,.()"']/g, "").trim();
+    if (sanitized) {
+      query = query.or(`email.ilike.%${sanitized}%,full_name.ilike.%${sanitized}%`);
+    }
   }
 
   if (params.role && params.role !== "all") {
@@ -177,7 +181,15 @@ export async function assignUserRoleAction(
   } = await supabase.auth.getUser();
 
   if (!currentUser) throw new Error("Authentication required");
-  await assertPermission(currentUser.id, PERMISSIONS.IAM_ROLES_ASSIGN);
+  const authContext = await assertPermission(currentUser.id, PERMISSIONS.IAM_ROLES_ASSIGN);
+
+  // Enforce role hierarchy and privilege escalation guard (SEC-04)
+  const actorRole = authContext.roles[0] || "candidate";
+  if (!canAssignRole(actorRole, input.roleCode)) {
+    throw new Error(
+      `Forbidden: Role '${actorRole}' is not authorized to assign role '${input.roleCode}'. Privilege escalation denied.`
+    );
+  }
 
   // Update profile role
   const { error } = await supabase
@@ -199,6 +211,9 @@ export async function assignUserRoleAction(
       timestamp: new Date().toISOString(),
     },
   });
+
+  // Invalidate in-memory auth cache for the target user (PERF-02)
+  invalidateUserAuthCache(input.userId);
 
   revalidatePath("/admin/users");
   revalidatePath(`/admin/users/${input.userId}`);
@@ -222,7 +237,10 @@ export async function getUserKpiStats(): Promise<UserKpiStats> {
   if (!currentUser) throw new Error("Authentication required");
   await assertPermission(currentUser.id, PERMISSIONS.ANALYTICS_KPI_READ);
 
-  const [usersCountRes, verifiedCountRes, bookmarksCountRes, notesCountRes] =
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const [usersCountRes, verifiedCountRes, bookmarksCountRes, notesCountRes, todayCountRes] =
     await Promise.all([
       supabase.from("profiles").select("id", { count: "exact", head: true }),
       supabase
@@ -231,12 +249,17 @@ export async function getUserKpiStats(): Promise<UserKpiStats> {
         .eq("email_verified", true),
       supabase.from("bookmarks").select("id", { count: "exact", head: true }),
       supabase.from("exam_notes").select("id", { count: "exact", head: true }),
+      supabase
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", todayStart.toISOString()),
     ]);
 
   const totalUsers = usersCountRes.count || 0;
   const verifiedUsers = verifiedCountRes.count || 0;
   const totalBookmarks = bookmarksCountRes.count || 0;
   const totalNotes = notesCountRes.count || 0;
+  const newUsersToday = todayCountRes.count || 0;
 
   return {
     totalUsers,
@@ -245,6 +268,6 @@ export async function getUserKpiStats(): Promise<UserKpiStats> {
     verifiedUsers,
     totalBookmarks,
     totalNotes,
-    newUsersToday: Math.max(1, Math.round(totalUsers * 0.05)),
+    newUsersToday,
   };
 }

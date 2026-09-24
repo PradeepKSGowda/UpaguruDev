@@ -110,12 +110,23 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<StandardRoleCode, PermissionCode[]
 };
 
 /**
+ * Pre-computed lookup Sets for O(1) permission membership checks.
+ */
+export const ROLE_PERMISSION_SETS: Record<string, Set<PermissionCode>> = Object.entries(
+  ROLE_DEFAULT_PERMISSIONS
+).reduce((acc, [role, perms]) => {
+  acc[role] = new Set(perms);
+  return acc;
+}, {} as Record<string, Set<PermissionCode>>);
+
+/**
  * Determines whether a role is authorized to perform an action based on static matrix.
+ * O(1) lookup via pre-computed Set.
  */
 export function isRoleAuthorized(role: string, permission: PermissionCode): boolean {
-  const perms = ROLE_DEFAULT_PERMISSIONS[role as StandardRoleCode];
-  if (!perms) return false;
-  return perms.includes(permission);
+  const permSet = ROLE_PERMISSION_SETS[role];
+  if (!permSet) return false;
+  return permSet.has(permission);
 }
 
 /**

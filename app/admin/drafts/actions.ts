@@ -13,6 +13,7 @@
 
 import { revalidateNotification, revalidateDraft } from "../../../lib/cache";
 import { createServerClient } from "../../../lib/supabase/server";
+import { dispatchEligibilityAlertsForNotification } from "@/lib/matching/eligibility-dispatcher";
 import {
   draftParsedFieldsSchema,
   draftRejectionSchema,
@@ -281,6 +282,11 @@ export async function publishNotificationAction(
       reason: "status_change",
     });
     revalidateDraft(draftId);
+
+    // 10. Trigger event-driven eligibility matching & alert dispatch in background (ENH-0010)
+    dispatchEligibilityAlertsForNotification(insertedNotification.id).catch((dispatchErr) => {
+      console.warn("[publishNotificationAction] Background eligibility dispatch warning:", dispatchErr);
+    });
 
     return {
       success: true,

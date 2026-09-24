@@ -11,6 +11,7 @@
  */
 
 import { revalidatePath } from "next/cache";
+import { randomInt, createHash } from "crypto";
 import { createServerClient } from "@/lib/supabase/server";
 import {
   accountSettingsSchema,
@@ -34,8 +35,11 @@ async function resolveCandidateUser() {
     return { supabase, user, isDevFallback: false };
   }
 
-  // Fallback for development if no active session
-  if (process.env.NODE_ENV === "development") {
+  // Fallback for development if no active session and explicitly opted-in (SEC-05)
+  if (
+    process.env.NODE_ENV === "development" &&
+    process.env.ALLOW_DEV_AUTH_BYPASS === "true"
+  ) {
     // Check if there is an existing profile in the database
     const { data: firstProfile } = await supabase
       .from("profiles")
@@ -468,7 +472,9 @@ export async function updateExamTrackingAction(input: ExamTrackingInput) {
 }
 
 /**
- * Sends a simulated verification OTP to candidate's mobile number.
+ * Sends a verification OTP to candidate's mobile number.
+ * Uses cryptographically secure random generator, stores SHA-256 hash in DB,
+ * and sets a 10-minute expiry (SEC-02, SEC-03).
  */
 export async function sendContactOtpAction(phone: string) {
   try {
@@ -481,20 +487,28 @@ export async function sendContactOtpAction(phone: string) {
 
     // Record verification request in database with 10-minute expiry
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-    // Default simulated test OTP hash (in production this delegates to SMS gateway like MSG91/Fast2SMS)
-    const testOtp = "123456";
+
+    // Generate 6-digit secure OTP (or deterministic 123456 only in dev when bypass enabled)
+    const isDevMock =
+      process.env.NODE_ENV === "development" &&
+      process.env.ALLOW_DEV_AUTH_BYPASS === "true";
+    const otp = isDevMock ? "123456" : String(randomInt(100000, 1000000));
+    const tokenHash = createHash("sha256").update(otp).digest("hex");
 
     await supabase.from("verification_requests").insert({
       user_id: user.id,
       target_type: "phone",
       target_value: phone,
-      token_hash: testOtp,
+      token_hash: tokenHash,
+      attempts: 0,
       expires_at: expiresAt,
     });
 
     return {
       success: true,
-      message: `OTP sent successfully to +91 ${phone} (Demo Code: 123456)`,
+      message: isDevMock
+        ? `OTP sent successfully to +91 ${phone} (Demo Code: ${otp})`
+        : `OTP sent successfully to +91 ${phone}`,
     };
   } catch (err: any) {
     return { success: false, error: err.message };
@@ -503,28 +517,67 @@ export async function sendContactOtpAction(phone: string) {
 
 /**
  * Verifies mobile OTP and marks candidate phone as verified.
+ * Validates SHA-256 hash against active unexpired request, limits failed attempts,
+ * and marks request as verified (SEC-02, SEC-03).
  */
 export async function verifyContactOtpAction(phone: string, otp: string) {
   try {
+    if (!/^\d{6}$/.test(otp)) {
+      return { success: false, error: "OTP must be a 6-digit number" };
+    }
+
     const { supabase, user } = await resolveCandidateUser();
     if (!user) return { success: false, error: "Unauthenticated" };
 
-    // Verify against verification_requests or accept test OTP
-    if (otp !== "123456") {
-      const { data: request } = await supabase
-        .from("verification_requests")
-        .select("id, token_hash, expires_at")
-        .eq("user_id", user.id)
-        .eq("target_type", "phone")
-        .eq("target_value", phone)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+    const tokenHash = createHash("sha256").update(otp).digest("hex");
 
-      if (!request || request.token_hash !== otp) {
-        return { success: false, error: "Invalid or expired OTP code" };
-      }
+    // Fetch latest unverified, unexpired request for this phone
+    const { data: request, error: reqError } = await supabase
+      .from("verification_requests")
+      .select("id, token_hash, expires_at, attempts")
+      .eq("user_id", user.id)
+      .eq("target_type", "phone")
+      .eq("target_value", phone)
+      .gt("expires_at", new Date().toISOString())
+      .is("verified_at", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (reqError) throw reqError;
+
+    if (!request) {
+      return { success: false, error: "No active verification request found or OTP expired." };
     }
+
+    // Rate-limiting failed attempts (max 5)
+    if ((request.attempts || 0) >= 5) {
+      return {
+        success: false,
+        error: "Too many failed attempts. Please request a new verification code.",
+      };
+    }
+
+    if (request.token_hash !== tokenHash) {
+      await supabase
+        .from("verification_requests")
+        .update({ attempts: (request.attempts || 0) + 1 })
+        .eq("id", request.id);
+
+      const remaining = 5 - ((request.attempts || 0) + 1);
+      return {
+        success: false,
+        error: remaining > 0
+          ? `Invalid OTP code. ${remaining} attempt(s) remaining.`
+          : "Invalid OTP code. Maximum attempts reached.",
+      };
+    }
+
+    // Mark verification request as consumed/verified
+    await supabase
+      .from("verification_requests")
+      .update({ verified_at: new Date().toISOString() })
+      .eq("id", request.id);
 
     // Mark phone as verified in user_profiles
     await supabase

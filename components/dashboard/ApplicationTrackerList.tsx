@@ -21,6 +21,7 @@ import {
   ExternalLink,
   Edit2,
   Save,
+  BookOpen,
 } from "lucide-react";
 import { updateExamTrackingAction } from "@/app/dashboard/actions";
 
@@ -181,6 +182,12 @@ export default function ApplicationTrackerList({ initialTracking }: { initialTra
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
+                <Link
+                  href={`/dashboard/tracking/${item.notification_id}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary-700 dark:text-primary-300 bg-primary-50 dark:bg-primary-950/60 hover:bg-primary-100 dark:hover:bg-primary-900/60 rounded-lg transition"
+                >
+                  <BookOpen className="w-3.5 h-3.5" /> Syllabus Tracker
+                </Link>
                 {notif.slug && (
                   <Link
                     href={`/notification/${notif.slug}`}

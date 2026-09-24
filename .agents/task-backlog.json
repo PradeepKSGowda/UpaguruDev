@@ -4526,6 +4526,232 @@
           "status": "Completed"
         }
       ]
+    },
+    {
+      "epic_id": "EPIC-11",
+      "title": "Smart Eligibility Matching Engine (ENH-0009)",
+      "description": "Rule-based candidate eligibility matching engine evaluating age with category-based reservation relaxation, qualification hierarchy, domicile state, and deadline urgency. Seamlessly integrates with Candidate Workspace and notification directory.",
+      "priority": "P0",
+      "dependencies": [
+        "EPIC-10"
+      ],
+      "assigned_agent": "Fullstack Engineer",
+      "estimated_effort": "1 week",
+      "acceptance_criteria": [
+        "Pure-function eligibility matching engine evaluates candidate profiles against notification criteria",
+        "Age relaxation rules applied accurately across reservation categories (GM, OBC, SC, ST)",
+        "Qualification hierarchy comparison supports prerequisite matching",
+        "Candidate eligibility preferences and cached matches tables deployed with mandatory RLS",
+        "Candidate workspace UI provides real-time match evaluation and qualification preferences configuration",
+        "Unit test suite covers all matching dimensions with 100% pass rate"
+      ],
+      "status": "Completed",
+      "features": [
+        {
+          "feature_id": "FEAT-1101",
+          "title": "Core Eligibility Engine & Schemas",
+          "description": "Pure matching engine (lib/matching/eligibility-engine.ts), Zod validation schemas, and database migration with RLS policies.",
+          "priority": "P0",
+          "dependencies": [
+            "FEAT-1001"
+          ],
+          "assigned_agent": "Backend Engineer",
+          "estimated_effort": "3 days",
+          "acceptance_criteria": [
+            "Pure engine evaluating age, qualification, state, deadline dimensions",
+            "Zod validation schemas for preferences and filters",
+            "DDL migration 20260925_eligibility_matching.sql with explicit RLS policies"
+          ],
+          "status": "Completed"
+        },
+        {
+          "feature_id": "FEAT-1102",
+          "title": "Candidate Eligibility UI & Server Actions",
+          "description": "Server Actions for real-time match computation, DashboardNav integration, and interactive EligibilityMatchesList interface.",
+          "priority": "P0",
+          "dependencies": [
+            "FEAT-1101",
+            "FEAT-1003"
+          ],
+          "assigned_agent": "Frontend Engineer",
+          "estimated_effort": "3 days",
+          "acceptance_criteria": [
+            "app/dashboard/eligibility/actions.ts Server Actions operational",
+            "DashboardNav contains Eligible Exams tab",
+            "app/dashboard/eligibility/page.tsx renders matches with dimension score breakdown",
+            "Unit test suite with 30 passing tests"
+          ],
+          "status": "Completed"
+        }
+      ]
+    },
+    {
+      "epic_id": "EPIC-12",
+      "title": "Event-Driven Eligibility Alert Dispatch & Telegram One-Click Bridge (ENH-0010)",
+      "description": "Bridges the Smart Eligibility Matching Engine with the Omnichannel Push Orchestrator and Telegram Bot deep-linking, automatically dispatching personalized recruitment alerts to eligible candidates upon notification publishing.",
+      "priority": "P0",
+      "dependencies": [
+        "EPIC-11",
+        "EPIC-06"
+      ],
+      "assigned_agent": "Fullstack Engineer",
+      "estimated_effort": "4 days",
+      "acceptance_criteria": [
+        "One-click Telegram deep linking (t.me/UpaguruBot?start=link_<userId>) pairs candidate account automatically",
+        "Publishing a notification in HITL verification triggers background eligibility matching and dispatch",
+        "Eligible candidates receive tailored Telegram HTML alerts with match score and dimension breakdown",
+        "Preferences UI allows 1-click connect and disconnect of Telegram bot",
+        "Unit test suite covers deep-link generation and HTML alert formatting"
+      ],
+      "status": "Completed",
+      "features": [
+        {
+          "feature_id": "FEAT-1201",
+          "title": "Telegram Bot Deep Link Bridge",
+          "description": "1-click Telegram account binding and disconnect actions with ChannelPreferences UI integration.",
+          "priority": "P0",
+          "dependencies": [
+            "FEAT-0503"
+          ],
+          "assigned_agent": "Frontend Engineer",
+          "estimated_effort": "2 days",
+          "acceptance_criteria": [
+            "getTelegramConnectLinkAction generates valid deep-link URLs",
+            "disconnectTelegramAction unlinks Telegram chat ID safely",
+            "ChannelPreferences component displays connection status with 1-click action"
+          ],
+          "status": "Completed"
+        },
+        {
+          "feature_id": "FEAT-1202",
+          "title": "Event-Driven Eligibility Alert Dispatcher",
+          "description": "Background dispatch worker evaluating candidate eligibility against newly published notifications and dispatching personalized alerts.",
+          "priority": "P0",
+          "dependencies": [
+            "FEAT-1101",
+            "FEAT-0505"
+          ],
+          "assigned_agent": "Backend Engineer",
+          "estimated_effort": "2 days",
+          "acceptance_criteria": [
+            "dispatchEligibilityAlertsForNotification runs non-blocking upon notification publish",
+            "Matches are cached in public.eligibility_matches",
+            "Tailored Telegram HTML alerts sent to eligible candidates",
+            "Unit tests in eligibility-dispatcher.test.ts passing"
+          ],
+          "status": "Completed"
+        }
+      ]
+    },
+    {
+      "epic_id": "EPIC-13",
+      "title": "Interactive Exam Syllabus & Subject Mastery Tracker (ENH-0011)",
+      "description": "Transforms UPA-GURU from a notification portal into an everyday preparation companion with topic-by-topic progress tracking, spaced-repetition revision cycles, confidence ratings, and exam readiness scoring.",
+      "priority": "P0",
+      "dependencies": [
+        "EPIC-01",
+        "EPIC-08"
+      ],
+      "assigned_agent": "Fullstack Engineer",
+      "estimated_effort": "4 days",
+      "acceptance_criteria": [
+        "public.candidate_syllabus_progress table deployed with mandatory RLS and indexes",
+        "extractCanonicalSyllabus parses scraped syllabus JSON with category fallback templates",
+        "calculateSyllabusMastery computes weighted coverage %, composite readiness score, and spaced revision alerts",
+        "SyllabusMasteryTracker client UI provides interactive status toggles, revisions, star ratings, and custom topics",
+        "ApplicationTrackerList integrates Syllabus Tracker link for each tracked exam",
+        "Unit tests in syllabus-tracker.test.ts passing"
+      ],
+      "status": "Completed",
+      "features": [
+        {
+          "feature_id": "FEAT-1301",
+          "title": "Syllabus Mastery Calculation & Normalization Engine",
+          "description": "Pure calculation module extracting topics, merging progress, and computing readiness and revision urgency.",
+          "priority": "P0",
+          "dependencies": [],
+          "assigned_agent": "Backend Engineer",
+          "estimated_effort": "2 days",
+          "acceptance_criteria": [
+            "Fallback templates for all major Indian exam categories (Civil Services, State PSC, Banking, Railways, etc.)",
+            "mergeSyllabusWithProgress preserves persisted and custom user topics",
+            "calculateSyllabusMastery generates accurate coverage and readiness scores"
+          ],
+          "status": "Completed"
+        },
+        {
+          "feature_id": "FEAT-1302",
+          "title": "Interactive Syllabus & Study Progress UI",
+          "description": "Candidate dashboard detail view (/dashboard/tracking/[id]) and SyllabusMasteryTracker component with status filters, revision logger, and notes.",
+          "priority": "P0",
+          "dependencies": [
+            "FEAT-1301"
+          ],
+          "assigned_agent": "Frontend Engineer",
+          "estimated_effort": "2 days",
+          "acceptance_criteria": [
+            "Candidate can toggle topic status, record revisions, rate confidence, and save study notes",
+            "Custom topics can be added and deleted",
+            "Milestone tracker provides direct entry point to exam syllabus"
+          ],
+          "status": "Completed"
+        }
+      ]
+    },
+    {
+      "epic_id": "EPIC-14",
+      "title": "Exam Lifecycle Automated Status Tracker (ENH-0012)",
+      "description": "Automated status tracking and real-time alerts across the post-notification examination lifecycle: Admit Card/Hall Ticket, Exam Day schedules, Answer Key & Objection Windows, and Final Results/Merit Lists.",
+      "priority": "P1",
+      "dependencies": [
+        "EPIC-01",
+        "EPIC-08",
+        "EPIC-13"
+      ],
+      "assigned_agent": "Fullstack Engineer",
+      "estimated_effort": "3 days",
+      "acceptance_criteria": [
+        "public.exam_lifecycle_events table deployed with mandatory RLS and indexes",
+        "buildExamLifecycleTimeline constructs 5-phase progression with urgency countdowns",
+        "ExamLifecycleTimeline UI renders interactive visual stepper with direct download links",
+        "Integrated into /dashboard/tracking/[id] alongside the syllabus tracker",
+        "Unit test suite with 11 passing tests in exam-lifecycle.test.ts"
+      ],
+      "status": "Completed",
+      "features": [
+        {
+          "feature_id": "FEAT-1401",
+          "title": "Lifecycle Milestone Schema & Evaluation Engine",
+          "description": "Database schema and timeline engine evaluating active phases and deadline urgencies.",
+          "priority": "P1",
+          "dependencies": [],
+          "assigned_agent": "Backend Engineer",
+          "estimated_effort": "1.5 days",
+          "acceptance_criteria": [
+            "exam_lifecycle_events table with status, closing dates, and official URLs",
+            "Timeline calculation detects active phases and urgent closing windows",
+            "RBAC-protected publish action for administrators"
+          ],
+          "status": "Completed"
+        },
+        {
+          "feature_id": "FEAT-1402",
+          "title": "Candidate Lifecycle Timeline & Feed UI",
+          "description": "ExamLifecycleTimeline visual stepper component and tracking workspace integration.",
+          "priority": "P1",
+          "dependencies": [
+            "FEAT-1401"
+          ],
+          "assigned_agent": "Frontend Engineer",
+          "estimated_effort": "1.5 days",
+          "acceptance_criteria": [
+            "Interactive 5-stage timeline with icons, status badges, and official links",
+            "Urgent alert banners for admit card and objection windows closing in <= 3 days",
+            "Exam workspace renders timeline prominently above syllabus"
+          ],
+          "status": "Completed"
+        }
+      ]
     }
   ],
   "source_references": [

@@ -159,3 +159,87 @@ export async function updateSubscriptionPreferences(
     };
   }
 }
+
+/**
+ * Generates a one-click deep link to bind candidate's Telegram account.
+ */
+export async function getTelegramConnectLinkAction(): Promise<{
+  success: boolean;
+  connectUrl?: string;
+  isConnected: boolean;
+  chatId?: string;
+  error?: string;
+}> {
+  try {
+    const supabase = await createServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, isConnected: false, error: "Authentication required" };
+    }
+
+    const { data: sub } = await supabase
+      .from("user_subscriptions")
+      .select("telegram_chat_id, preferred_channels")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const isConnected = Boolean(sub?.telegram_chat_id);
+    const botUsername = (process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "UpaguruBot").replace(/^@/, "");
+    const connectUrl = `https://t.me/${botUsername}?start=link_${user.id}`;
+
+    return {
+      success: true,
+      connectUrl,
+      isConnected,
+      chatId: sub?.telegram_chat_id || undefined,
+    };
+  } catch (err: any) {
+    return { success: false, isConnected: false, error: err.message };
+  }
+}
+
+/**
+ * Disconnects candidate's linked Telegram account and removes telegram from preferred channels.
+ */
+export async function disconnectTelegramAction(): Promise<{
+  success: boolean;
+  message?: string;
+  error?: string;
+}> {
+  try {
+    const supabase = await createServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    const { data: sub } = await supabase
+      .from("user_subscriptions")
+      .select("id, preferred_channels")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (sub) {
+      const updatedChannels = (sub.preferred_channels || []).filter((c) => c !== "telegram");
+      await supabase
+        .from("user_subscriptions")
+        .update({
+          telegram_chat_id: null,
+          preferred_channels: updatedChannels,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", sub.id);
+    }
+
+    revalidateCandidatePreferences(user.id);
+    return { success: true, message: "Telegram account disconnected successfully." };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
