@@ -264,6 +264,28 @@ class UPSCCrawler(BaseCrawler):
                     except Exception as draft_err:
                         logger.warning("Failed ingesting draft notification for notice", title=title[:50], error=str(draft_err))
 
+                    # Process lifecycle intelligence linking
+                    try:
+                        from crawler.core.crawler_orchestrator import CrawlerOrchestrator
+                        from scraper.core.db import get_supabase_client
+                        client = None
+                        try:
+                            client = get_supabase_client()
+                        except Exception:
+                            pass
+                        orchestrator = CrawlerOrchestrator(db_client=client)
+                        orchestrator.process_document(
+                            raw_url=pdf_url,
+                            title=title,
+                            file_bytes=downloaded.file_bytes or b"",
+                            extracted_text=extracted.text or "",
+                            organization_code="UPSC",
+                            base_url=self.config.get("base_url", "https://www.upsc.gov.in"),
+                        )
+                        logger.info("Processed UPSC notice through lifecycle intelligence engine", title=title[:50])
+                    except Exception as life_err:
+                        logger.debug("Lifecycle processing note", error=str(life_err))
+
                     await asyncio.sleep(delay)
 
                 except Exception as exc:

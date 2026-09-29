@@ -1,0 +1,36 @@
+portal_code: UPSC
+portal_name: Union Public Service Commission
+organization_type: CENTRAL_COMMISSION
+base_url: https://www.upsc.gov.in
+notifications_url: https://www.upsc.gov.in/examinations/active-exams
+wait_selector: "table, .view-content, a[href$='.pdf']"
+engine: httpx
+request_delay_seconds: 2.0
+timeout_seconds: 40
+
+include_keywords:
+  - "examination"
+  - "recruitment"
+  - "notice"
+  - "corrigendum"
+  - "admit card"
+  - "schedule"
+  - "time table"
+  - "result"
+
+stage_mappings:
+  "preliminary examination":
+    stage: PRELIMS
+    event_type: PRELIMS_EXAM
+  "civil services (preliminary)":
+    stage: PRELIMS
+    event_type: PRELIMS_EXAM
+  "main examination":
+    stage: MAINS
+    event_type: MAINS_EXAM
+  "personality test":
+    stage: INTERVIEW
+    event_type: PERSONALITY_TEST
+  "detailed application form":
+    stage: DAF
+    event_type: DAF_OPEN

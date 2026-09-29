@@ -1,0 +1,40 @@
+portal_code: RRB
+portal_name: Railway Recruitment Boards
+organization_type: RECRUITMENT_BOARD
+base_url: https://rrbcdg.gov.in
+notifications_url: https://rrbcdg.gov.in/
+wait_selector: "table, a[href$='.pdf']"
+engine: playwright
+request_delay_seconds: 2.0
+timeout_seconds: 30
+
+include_keywords:
+  - "cen"
+  - "ntpc"
+  - "cbt"
+  - "notice"
+  - "corrigendum"
+  - "result"
+
+stage_mappings:
+  "1st stage cbt":
+    stage: CBT_1
+    event_type: CBT_1
+  "cbt 1":
+    stage: CBT_1
+    event_type: CBT_1
+  "2nd stage cbt":
+    stage: CBT_2
+    event_type: CBT_2
+  "cbt 2":
+    stage: CBT_2
+    event_type: CBT_2
+  "computer based aptitude test":
+    stage: CBAT
+    event_type: CBAT_EXAM
+  "typing skill test":
+    stage: SKILL_TEST
+    event_type: SKILL_TEST
+  "document verification":
+    stage: DV
+    event_type: DOCUMENT_VERIFICATION

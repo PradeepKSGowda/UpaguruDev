@@ -1,0 +1,32 @@
+portal_code: SSC
+portal_name: Staff Selection Commission
+organization_type: CENTRAL_COMMISSION
+base_url: https://ssc.gov.in
+notifications_url: https://ssc.gov.in/
+wait_selector: "table, .notice-item, a[href$='.pdf']"
+engine: playwright
+request_delay_seconds: 2.0
+timeout_seconds: 30
+
+include_keywords:
+  - "cgl"
+  - "chsl"
+  - "mts"
+  - "notice"
+  - "corrigendum"
+  - "schedule"
+  - "result"
+
+stage_mappings:
+  "tier-i":
+    stage: TIER_1
+    event_type: TIER_1_EXAM
+  "tier-ii":
+    stage: TIER_2
+    event_type: TIER_2_EXAM
+  "skill test":
+    stage: SKILL_TEST
+    event_type: SKILL_TEST
+  "option-cum-preference":
+    stage: OPTION_PREFERENCE
+    event_type: OPTION_PREFERENCE_OPEN

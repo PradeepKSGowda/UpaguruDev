@@ -1,0 +1,33 @@
+portal_code: KPSC
+portal_name: Karnataka Public Service Commission
+organization_type: STATE_PSC
+state: KA
+base_url: https://kpsc.kar.nic.in
+notifications_url: https://kpsc.kar.nic.in/notification.html
+wait_selector: "table, a[href$='.pdf']"
+engine: playwright
+request_delay_seconds: 2.0
+timeout_seconds: 30
+
+include_keywords:
+  - "notification"
+  - "gazetted"
+  - "probationers"
+  - "recruitment"
+  - "corrigendum"
+  - "timetable"
+  - "result"
+
+stage_mappings:
+  "preliminary examination":
+    stage: PRELIMS
+    event_type: PRELIMS_EXAM
+  "main examination":
+    stage: MAINS
+    event_type: MAINS_EXAM
+  "kannada language examination":
+    stage: LANGUAGE_TEST
+    event_type: SKILL_TEST
+  "personality test":
+    stage: INTERVIEW
+    event_type: PERSONALITY_TEST

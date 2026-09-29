@@ -68,6 +68,12 @@ const NAV_ITEMS: NavItem[] = [
     id: "admin-nav-drafts",
   },
   {
+    name: "Review Queue",
+    href: "/admin/review-queue",
+    icon: ShieldCheck,
+    id: "admin-nav-review-queue",
+  },
+  {
     name: "Exams Master",
     href: "/admin/exams",
     icon: GraduationCap,

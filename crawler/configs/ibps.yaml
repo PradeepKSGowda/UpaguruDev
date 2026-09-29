@@ -1,0 +1,31 @@
+portal_code: IBPS
+portal_name: Institute of Banking Personnel Selection
+organization_type: BANKING_INSTITUTE
+base_url: https://www.ibps.in
+notifications_url: https://www.ibps.in/
+wait_selector: "table, a[href$='.pdf']"
+engine: playwright
+request_delay_seconds: 2.0
+timeout_seconds: 30
+
+include_keywords:
+  - "crp"
+  - "po/mt"
+  - "clerk"
+  - "specialist"
+  - "notice"
+  - "result"
+
+stage_mappings:
+  "online examination - preliminary":
+    stage: PRELIMS
+    event_type: PRELIMS_EXAM
+  "online examination - main":
+    stage: MAINS
+    event_type: MAINS_EXAM
+  "conduct of interview":
+    stage: INTERVIEW
+    event_type: INTERVIEW
+  "provisional allotment":
+    stage: FINAL
+    event_type: PROVISIONAL_ALLOTMENT

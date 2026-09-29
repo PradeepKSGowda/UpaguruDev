@@ -4932,6 +4932,29 @@
         "All 15 regression tests in vitest pass 100%"
       ],
       "status": "Completed"
+    },
+    {
+      "epic_id": "ENH-LIFECYCLE-INTELLIGENCE-ENGINE",
+      "title": "Multi-Exam Recruitment Intelligence & Document Lifecycle Linking Engine",
+      "description": "Production-grade, multi-organization examination lifecycle intelligence engine transforming 1:1 PDF-notification assumption into an Entity-Lifecycle and Evidence Graph anchored on canonical Exam Cycles across UPSC, KPSC, SSC, RRB, and IBPS with non-destructive versioning, field-level provenance, deterministic cycle resolution, and HITL review queue.",
+      "priority": "P0",
+      "dependencies": [
+        "EPIC-01",
+        "EPIC-02",
+        "EPIC-03",
+        "EPIC-04"
+      ],
+      "assigned_agent": "Principal Software Architect & Lead Engineer",
+      "estimated_effort": "1 week",
+      "acceptance_criteria": [
+        "Database schema deployed with 14 lifecycle entities, RLS policies, and legacy backfill projections",
+        "Common core intelligence engine with 7-stage normalizer, reference extractor, document classifier, cycle resolver, document linker, and non-destructive event versioning",
+        "Adapters implemented for UPSC, KPSC, SSC, RRB, and IBPS with declarative YAML configs",
+        "Confidence-gated linking routing score < 85 to review_queue_item",
+        "Candidate-facing timeline API model and admin review actions implemented with backward compatibility",
+        "100% offline fixture test suite passing covering full 9-stage lifecycles"
+      ],
+      "status": "Completed"
     }
   ],
   "source_references": [
