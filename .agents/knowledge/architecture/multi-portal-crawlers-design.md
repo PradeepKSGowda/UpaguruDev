@@ -46,9 +46,9 @@ graph TD
 
 ## 2. Portal-Specific Extraction Nuances
 
-| Portal | URL & Architecture | DOM Quirks & Selectors | Key Filters |
+| Portal | URL & Architecture | DOM Quirks & Selectors | Key Filters & Pipeline |
 | :--- | :--- | :--- | :--- |
-| **UPSC** | `https://upsc.gov.in/examinations/active-examinations` | Tables with nested links inside accordion and tab structures. Requires waiting for dynamic content hydration. | "Notification", "Examination", "Advt". Excludes interview schedules and final results. |
+| **UPSC** | `https://www.upsc.gov.in/examinations/active-exams` | Statically-rendered Drupal CMS. Protected by Akamai EdgeSuite CDN which blocks headless Playwright Chromium with `Access Denied` (`errors.edgesuite.net`). Uses `engine: "httpx"` with browser headers to fetch in <1s. Candidate examinations rendered in `.view-content .views-row` and `.views-field-field-exam-name a`. Secondary exam landing subpages host the official notification PDF and dates (`Date of Notification`, `Last Date for Receipt of Applications`) inside `table.views-table.cols-6` under `Download Notification`. Newly downloaded PDFs are immediately ingested into `draft_notifications` with `status: 'pending_review'`. | "Notification", "Examination", "Advt", "Civil Services", "Engineering Services", "Combined Defence". Filters out generic utility links (`/exam-calendar`, `/previous-question-papers`, etc.). |
 | **SSC** | `https://ssc.gov.in/` & notices tab | Dynamic React/Angular SPA hydration with paginated table views. PDF downloads frequently use relative paths with encoded characters. | "Notice of Examination", "Recruitment", "Phase-". Excludes exam day guidelines and tentative answer keys. |
 | **RRB** | Multi-regional (e.g. `rrbbnc.gov.in`, `rrbcdg.gov.in`) | Legacy HTML tables with Centralized Employment Notices (CEN). PDF links formatted as CEN 01/2024, CEN 02/2024. | "CEN", "Recruitment", "Notification", "Employment". Excludes medical appeals. |
 

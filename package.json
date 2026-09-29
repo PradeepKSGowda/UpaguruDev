@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
+    "test:eligibility": "vitest run tests/unit/candidate-eligibility-evaluator.test.ts tests/unit/candidate-test-matrix.test.ts",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",

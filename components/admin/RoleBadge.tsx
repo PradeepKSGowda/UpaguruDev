@@ -9,10 +9,19 @@ import React from "react";
 
 interface RoleBadgeProps {
   role: string;
+  isTestUser?: boolean;
 }
 
-export default function RoleBadge({ role }: RoleBadgeProps) {
+export default function RoleBadge({ role, isTestUser }: RoleBadgeProps) {
   const normalized = role.toLowerCase();
+
+  if (normalized === "test_candidate" || (isTestUser && normalized === "candidate")) {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60">
+        Test Candidate
+      </span>
+    );
+  }
 
   switch (normalized) {
     case "super_admin":

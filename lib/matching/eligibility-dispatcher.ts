@@ -106,7 +106,7 @@ export async function dispatchEligibilityAlertsForNotification(
     // 2. Fetch all candidates with profiles and preferences
     const [profilesRes, userProfilesRes, prefsRes, subsRes] = await Promise.all([
       supabase.from("profiles").select("id, full_name, email"),
-      supabase.from("user_profiles").select("id, date_of_birth, gender, category, state"),
+      supabase.from("user_profiles").select("id, date_of_birth, gender, marital_status, category, state"),
       supabase.from("candidate_eligibility_preferences").select("user_id, qualifications"),
       supabase.from("user_subscriptions").select("user_id, preferred_channels, telegram_chat_id"),
     ]);
@@ -131,6 +131,7 @@ export async function dispatchEligibilityAlertsForNotification(
       const candidateProfile: CandidateProfile = {
         dateOfBirth: uProfile?.date_of_birth || null,
         gender: uProfile?.gender || null,
+        maritalStatus: (uProfile as any)?.marital_status || null,
         category: uProfile?.category || null,
         state: uProfile?.state || null,
         qualifications: uPrefs?.qualifications || [],

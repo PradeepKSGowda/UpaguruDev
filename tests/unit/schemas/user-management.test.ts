@@ -145,4 +145,48 @@ describe("Candidate Workspace Schemas", () => {
     });
     expect(valid.success).toBe(true);
   });
+
+  it("validates all standard marital status options", () => {
+    const statuses = [
+      "unmarried",
+      "married",
+      "divorced",
+      "widowed",
+      "widow_widower",
+      "judicially_separated",
+      "other",
+    ];
+
+    statuses.forEach((status) => {
+      const res = accountSettingsSchema.safeParse({
+        firstName: "Anjali",
+        maritalStatus: status,
+      });
+      expect(res.success).toBe(true);
+    });
+
+    const invalidStatus = accountSettingsSchema.safeParse({
+      firstName: "Anjali",
+      maritalStatus: "complicated",
+    });
+    expect(invalidStatus.success).toBe(false);
+  });
+
+  it("validates all standard gender options including transgender", () => {
+    const genders = ["male", "female", "transgender", "other", "prefer_not_to_say"];
+
+    genders.forEach((gender) => {
+      const res = accountSettingsSchema.safeParse({
+        firstName: "Kiran",
+        gender,
+      });
+      expect(res.success).toBe(true);
+    });
+
+    const invalidGender = accountSettingsSchema.safeParse({
+      firstName: "Kiran",
+      gender: "unknown_gender",
+    });
+    expect(invalidGender.success).toBe(false);
+  });
 });

@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UPA-GURU Location & Domicile Test Matrix",
+  "description": "Geographical regions, districts, and Article 371(J) Kalyana Karnataka domicile test scenarios",
+  "version": "2.0.0",
+  "states": [
+    "Karnataka",
+    "Maharashtra",
+    "Tamil Nadu",
+    "Kerala",
+    "Andhra Pradesh",
+    "Telangana",
+    "Delhi",
+    "Uttar Pradesh",
+    "Rajasthan",
+    "Jammu & Kashmir",
+    "West Bengal"
+  ],
+  "karnataka_general_districts": [
+    "Bengaluru Urban",
+    "Bengaluru Rural",
+    "Mysuru",
+    "Belagavi",
+    "Dharwad",
+    "Shivamogga",
+    "Dakshina Kannada",
+    "Udupi",
+    "Tumakuru",
+    "Hassan"
+  ],
+  "kalyana_karnataka_districts": [
+    "Kalaburagi",
+    "Bidar",
+    "Raichur",
+    "Yadgir",
+    "Ballari",
+    "Koppal",
+    "Vijayanagara"
+  ],
+  "test_scenarios": [
+    {
+      "scenario_id": "LOC-STATE-MATCH",
+      "state": "Karnataka",
+      "notification_scope": "Karnataka",
+      "expected_outcome": "PASS"
+    },
+    {
+      "scenario_id": "LOC-STATE-MISMATCH",
+      "state": "Maharashtra",
+      "notification_scope": "Karnataka",
+      "expected_outcome": "FAIL",
+      "reason": "This exam requires Karnataka domicile. Candidate state is Maharashtra."
+    },
+    {
+      "scenario_id": "LOC-CENTRAL-OPEN",
+      "state": "Jammu & Kashmir",
+      "notification_scope": "Central",
+      "expected_outcome": "PASS",
+      "reason": "Central / All-India posts are open to candidates across all Indian states."
+    },
+    {
+      "scenario_id": "LOC-KK-LOCAL-CERTIFIED",
+      "state": "Karnataka",
+      "district": "Kalaburagi",
+      "region": "Kalyana Karnataka",
+      "has_domicile_certificate": true,
+      "notification_quota": "Kalyana Karnataka 371(J)",
+      "expected_outcome": "PASS",
+      "reason": "Candidate satisfies Article 371(J) Kalyana Karnataka local quota with valid certificate"
+    },
+    {
+      "scenario_id": "LOC-KK-RESIDENT-NO-CERT",
+      "state": "Karnataka",
+      "district": "Bidar",
+      "region": "Kalyana Karnataka",
+      "has_domicile_certificate": false,
+      "notification_quota": "Kalyana Karnataka 371(J)",
+      "expected_outcome": "FAIL",
+      "reason": "Candidate resides in Kalyana Karnataka district but lacks mandatory Article 371(J) domicile eligibility certificate"
+    },
+    {
+      "scenario_id": "LOC-NON-KK-NO-CERT",
+      "state": "Karnataka",
+      "district": "Bengaluru Urban",
+      "region": "Non-KK",
+      "has_domicile_certificate": false,
+      "notification_quota": "Kalyana Karnataka 371(J)",
+      "expected_outcome": "FAIL",
+      "reason": "Candidate is from non-Kalyana Karnataka region and not eligible for 371(J) local reservation"
+    }
+  ]
+}

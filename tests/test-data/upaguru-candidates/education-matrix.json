@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UPA-GURU Education Test Matrix",
+  "description": "Standardized education hierarchy, degrees, and specializations for eligibility validation",
+  "version": "2.0.0",
+  "hierarchy": [
+    "8th",
+    "10th",
+    "12th",
+    "ITI",
+    "Diploma",
+    "Graduate",
+    "Post Graduate",
+    "Engineering",
+    "Medical",
+    "Law",
+    "PhD"
+  ],
+  "degrees": [
+    { "code": "SSLC", "level": "10th", "title": "Secondary School Leaving Certificate (10th Standard)" },
+    { "code": "PUC", "level": "12th", "title": "Pre-University Course / 12th Standard Higher Secondary" },
+    { "code": "ITI", "level": "ITI", "title": "Industrial Training Institute Certificate", "specializations": ["Fitter", "Electrician", "Mechanic"] },
+    { "code": "DIPLOMA", "level": "Diploma", "title": "State Board of Technical Education Diploma", "specializations": ["Civil Engineering", "Mechanical Engineering", "Electrical Engineering", "Computer Science"] },
+    { "code": "BE", "level": "Engineering", "title": "Bachelor of Engineering", "specializations": ["Computer Science", "Mechanical Engineering", "Civil Engineering", "Electrical Engineering", "Electronics & Communication"] },
+    { "code": "BTECH", "level": "Engineering", "title": "Bachelor of Technology", "specializations": ["Computer Science", "Information Technology", "Mechanical Engineering", "Civil Engineering"] },
+    { "code": "BSC", "level": "Graduate", "title": "Bachelor of Science", "specializations": ["Mathematics", "Physics", "Chemistry", "Computer Science", "Statistics"] },
+    { "code": "BCOM", "level": "Graduate", "title": "Bachelor of Commerce", "specializations": ["General", "Accounting & Finance", "Taxation"] },
+    { "code": "BA", "level": "Graduate", "title": "Bachelor of Arts", "specializations": ["Economics", "English", "History", "Political Science", "Kannada"] },
+    { "code": "MA", "level": "Post Graduate", "title": "Master of Arts", "specializations": ["Economics", "English", "Public Administration", "History"] },
+    { "code": "MSC", "level": "Post Graduate", "title": "Master of Science", "specializations": ["Computer Science", "Mathematics", "Physics", "Chemistry"] },
+    { "code": "MCOM", "level": "Post Graduate", "title": "Master of Commerce", "specializations": ["Finance", "Accounting"] },
+    { "code": "MBA", "level": "Post Graduate", "title": "Master of Business Administration", "specializations": ["Human Resources", "Finance", "Marketing"] },
+    { "code": "MCA", "level": "Post Graduate", "title": "Master of Computer Applications", "specializations": ["Computer Applications", "Software Engineering"] },
+    { "code": "MBBS", "level": "Medical", "title": "Bachelor of Medicine, Bachelor of Surgery", "specializations": ["General Medicine"] },
+    { "code": "LLB", "level": "Law", "title": "Bachelor of Legislative Law", "specializations": ["General Law", "Constitutional Law"] },
+    { "code": "LLM", "level": "Post Graduate", "title": "Master of Laws", "specializations": ["Corporate Law", "Criminal Law"] }
+  ],
+  "test_scenarios": [
+    { "scenario_id": "QUAL-EXACT-MATCH", "description": "Candidate has exact degree required by notification" },
+    { "scenario_id": "QUAL-HIERARCHY-SUPERIOR", "description": "Candidate holds a higher tier degree in the same discipline hierarchy" },
+    { "scenario_id": "QUAL-HIERARCHY-INFERIOR", "description": "Candidate holds a lower tier degree than required (e.g. Diploma when BE is required)" },
+    { "scenario_id": "SPEC-EXACT-MATCH", "description": "Candidate specialization matches notification required discipline exactly" },
+    { "scenario_id": "SPEC-MISMATCH", "description": "Candidate has the qualifying degree level but mismatched discipline (e.g. BE Civil for BE CS post)" },
+    { "scenario_id": "SPEC-NOT-SPECIFIED", "description": "Candidate profile omits specialization for general degree posts" }
+  ]
+}

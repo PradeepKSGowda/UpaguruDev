@@ -10,19 +10,25 @@
  */
 
 import { revalidatePath } from "next/cache";
-import { createServerClient } from "../../../lib/supabase/server";
+import { createServerClient, createAdminClient, type ServerClient } from "../../../lib/supabase/server";
 import { assertPermission, invalidateUserAuthCache } from "../../../lib/rbac/rbac-service";
 import { PERMISSIONS, canAssignRole } from "../../../lib/rbac/permissions";
 import {
   userFilterSchema,
   userBlockStatusSchema,
   assignRoleSchema,
-  createAdminSchema,
   type UserFilterInput,
   type UserBlockStatusInput,
   type AssignRoleInput,
-  type CreateAdminInput,
 } from "../../../lib/schemas/user-management";
+
+function getAdminOrFallback(fallback: ServerClient): ServerClient {
+  try {
+    return createAdminClient();
+  } catch {
+    return fallback;
+  }
+}
 
 export interface UserSummaryItem {
   id: string;
@@ -33,6 +39,9 @@ export interface UserSummaryItem {
   avatarUrl: string | null;
   createdAt: string;
   isBlocked?: boolean;
+  gender?: string | null;
+  maritalStatus?: string | null;
+  isTestUser?: boolean;
 }
 
 export interface UserDirectoryResult {
@@ -68,8 +77,9 @@ export async function getUsersDirectory(
   if (!currentUser) throw new Error("Authentication required");
   await assertPermission(currentUser.id, PERMISSIONS.USERS_READ_ALL);
 
-  // Query profiles
-  let query = supabase.from("profiles").select("*", { count: "exact" });
+  // Query profiles using admin client so that caller session RLS does not suppress other users
+  const db = getAdminOrFallback(supabase);
+  let query = db.from("profiles").select("*", { count: "exact" });
 
   if (params.query) {
     // Sanitize query to prevent PostgREST .or() filter injection (SEC-01)
@@ -80,7 +90,19 @@ export async function getUsersDirectory(
   }
 
   if (params.role && params.role !== "all") {
-    query = query.eq("role", params.role);
+    if (params.role === "test_candidate") {
+      query = query.eq("role", "candidate").ilike("email", "%@upaguru.test");
+    } else if (params.role === "candidate") {
+      query = query.eq("role", "candidate").not("email", "ilike", "%@upaguru.test");
+    } else {
+      query = query.eq("role", params.role);
+    }
+  }
+
+  if (params.userType === "test") {
+    query = query.ilike("email", "%@upaguru.test");
+  } else if (params.userType === "real") {
+    query = query.not("email", "ilike", "%@upaguru.test");
   }
 
   const from = (params.page - 1) * params.limit;
@@ -90,16 +112,38 @@ export async function getUsersDirectory(
   const { data: profiles, count, error } = await query;
   if (error) throw error;
 
-  const users: UserSummaryItem[] = (profiles || []).map((p) => ({
-    id: p.id,
-    email: p.email,
-    fullName: p.full_name,
-    role: p.role,
-    emailVerified: p.email_verified,
-    avatarUrl: p.avatar_url,
-    createdAt: p.created_at,
-    isBlocked: false, // Baseline fallback
-  }));
+  // Retrieve extended profile attributes (gender, marital_status) from user_profiles
+  const profileIds = (profiles || []).map((p) => p.id);
+  const userProfilesMap = new Map<string, { gender?: string | null; marital_status?: string | null }>();
+  if (profileIds.length > 0) {
+    const { data: upData } = await db
+      .from("user_profiles")
+      .select("id, gender, marital_status")
+      .in("id", profileIds);
+    if (upData) {
+      upData.forEach((up: any) => {
+        userProfilesMap.set(up.id, { gender: up.gender, marital_status: up.marital_status });
+      });
+    }
+  }
+
+  const users: UserSummaryItem[] = (profiles || []).map((p) => {
+    const up = userProfilesMap.get(p.id);
+    const isTest = p.email.endsWith("@upaguru.test") || p.email.includes(".test");
+    return {
+      id: p.id,
+      email: p.email,
+      fullName: p.full_name,
+      role: p.role,
+      emailVerified: p.email_verified,
+      avatarUrl: p.avatar_url,
+      createdAt: p.created_at,
+      isBlocked: false, // Baseline fallback
+      gender: up?.gender || null,
+      maritalStatus: up?.marital_status || null,
+      isTestUser: isTest,
+    };
+  });
 
   const total = count || 0;
   return {
@@ -126,8 +170,10 @@ export async function setUserBlockStatus(
   if (!currentUser) throw new Error("Authentication required");
   const authContext = await assertPermission(currentUser.id, PERMISSIONS.USERS_BLOCK);
 
+  const db = getAdminOrFallback(supabase);
+
   // Invariant: Non-super-admin cannot block an admin
-  const { data: targetProfile } = await supabase
+  const { data: targetProfile } = await db
     .from("profiles")
     .select("role, email")
     .eq("id", input.userId)
@@ -143,7 +189,7 @@ export async function setUserBlockStatus(
   }
 
   // Record audit log
-  await supabase.from("audit_logs").insert({
+  await db.from("audit_logs").insert({
     admin_id: currentUser.id,
     action: input.isBlocked ? "user_blocked" : "user_reactivated",
     target_entity: "profiles",
@@ -191,16 +237,44 @@ export async function assignUserRoleAction(
     );
   }
 
+  const db = getAdminOrFallback(supabase);
+
   // Update profile role
-  const { error } = await supabase
+  const { error } = await db
     .from("profiles")
     .update({ role: input.roleCode, updated_at: new Date().toISOString() })
     .eq("id", input.userId);
 
   if (error) throw error;
 
+  // Synchronize public.user_roles so that database RBAC and profile remain in complete parity
+  const { data: roleRecord } = await db
+    .from("roles")
+    .select("id")
+    .eq("code", input.roleCode)
+    .maybeSingle();
+
+  if (roleRecord?.id) {
+    await db.from("user_roles").delete().eq("user_id", input.userId);
+    await db.from("user_roles").insert({
+      user_id: input.userId,
+      role_id: roleRecord.id,
+      assigned_by: currentUser.id,
+      assigned_at: new Date().toISOString(),
+    });
+  }
+
+  // Synchronize auth.users app_metadata for JWT claims parity
+  try {
+    await db.auth.admin.updateUserById(input.userId, {
+      app_metadata: { role: input.roleCode },
+    });
+  } catch {
+    // Non-blocking fallback if auth admin API is unavailable
+  }
+
   // Log in audit logs
-  await supabase.from("audit_logs").insert({
+  await db.from("audit_logs").insert({
     admin_id: currentUser.id,
     action: "role_assigned",
     target_entity: "profiles",
@@ -212,8 +286,9 @@ export async function assignUserRoleAction(
     },
   });
 
-  // Invalidate in-memory auth cache for the target user (PERF-02)
+  // Invalidate in-memory auth cache for both target user and caller session (PERF-02)
   invalidateUserAuthCache(input.userId);
+  invalidateUserAuthCache(currentUser.id);
 
   revalidatePath("/admin/users");
   revalidatePath(`/admin/users/${input.userId}`);
@@ -237,19 +312,21 @@ export async function getUserKpiStats(): Promise<UserKpiStats> {
   if (!currentUser) throw new Error("Authentication required");
   await assertPermission(currentUser.id, PERMISSIONS.ANALYTICS_KPI_READ);
 
+  const db = getAdminOrFallback(supabase);
+
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
   const [usersCountRes, verifiedCountRes, bookmarksCountRes, notesCountRes, todayCountRes] =
     await Promise.all([
-      supabase.from("profiles").select("id", { count: "exact", head: true }),
-      supabase
+      db.from("profiles").select("id", { count: "exact", head: true }),
+      db
         .from("profiles")
         .select("id", { count: "exact", head: true })
         .eq("email_verified", true),
-      supabase.from("bookmarks").select("id", { count: "exact", head: true }),
-      supabase.from("exam_notes").select("id", { count: "exact", head: true }),
-      supabase
+      db.from("bookmarks").select("id", { count: "exact", head: true }),
+      db.from("exam_notes").select("id", { count: "exact", head: true }),
+      db
         .from("profiles")
         .select("id", { count: "exact", head: true })
         .gte("created_at", todayStart.toISOString()),

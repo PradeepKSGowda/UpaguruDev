@@ -8,7 +8,7 @@
  * Architecture Reference: ADR-001 (RSC Data Fetching), ADR-002 (Database), ADR-013 (Security)
  */
 
-import { createServerClient } from "../supabase/server";
+import { createServerClient, createAdminClient, type ServerClient } from "../supabase/server";
 import type { Database } from "../../types/database.types";
 
 type DraftRow = Database["public"]["Tables"]["draft_notifications"]["Row"];
@@ -46,7 +46,12 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
   ).toISOString();
 
   try {
-    const supabase = await createServerClient();
+    let supabase: ServerClient;
+    try {
+      supabase = createAdminClient();
+    } catch {
+      supabase = await createServerClient();
+    }
 
     // Execute queries in parallel
     const [

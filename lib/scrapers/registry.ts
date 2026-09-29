@@ -1,8 +1,8 @@
 /**
  * @file lib/scrapers/registry.ts
  * @description Centralized, extensible registry for recruitment portal crawlers and scrapers.
- * Supports static registry definitions (KPSC, UPSC, SSC, RRB, IBPS) and dynamic discovery
- * when new portal crawlers or database entries are detected.
+ * Supports static registry definitions (KPSC, UPSC, SSC, RRB, IBPS), dynamic database overrides,
+ * target URL modification, and audit history tracking.
  * 
  * Architecture Reference: ADR-001 (Frontend RSC), ADR-002 (Database), ADR-011 (Observability)
  */
@@ -14,6 +14,7 @@ export interface PortalConfig {
   name: string;
   category: "state" | "central" | "banking" | "railways" | "defence" | "other";
   officialWebsite: string;
+  targetUrl: string;
   stateOrCentral: "State" | "Central";
   logoUrl?: string;
   description: string;
@@ -27,6 +28,38 @@ export interface ManualExtractResult {
   timestamp: string;
 }
 
+export interface PortalUrlHistoryEntry {
+  id: string;
+  portalCode: string;
+  previousUrl: string;
+  newUrl: string;
+  reason: string | null;
+  changedByEmail: string | null;
+  createdAt: string;
+}
+
+export interface CrawlerParserTestItem {
+  title: string;
+  url: string;
+  isDirectPdf: boolean;
+  dateRaw?: string | null;
+}
+
+export interface CrawlerParserTestResult {
+  success: boolean;
+  portalCode: string;
+  targetUrl: string;
+  finalUrl: string;
+  isRedirect: boolean;
+  httpStatus: number;
+  responseTimeMs: number;
+  totalElementsFound: number;
+  structureType: "direct_pdf" | "two_tier_subpages" | "unrecognized";
+  diagnosticMessage: string;
+  diagnosticType: "success" | "warning" | "error";
+  items: CrawlerParserTestItem[];
+}
+
 export const portalTriggerSchema = z.object({
   portalCode: z
     .string()
@@ -36,9 +69,53 @@ export const portalTriggerSchema = z.object({
     .transform((val) => val.toUpperCase()),
 });
 
+export const updatePortalUrlSchema = z.preprocess(
+  (val) => {
+    if (val && typeof val === "object") {
+      const obj = { ...(val as Record<string, unknown>) };
+      const url = obj.newUrl || obj.targetUrl;
+      if (url) {
+        obj.newUrl = url;
+        obj.targetUrl = url;
+      }
+      return obj;
+    }
+    return val;
+  },
+  z.object({
+    portalCode: z
+      .string()
+      .trim()
+      .min(1, "Portal code cannot be empty")
+      .transform((val) => val.toUpperCase()),
+    newUrl: z
+      .string()
+      .trim()
+      .url("Must be a valid HTTP or HTTPS URL")
+      .refine((url) => url.startsWith("http://") || url.startsWith("https://"), {
+        message: "URL must begin with http:// or https://",
+      }),
+    targetUrl: z
+      .string()
+      .trim()
+      .url("Must be a valid HTTP or HTTPS URL")
+      .refine((url) => url.startsWith("http://") || url.startsWith("https://"), {
+        message: "URL must begin with http:// or https://",
+      })
+      .optional(),
+    reason: z
+      .string()
+      .trim()
+      .max(500, "Reason cannot exceed 500 characters")
+      .optional()
+      .default("Portal extraction URL updated via Admin Cockpit"),
+  })
+);
+
+export type UpdatePortalUrlInput = z.infer<typeof updatePortalUrlSchema>;
+
 /**
- * Built-in registry of supported government recruitment portals.
- * Adding a new portal here (e.g., IBPS, BPSC, MPSC) automatically surfaces it in the dashboard.
+ * Built-in registry of supported government recruitment portals with default target URLs.
  */
 export const PORTAL_REGISTRY: Record<string, PortalConfig> = {
   KPSC: {
@@ -46,6 +123,7 @@ export const PORTAL_REGISTRY: Record<string, PortalConfig> = {
     name: "Karnataka Public Service Commission",
     category: "state",
     officialWebsite: "https://kpsc.kar.nic.in",
+    targetUrl: "https://kpsc.kar.nic.in/notification.html",
     stateOrCentral: "State",
     description: "State civil services, gazetted probationers, and departmental exams for Karnataka.",
   },
@@ -53,7 +131,8 @@ export const PORTAL_REGISTRY: Record<string, PortalConfig> = {
     code: "UPSC",
     name: "Union Public Service Commission",
     category: "central",
-    officialWebsite: "https://upsc.gov.in",
+    officialWebsite: "https://www.upsc.gov.in",
+    targetUrl: "https://www.upsc.gov.in/examinations/active-exams",
     stateOrCentral: "Central",
     description: "Central civil services (IAS, IPS, IFS), Engineering Services, NDA, and CDS exams.",
   },
@@ -62,6 +141,7 @@ export const PORTAL_REGISTRY: Record<string, PortalConfig> = {
     name: "Staff Selection Commission",
     category: "central",
     officialWebsite: "https://ssc.gov.in",
+    targetUrl: "https://ssc.gov.in/",
     stateOrCentral: "Central",
     description: "Combined Graduate Level (CGL), CHSL, MTS, and Central Police Organization recruitment.",
   },
@@ -70,6 +150,7 @@ export const PORTAL_REGISTRY: Record<string, PortalConfig> = {
     name: "Railway Recruitment Boards",
     category: "railways",
     officialWebsite: "https://rrbcdg.gov.in",
+    targetUrl: "https://rrbcdg.gov.in/",
     stateOrCentral: "Central",
     description: "Indian Railways non-technical popular categories (NTPC), Group D, and ALP vacancies.",
   },
@@ -78,6 +159,7 @@ export const PORTAL_REGISTRY: Record<string, PortalConfig> = {
     name: "Institute of Banking Personnel Selection",
     category: "banking",
     officialWebsite: "https://www.ibps.in",
+    targetUrl: "https://www.ibps.in/",
     stateOrCentral: "Central",
     description: "Public sector bank probationary officers, clerks, and specialist officer recruitments.",
   },
@@ -105,6 +187,7 @@ export function getPortalConfig(code: string): PortalConfig {
     name: `${normalized} Examination Board`,
     category: "other",
     officialWebsite: `https://${normalized.toLowerCase()}.gov.in`,
+    targetUrl: `https://${normalized.toLowerCase()}.gov.in/`,
     stateOrCentral: "State",
     description: `Government exam notifications extracted from ${normalized} portal.`,
   };

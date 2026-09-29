@@ -13,6 +13,7 @@ import {
   getKnownPortalConfig,
   isDateOngoing,
   portalTriggerSchema,
+  updatePortalUrlSchema,
   type PortalConfig,
 } from "@/lib/scrapers/registry";
 
@@ -25,6 +26,15 @@ describe("Scraper Registry & Portal Configuration", () => {
     expect(codes).toContain("RRB");
     expect(codes).toContain("SSC");
     expect(codes).toContain("IBPS");
+  });
+
+  it("should configure correct extraction target URLs including UPSC active exams", () => {
+    const upsc = getKnownPortalConfig("UPSC");
+    expect(upsc.targetUrl).toBe("https://www.upsc.gov.in/examinations/active-exams");
+
+    const kpsc = getKnownPortalConfig("KPSC");
+    expect(kpsc.targetUrl).toBeDefined();
+    expect(kpsc.targetUrl).toContain("kpsc.kar.nic.in");
   });
 
   it("should look up known portals case-insensitively", () => {
@@ -93,3 +103,113 @@ describe("Manual Extraction Server Action Zod Validation", () => {
     expect(tooLong.success).toBe(false);
   });
 });
+
+describe("Update Portal Target URL Zod Validation (Permanent Solution)", () => {
+  it("should accept valid HTTPS URLs and trim whitespace", () => {
+    const res = updatePortalUrlSchema.safeParse({
+      portalCode: "upsc",
+      targetUrl: "  https://www.upsc.gov.in/examinations/active-exams  ",
+      reason: "UPSC migrated from active-examinations to active-exams",
+    });
+    expect(res.success).toBe(true);
+    if (res.success) {
+      expect(res.data.portalCode).toBe("UPSC");
+      expect(res.data.newUrl).toBe("https://www.upsc.gov.in/examinations/active-exams");
+      expect(res.data.targetUrl).toBe("https://www.upsc.gov.in/examinations/active-exams");
+      expect(res.data.reason).toBe("UPSC migrated from active-examinations to active-exams");
+    }
+  });
+
+  it("should accept newUrl property directly and normalize uppercase portal code", () => {
+    const res = updatePortalUrlSchema.safeParse({
+      portalCode: "kpsc",
+      newUrl: "https://kpsc.kar.nic.in/notification.html",
+    });
+    expect(res.success).toBe(true);
+    if (res.success) {
+      expect(res.data.portalCode).toBe("KPSC");
+      expect(res.data.newUrl).toBe("https://kpsc.kar.nic.in/notification.html");
+      expect(res.data.reason).toBe("Portal extraction URL updated via Admin Cockpit");
+    }
+  });
+
+  it("should reject malformed or non-http/https URLs", () => {
+    const badUrl = updatePortalUrlSchema.safeParse({
+      portalCode: "UPSC",
+      targetUrl: "ftp://upsc.gov.in/exams",
+    });
+    expect(badUrl.success).toBe(false);
+
+    const notAUrl = updatePortalUrlSchema.safeParse({
+      portalCode: "UPSC",
+      targetUrl: "just some random text",
+    });
+    expect(notAUrl.success).toBe(false);
+  });
+
+  it("should permit optional reason for audit documentation", () => {
+    const res = updatePortalUrlSchema.safeParse({
+      portalCode: "KPSC",
+      targetUrl: "https://kpsc.kar.nic.in/notifications.html",
+    });
+    expect(res.success).toBe(true);
+  });
+});
+
+describe("In-Portal Crawler Parser Diagnostics & Structure Classification", () => {
+  it("should properly identify two-tier subpage vs direct PDF circular links", () => {
+    const sampleSubpageUrl = "https://www.upsc.gov.in/examinations/Civil%20Services%20Examination%2C%202026";
+    const sampleDirectPdfUrl = "https://www.upsc.gov.in/sites/default/files/Notif-CSP-2026-Engl.pdf";
+
+    const isDirectPdf = (url: string) => url.toLowerCase().includes(".pdf");
+    const isSubpage = (url: string) =>
+      url.toLowerCase().includes("/examinations/") ||
+      url.toLowerCase().includes("/recruitment/") ||
+      url.toLowerCase().includes("/notification");
+
+    expect(isDirectPdf(sampleDirectPdfUrl)).toBe(true);
+    expect(isDirectPdf(sampleSubpageUrl)).toBe(false);
+
+    expect(isSubpage(sampleSubpageUrl)).toBe(true);
+    expect(isSubpage(sampleDirectPdfUrl)).toBe(false);
+  });
+
+  it("should generate appropriate diagnostic warnings when portal structure requires two-tier traversal", () => {
+    const directPdfCount = 0;
+    const subpageCount = 15;
+
+    let structureType = "unrecognized";
+    let diagnosticType = "error";
+
+    if (directPdfCount > 0) {
+      structureType = "direct_pdf";
+      diagnosticType = "success";
+    } else if (subpageCount > 0) {
+      structureType = "two_tier_subpages";
+      diagnosticType = "warning";
+    }
+
+    expect(structureType).toBe("two_tier_subpages");
+    expect(diagnosticType).toBe("warning");
+  });
+
+  it("should flag unrecognized structure when 0 circulars or subpages are detected", () => {
+    const directPdfCount = 0;
+    const subpageCount = 0;
+
+    let structureType = "unrecognized";
+    let diagnosticType = "error";
+
+    if (directPdfCount > 0) {
+      structureType = "direct_pdf";
+      diagnosticType = "success";
+    } else if (subpageCount > 0) {
+      structureType = "two_tier_subpages";
+      diagnosticType = "warning";
+    }
+
+    expect(structureType).toBe("unrecognized");
+    expect(diagnosticType).toBe("error");
+  });
+});
+

@@ -59,7 +59,8 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
     phone TEXT,
     is_phone_verified BOOLEAN DEFAULT false,
     alternate_phone TEXT,
-    gender TEXT CHECK (gender IN ('male', 'female', 'other', 'prefer_not_to_say')),
+    gender TEXT CHECK (gender IN ('male', 'female', 'transgender', 'other', 'prefer_not_to_say')),
+    marital_status TEXT CHECK (marital_status IN ('unmarried', 'married', 'divorced', 'widowed', 'widow_widower', 'judicially_separated', 'other')),
     date_of_birth DATE,
     category TEXT, -- Reservation/Eligibility category (e.g. GM, OBC, SC, ST)
     address_line TEXT,

@@ -1,0 +1,273 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UPA-GURU Eligibility Expected Results Golden Fixture",
+  "description": "Deterministic expected outputs for test notifications against synthetic candidate population",
+  "version": "2.0.0",
+  "engine_target_version": "2.0.0",
+  "test_notifications": [
+    {
+      "notification_id": "NOTIF-KPSC-AE-2027",
+      "revision": 1,
+      "title": "KPSC Assistant Engineer (Civil/Mechanical/Electrical/CS) 2027",
+      "conducting_body": "KPSC",
+      "notification_number": "PSC-01-ENGG-2027",
+      "state_or_central": "Karnataka",
+      "category": "Engineering",
+      "extraction_confidence_score": 0.95,
+      "is_published": true,
+      "important_dates": {
+        "notification_date": "2026-11-01",
+        "application_start": "2026-11-15",
+        "application_end": "2026-12-31",
+        "exam_date": "2027-03-15"
+      },
+      "age_limits": {
+        "min_age": 18,
+        "max_age": 27,
+        "cutoff_date": "2027-01-01",
+        "relaxation_details": {
+          "OBC": 3,
+          "SC": 5,
+          "ST": 5,
+          "Ex-Servicemen": 5,
+          "PwBD": 10
+        }
+      },
+      "qualifications": [
+        {
+          "degree_level": "Engineering",
+          "discipline": null,
+          "mandatory_certifications": [],
+          "experience_years": 0
+        }
+      ],
+      "expected_evaluations": {
+        "TC-0001": {
+          "eligible": false,
+          "status": "INELIGIBLE",
+          "failed_rules": ["age"],
+          "reasons": ["Candidate is below the minimum age of 18 years as of reference date 2027-01-01"]
+        },
+        "TC-0002": {
+          "eligible": false,
+          "status": "INELIGIBLE",
+          "failed_rules": ["age"],
+          "reasons": ["Candidate is below the minimum age of 18 years as of reference date 2027-01-01"]
+        },
+        "TC-0003": {
+          "eligible": true,
+          "status": "ELIGIBLE",
+          "matched_rules": ["age", "education", "location"],
+          "failed_rules": [],
+          "reasons": []
+        },
+        "TC-0006": {
+          "eligible": true,
+          "status": "ELIGIBLE",
+          "matched_rules": ["age", "education", "location"],
+          "failed_rules": [],
+          "reasons": []
+        },
+        "TC-0009": {
+          "eligible": true,
+          "status": "ELIGIBLE",
+          "matched_rules": ["age", "education", "location"],
+          "failed_rules": [],
+          "reasons": []
+        },
+        "TC-0010": {
+          "eligible": false,
+          "status": "INELIGIBLE",
+          "failed_rules": ["age"],
+          "reasons": ["Candidate exceeds maximum allowed age of 27 years as of reference date 2027-01-01"]
+        },
+        "TC-0011": {
+          "eligible": false,
+          "status": "INELIGIBLE",
+          "failed_rules": ["age"],
+          "reasons": ["Candidate exceeds maximum allowed age of 27 years as of reference date 2027-01-01"]
+        },
+        "TC-0013": {
+          "eligible": true,
+          "status": "ELIGIBLE",
+          "matched_rules": ["age", "education", "location", "category_relaxation"],
+          "failed_rules": [],
+          "reasons": []
+        },
+        "TC-0014": {
+          "eligible": true,
+          "status": "ELIGIBLE",
+          "matched_rules": ["age", "education", "location", "category_relaxation"],
+          "failed_rules": [],
+          "reasons": []
+        },
+        "TC-0015": {
+          "eligible": false,
+          "status": "INELIGIBLE",
+          "failed_rules": ["age"],
+          "reasons": ["Candidate exceeds maximum allowed age of 30 years (with OBC relaxation) as of reference date 2027-01-01"]
+        },
+        "TC-0017": {
+          "eligible": true,
+          "status": "ELIGIBLE",
+          "matched_rules": ["age", "education", "location", "category_relaxation"],
+          "failed_rules": [],
+          "reasons": []
+        },
+        "TC-0018": {
+          "eligible": true,
+          "status": "ELIGIBLE",
+          "matched_rules": ["age", "education", "location", "category_relaxation"],
+          "failed_rules": [],
+          "reasons": []
+        },
+        "TC-0019": {
+          "eligible": false,
+          "status": "INELIGIBLE",
+          "failed_rules": ["age"],
+          "reasons": ["Candidate exceeds maximum allowed age of 32 years (with SC relaxation) as of reference date 2027-01-01"]
+        },
+        "TC-0026": {
+          "eligible": false,
+          "status": "INELIGIBLE",
+          "failed_rules": ["education"],
+          "reasons": ["Candidate qualification (SSLC) does not meet the minimum requirement of Engineering"]
+        },
+        "TC-0030": {
+          "eligible": false,
+          "status": "INELIGIBLE",
+          "failed_rules": ["education"],
+          "reasons": ["Candidate qualification (Diploma) does not meet the minimum requirement of Engineering"]
+        },
+        "TC-0033": {
+          "eligible": true,
+          "status": "ELIGIBLE",
+          "matched_rules": ["age", "education", "location"],
+          "failed_rules": [],
+          "reasons": []
+        },
+        "TC-0069": {
+          "eligible": false,
+          "status": "INELIGIBLE",
+          "failed_rules": ["location"],
+          "reasons": ["This exam is for Karnataka domicile. Candidate state is Maharashtra."]
+        },
+        "TC-0097": {
+          "eligible": false,
+          "status": "INELIGIBLE",
+          "failed_rules": ["age", "education"],
+          "reasons": [
+            "Candidate exceeds maximum allowed age of 27 years as of reference date 2027-01-01",
+            "Candidate qualification (Diploma) does not meet the minimum requirement of Engineering"
+          ]
+        },
+        "TC-0098": {
+          "eligible": false,
+          "status": "INELIGIBLE",
+          "failed_rules": ["age", "location"],
+          "reasons": [
+            "Candidate exceeds maximum allowed age of 27 years as of reference date 2027-01-01",
+            "This exam is for Karnataka domicile. Candidate state is Maharashtra."
+          ]
+        },
+        "TC-0100": {
+          "eligible": false,
+          "status": "INELIGIBLE",
+          "failed_rules": ["age", "education", "location"],
+          "reasons": [
+            "Candidate exceeds maximum allowed age of 27 years as of reference date 2027-01-01",
+            "Candidate qualification (SSLC) does not meet the minimum requirement of Engineering",
+            "This exam is for Karnataka domicile. Candidate state is Maharashtra."
+          ]
+        },
+        "TC-0116": {
+          "eligible": null,
+          "status": "INDETERMINATE",
+          "failed_rules": [],
+          "reasons": ["Candidate profile does not specify date of birth"]
+        }
+      }
+    },
+    {
+      "notification_id": "NOTIF-AMBIGUOUS-CUTOFF-2027",
+      "revision": 1,
+      "title": "KEA Group-C Technical Posts (Missing Cutoff Date & Low Confidence)",
+      "conducting_body": "KEA",
+      "notification_number": "KEA-C-09-2027",
+      "state_or_central": "Karnataka",
+      "category": "General",
+      "extraction_confidence_score": 0.65,
+      "is_published": false,
+      "important_dates": {
+        "notification_date": "2026-12-01",
+        "application_start": "2026-12-10",
+        "application_end": "2027-01-10"
+      },
+      "age_limits": {
+        "min_age": 18,
+        "max_age": 27,
+        "cutoff_date": null,
+        "relaxation_details": {}
+      },
+      "qualifications": [
+        {
+          "degree_level": "Graduate",
+          "discipline": null
+        }
+      ],
+      "expected_evaluations": {
+        "TC-0006": {
+          "eligible": null,
+          "status": "INDETERMINATE",
+          "reasons": [
+            "Notification extraction confidence (65%) is below verification threshold (85%)",
+            "Notification does not specify reference/cutoff date for age calculation"
+          ]
+        }
+      }
+    },
+    {
+      "notification_id": "NOTIF-CORRIGENDUM-2027",
+      "revision": 2,
+      "is_corrigendum": true,
+      "corrigendum_details": "Maximum permissible age enhanced from 27 years to 30 years for all unreserved categories",
+      "title": "KPSC Assistant Engineer 2027 (Corrigendum)",
+      "conducting_body": "KPSC",
+      "notification_number": "PSC-01-ENGG-2027-REV2",
+      "state_or_central": "Karnataka",
+      "category": "Engineering",
+      "extraction_confidence_score": 0.96,
+      "is_published": true,
+      "important_dates": {
+        "notification_date": "2026-12-01",
+        "application_start": "2026-12-05",
+        "application_end": "2027-01-15"
+      },
+      "age_limits": {
+        "min_age": 18,
+        "max_age": 30,
+        "cutoff_date": "2027-01-01",
+        "relaxation_details": {
+          "OBC": 3,
+          "SC": 5,
+          "ST": 5
+        }
+      },
+      "qualifications": [
+        {
+          "degree_level": "Engineering",
+          "discipline": null
+        }
+      ],
+      "expected_evaluations": {
+        "TC-0011": {
+          "eligible": true,
+          "status": "ELIGIBLE",
+          "matched_rules": ["age", "education", "location"],
+          "failed_rules": [],
+          "reasons": []
+        }
+      }
+    }
+  ]
+}

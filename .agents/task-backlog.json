@@ -4752,6 +4752,186 @@
           "status": "Completed"
         }
       ]
+    },
+    {
+      "epic_id": "EPIC-15",
+      "title": "Dynamic Recruitment Crawler URL Management & Audit Cockpit",
+      "description": "Decouple crawler extraction target URLs from static code into a managed PostgreSQL database layer, allowing administrators to inspect, ping-verify, and edit recruitment portal URLs directly in the Admin Cockpit (/admin/scrapers) with automated redirect detection, while permanently logging all historical URL changes for audit documentation. Python crawlers dynamically resolve active URLs with seamless offline YAML fallback.",
+      "priority": "P0",
+      "dependencies": [
+        "EPIC-01",
+        "EPIC-03",
+        "EPIC-04"
+      ],
+      "assigned_agent": "Fullstack Engineer",
+      "estimated_effort": "2 days",
+      "acceptance_criteria": [
+        "public.crawler_portals and public.crawler_portal_url_history tables deployed with mandatory RLS and indexes",
+        "Python crawlers dynamically pull active target URLs from DB via portal_loader.py with offline YAML fallback",
+        "Admin Cockpit (/admin/scrapers) displays active extraction target URLs with inline 'Edit URL' trigger and history badge",
+        "PortalUrlEditModal provides live ping test, latency benchmarking, and 1-click redirect adoption",
+        "URL changes archived in crawler_portal_url_history with reason, admin ID, and timestamp",
+        "Unit test suite covering target URLs and updatePortalUrlSchema validation"
+      ],
+      "status": "Completed",
+      "features": [
+        {
+          "feature_id": "FEAT-1501",
+          "title": "Dynamic Crawler Portals & URL History Schema",
+          "description": "Database migration deploying crawler_portals and crawler_portal_url_history tables with idempotent RLS policies, performance indexes, and initial seeds.",
+          "priority": "P0",
+          "dependencies": [],
+          "assigned_agent": "Solution Architect",
+          "estimated_effort": "0.5 days",
+          "acceptance_criteria": [
+            "crawler_portals table with portal_code unique constraint, current_target_url, and wait_selector",
+            "crawler_portal_url_history table with previous_url, new_url, reason, and admin metadata",
+            "Mandatory RLS policies for public select and admin write",
+            "Initial seeds for UPSC (active-exams), KPSC, SSC, RRB, and IBPS"
+          ],
+          "status": "Completed"
+        },
+        {
+          "feature_id": "FEAT-1502",
+          "title": "Crawler Runtime Dynamic Configuration Loader",
+          "description": "Python portal loader querying Supabase crawler_portals at runtime with graceful fallback to local YAML configs.",
+          "priority": "P0",
+          "dependencies": [
+            "FEAT-1501"
+          ],
+          "assigned_agent": "Backend Engineer",
+          "estimated_effort": "0.5 days",
+          "acceptance_criteria": [
+            "load_portal_config queries Supabase and dynamically overrides notifications_url and wait_selector",
+            "Gracefully catches database errors and falls back to YAML defaults",
+            "Uniformly adopted across UPSC, KPSC, SSC, and RRB crawlers"
+          ],
+          "status": "Completed"
+        },
+        {
+          "feature_id": "FEAT-1503",
+          "title": "Admin Scrapers Dynamic URL Display & Live Verification Modal",
+          "description": "Next.js admin components and server actions providing live URL display, ping verification, redirect detection, audit logging, and change history visualization.",
+          "priority": "P0",
+          "dependencies": [
+            "FEAT-1501",
+            "FEAT-1502"
+          ],
+          "assigned_agent": "Frontend Engineer",
+          "estimated_effort": "1 day",
+          "acceptance_criteria": [
+            "ScraperTable displays live target URL, 'Edit URL' button, and change count badge",
+            "PortalUrlEditModal provides live ping test with redirect detection and 'Use Redirect URL' shortcut",
+            "Server action updatePortalTargetUrlAction validates with Zod, records history, and revalidates paths",
+            "URL change history tab renders chronological audit log with reason and editor details"
+          ],
+          "status": "Completed"
+        },
+        {
+          "feature_id": "FEAT-1504",
+          "title": "Two-Tier Subpage Crawler Traversal & In-Portal Parser Diagnostics",
+          "description": "Two-tier traversal engine in upsc.py navigating from examination landing pages to official circular PDFs, coupled with in-portal dry-run parser preview and high-visibility website change diagnostic alerts.",
+          "priority": "P0",
+          "dependencies": [
+            "FEAT-1502",
+            "FEAT-1503"
+          ],
+          "assigned_agent": "Fullstack Engineer",
+          "estimated_effort": "1 day",
+          "acceptance_criteria": [
+            "upsc.py supports two-tier navigation from /examinations/active-exams to exam subpages to extract Notice PDFs",
+            "testCrawlerParserAction performs non-destructive dry-run parser test",
+            "Diagnostic alerts for website redirects, structure changes, two-tier subpages, and direct circulars",
+            "PortalUrlEditModal renders Dry-Run Parser Preview tab with sample items discovered",
+            "ScraperTable includes inline 'Dry Run' test trigger"
+          ],
+          "status": "Completed"
+        },
+        {
+          "feature_id": "FEAT-1505",
+          "title": "Admin Scraper Telemetry Privileged RLS Resolution & Automated Draft Ingestion",
+          "description": "Resolves silent zero-row suppression in Scraper Management Cockpit by using elevated admin client across PostgreSQL RLS boundaries, expands telemetry aggregation to include raw pdf_documents, and automates immediate ingestion of newly crawled documents into public.draft_notifications.",
+          "priority": "P0",
+          "dependencies": [
+            "FEAT-1501",
+            "FEAT-1504"
+          ],
+          "assigned_agent": "Fullstack Engineer",
+          "estimated_effort": "1 day",
+          "acceptance_criteria": [
+            "getScraperManagementData utilizes createAdminClient to read crawl_runs, draft_notifications, and pdf_documents across RLS",
+            "getDraftNotifications utilizes createAdminClient for Admin Verification Queue rendering",
+            "DiscoveredAt, totalNotifications, and ongoing metrics accurately reflect active extracted circulars",
+            "Crawler pipeline automatically hands off newly persisted PDF documents to process_crawled_item_async",
+            "All 23 UPSC active examinations ingested as pending drafts and visible in /admin/drafts"
+          ],
+          "status": "Completed"
+        },
+        {
+          "feature_id": "FEAT-1506",
+          "title": "Admin User Directory RLS Elevation & Multi-User Visibility",
+          "description": "Resolves caller session RLS suppression where administrators only saw their own profile by utilizing createAdminClient in admin user actions (getUsersDirectory, getUserKpiStats, setUserBlockStatus, assignUserRoleAction) after cryptographic permission verification, and adds non-recursive is_admin_or_moderator SECURITY DEFINER database function.",
+          "priority": "P0",
+          "dependencies": [
+            "FEAT-0101"
+          ],
+          "assigned_agent": "Security & Backend Engineer",
+          "estimated_effort": "0.5 days",
+          "acceptance_criteria": [
+            "getUsersDirectory and getUserKpiStats retrieve all registered platform users without caller RLS filtering",
+            "pradeep.flwork@gmail.com and all candidates visible in /admin/users",
+            "Database migration 20260929_fix_profiles_rls_admin.sql deployed with is_admin_or_moderator function",
+            "Unit test suite tests/unit/admin-user-directory.test.ts passing"
+          ],
+          "status": "Completed"
+        },
+        {
+          "feature_id": "FEAT-1507",
+          "title": "Candidate Demographic Eligibility Extensions: Marital Status & Comprehensive Gender Taxonomy",
+          "description": "Adds marital_status column with check constraint (unmarried, married, divorced, widowed, widow_widower, judicially_separated, other) to public.user_profiles, updates gender check constraint to include transgender, updates Zod accountSettingsSchema, CandidateProfileForm, eligibility engine, and displays candidate demographics in the Admin User Directory.",
+          "priority": "P0",
+          "dependencies": [
+            "FEAT-1506"
+          ],
+          "assigned_agent": "Fullstack Engineer",
+          "estimated_effort": "0.5 days",
+          "acceptance_criteria": [
+            "Database migration 20260930_add_user_marital_status_and_gender.sql deployed with check constraints and indexes",
+            "accountSettingsSchema validates all standard marital status options and transgender gender option",
+            "CandidateProfileForm provides interactive selectors for Marital Status and Gender",
+            "updateCandidateProfileAction persists marital_status and factors it into profile completion score",
+            "Admin User Directory renders Gender and Marital Status badges for candidate rows",
+            "Unit tests in tests/unit/schemas/user-management.test.ts pass 12/12 tests"
+          ],
+          "status": "Completed"
+        }
+      ]
+    },
+    {
+      "epic_id": "ENH-CANDIDATE-TEST-MATRIX",
+      "title": "Synthetic Candidate Test Data & Confidence-Aware Eligibility Evaluation System",
+      "description": "Deterministic 120-candidate test population covering age boundaries, education hierarchy, specializations, Kalyana Karnataka Article 371(J) domicile, category relaxations, and regional script edge cases, paired with Eligibility Evaluator Engine v2.0 supporting multi-rule breakdowns, exact failure reasons, INDETERMINATE status mapping for missing/low-confidence extraction data, and sub-second batch evaluation.",
+      "priority": "P0",
+      "dependencies": [
+        "EPIC-01",
+        "EPIC-02",
+        "EPIC-03",
+        "EPIC-04"
+      ],
+      "assigned_agent": "QA Architect & Backend Lead",
+      "estimated_effort": "1 day",
+      "acceptance_criteria": [
+        "Deterministic 120 synthetic candidate dataset created in JSON and CSV under tests/test-data/upaguru-candidates/",
+        "Age boundary matrices cover min/max +/-2d, +/-1d, exact, and category relaxations (OBC, SC, ST, Ex-Servicemen, PwBD)",
+        "Kalyana Karnataka Article 371(J) domicile tested distinguishing physical residence from certified domicile status",
+        "Multi-dimensional evaluator v2.0 in lib/matching/candidate-eligibility-evaluator.ts returns ELIGIBLE, INELIGIBLE with exact human reasons, and INDETERMINATE",
+        "Extraction confidence < 0.85 and missing cutoff dates cleanly map to INDETERMINATE",
+        "Corrigendum recalculations audited with versioned snapshots",
+        "Seed and safe cleanup scripts isolated strictly to @upaguru.test domain with zero production contamination risk",
+        "Batch performance target met: evaluates 120 candidates in 1.47ms (target: < 250ms)",
+        "All 15 regression tests in vitest pass 100%"
+      ],
+      "status": "Completed"
     }
   ],
   "source_references": [

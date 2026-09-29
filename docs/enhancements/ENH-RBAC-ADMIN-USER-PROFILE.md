@@ -331,10 +331,17 @@ CREATE TABLE IF NOT EXISTS public.verification_requests (
 **Current Status:** Fully implemented across Database, RBAC service, Server Actions, Admin directory, and Candidate Personal Workspace. Ready for verification.
 
 ### 9.1 Implemented Artifacts Summary
-- **Database & DDL:** `supabase/migrations/20260924_rbac_user_profiles.sql`, `types/database.types.ts`
+- **Database & DDL:** `supabase/migrations/20260924_rbac_user_profiles.sql`, `supabase/migrations/20260929_fix_profiles_rls_admin.sql`, `types/database.types.ts`
 - **RBAC Engine:** `lib/rbac/permissions.ts`, `lib/rbac/rbac-service.ts`
 - **Validation Schemas:** `lib/schemas/user-management.ts`, `lib/schemas/candidate-workspace.ts`
 - **Admin Management:** `app/admin/users/actions.ts`, `app/admin/users/page.tsx`, `app/admin/settings/profile/page.tsx`, `components/admin/RoleBadge.tsx`, `components/admin/UserKpiCards.tsx`, `components/admin/UserDirectoryTable.tsx`, `components/admin/AdminSidebar.tsx`
 - **Candidate Workspace:** `app/dashboard/actions.ts`, `app/dashboard/layout.tsx`, `app/dashboard/page.tsx`, `app/dashboard/profile/page.tsx`, `app/dashboard/bookmarks/page.tsx`, `app/dashboard/notes/page.tsx`, `app/dashboard/tracking/page.tsx`, `components/dashboard/DashboardNav.tsx`, `components/dashboard/ProfileCompletionBar.tsx`, `components/dashboard/BookmarksList.tsx`, `components/dashboard/NotesList.tsx`, `components/dashboard/ApplicationTrackerList.tsx`, `components/dashboard/CandidateProfileForm.tsx`
 - **Header & Navigation:** `components/layout/Header.tsx`, `components/layout/MobileNav.tsx`, `middleware.ts`
-- **Unit Test Suites:** `tests/unit/rbac.test.ts`, `tests/unit/schemas/user-management.test.ts`
+- **Unit Test Suites:** `tests/unit/rbac.test.ts`, `tests/unit/schemas/user-management.test.ts`, `tests/unit/admin-user-directory.test.ts`
+
+### 9.2 Incident Resolution: Multi-User Directory Visibility Under RLS
+- **Root Cause:** In Supabase Auth, standard authenticated sessions possess `auth.jwt() ->> 'role'` set to `'authenticated'`. The initial `profiles_select_own` RLS policy checked `(auth.jwt() ->> 'role') IN ('admin', 'super_admin')`, which evaluated to `false`. When administrators inspected `/admin/users`, queries executed via `createServerClient()` were scoped exclusively to `auth.uid() = id`, suppressing candidate users (e.g. `pradeep.flwork@gmail.com`).
+- **Remediation:** 
+  1. Updated `app/admin/users/actions.ts` (`getUsersDirectory`, `getUserKpiStats`, `setUserBlockStatus`, `assignUserRoleAction`) and `lib/data/admin-dashboard.ts` to utilize `createAdminClient()` (falling back to caller client) once `assertPermission(currentUser.id, ...)` verifies administrator authority.
+  2. Created migration `supabase/migrations/20260929_fix_profiles_rls_admin.sql` with a non-recursive `SECURITY DEFINER` function `is_admin_or_moderator(UUID)` and updated PostgreSQL RLS policies to check `app_metadata` and user privileges.
+

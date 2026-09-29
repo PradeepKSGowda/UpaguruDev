@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UPA-GURU Combination & Risk Scenarios Matrix",
+  "description": "Multi-dimensional combination strategies and high-risk eligibility scenarios",
+  "version": "2.0.0",
+  "combination_strategy": {
+    "dimensions": ["education", "age_boundary", "category_relaxation", "location_domicile"],
+    "sampling_approach": "Pairwise Orthogonal Array + Explicit Risk Scenarios",
+    "target_candidate_count": 120,
+    "rationale": "Balances complete boundary-value coverage with combinatorial economy, ensuring critical failure permutations are thoroughly tested without redundant explosive states."
+  },
+  "high_risk_scenarios": [
+    {
+      "code": "RISK-01-AGE-PASS-QUAL-FAIL",
+      "description": "Candidate age satisfies boundary but qualification is inferior (e.g. Diploma vs BE required)",
+      "expected_outcome": "INELIGIBLE",
+      "failed_dimension": "education"
+    },
+    {
+      "code": "RISK-02-QUAL-PASS-AGE-FAIL",
+      "description": "Candidate qualification matches but age is 1 day over maximum limit",
+      "expected_outcome": "INELIGIBLE",
+      "failed_dimension": "age"
+    },
+    {
+      "code": "RISK-03-MULTI-FAIL-AGE-AND-STATE",
+      "description": "Candidate exceeds age limit and resides in non-recruiting state",
+      "expected_outcome": "INELIGIBLE",
+      "failed_dimensions": ["age", "location"],
+      "expected_multiple_reasons": true
+    },
+    {
+      "code": "RISK-04-MULTI-FAIL-AGE-QUAL-STATE",
+      "description": "Candidate fails age, qualification level, and state jurisdiction simultaneously",
+      "expected_outcome": "INELIGIBLE",
+      "failed_dimensions": ["age", "education", "location"],
+      "expected_multiple_reasons": true
+    },
+    {
+      "code": "RISK-05-RELAXATION-QUALIFIED",
+      "description": "Candidate age exceeds general UR limit but is fully eligible due to OBC +3 year relaxation",
+      "expected_outcome": "ELIGIBLE",
+      "critical_factor": "relaxation_applied"
+    },
+    {
+      "code": "RISK-06-KK-371J-LOCAL-RESERVATION",
+      "description": "Candidate from Kalaburagi with 371(J) certificate qualifies for local cadre post",
+      "expected_outcome": "ELIGIBLE",
+      "critical_factor": "domicile_certificate_verified"
+    },
+    {
+      "code": "RISK-07-KK-371J-CERTIFICATE-MISSING",
+      "description": "Candidate resides in Bidar but lacks 371(J) certificate, failing local quota",
+      "expected_outcome": "INELIGIBLE",
+      "failed_dimension": "location_domicile"
+    },
+    {
+      "code": "RISK-08-INDETERMINATE-MISSING-REF-DATE",
+      "description": "Notification provides age 18-27 but omits cutoff/reference date",
+      "expected_outcome": "INDETERMINATE",
+      "expected_status": "INDETERMINATE",
+      "reason": "Notification does not specify reference/cutoff date for age calculation"
+    },
+    {
+      "code": "RISK-09-INDETERMINATE-LOW-CONFIDENCE",
+      "description": "Notification extracted with confidence score 0.62 (< 0.85 threshold)",
+      "expected_outcome": "INDETERMINATE",
+      "expected_status": "INDETERMINATE",
+      "reason": "Notification extraction confidence (62%) is below verification threshold"
+    },
+    {
+      "code": "RISK-10-CORRIGENDUM-REVALUATION",
+      "description": "Corrigendum raises max age from 27 to 30, converting previously ineligible candidate to eligible",
+      "expected_outcome": "ELIGIBLE_POST_CORRIGENDUM"
+    }
+  ]
+}

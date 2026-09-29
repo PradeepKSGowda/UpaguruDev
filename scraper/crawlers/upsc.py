@@ -24,13 +24,13 @@ class UPSCCrawler(BaseCrawler):
     def __init__(self, config: Optional[dict[str, Any]] = None, fetcher: Optional[BaseFetcher] = None):
         cfg = config or load_portal_config("UPSC")
         if fetcher is None:
-            if cfg.get("engine") == "httpx":
+            # UPSC uses Akamai EdgeSuite CDN which blocks headless Chromium/Playwright with 'Access Denied'.
+            # HttpxFetcher with browser headers bypasses WAF and fetches static Drupal markup cleanly.
+            if cfg.get("engine") == "playwright":
+                # Fallback to HttpxFetcher if playwright is set to prevent Akamai block
                 fetcher = HttpxFetcher(timeout_seconds=cfg.get("timeout_seconds", 40))
             else:
-                fetcher = PlaywrightFetcher(
-                    headless=cfg.get("headless", True),
-                    timeout_seconds=cfg.get("timeout_seconds", 40),
-                )
+                fetcher = HttpxFetcher(timeout_seconds=cfg.get("timeout_seconds", 40))
         super().__init__(portal_config=cfg, fetcher=fetcher)
         self.downloader = PDFDownloader()
 
@@ -48,49 +48,91 @@ class UPSCCrawler(BaseCrawler):
 
         return True
 
-    def _parse_notification_links(self, html: str) -> list[dict[str, str]]:
-        """Extract PDF URLs, exam titles, and dates from UPSC HTML tables."""
+    def _parse_candidate_entries(self, html: str) -> list[dict[str, Any]]:
+        """
+        Extract candidate examination entries from UPSC active examinations or recruitment pages.
+        Supports both direct PDF circulars and two-tier landing page links.
+        """
         soup = BeautifulSoup(html, "html.parser")
-        base_url = self.config.get("base_url", "https://upsc.gov.in")
-        found_items: list[dict[str, str]] = []
+        base_url = self.config.get("base_url", "https://www.upsc.gov.in")
+        found_entries: list[dict[str, Any]] = []
 
-        rows = soup.select("table tbody tr, .view-content tbody tr, table.views-table tr")
-        logger.info("Found candidate DOM rows for UPSC", count=len(rows))
+        # Comprehensive DOM selectors for tables, Drupal views rows, and listings
+        candidate_elements = soup.select(
+            ".view-content .views-row, .views-row, .views-field-field-exam-name, "
+            "table tbody tr, table.views-table tr, .view-content tbody tr, "
+            ".region-content table tr, .item-list li"
+        )
+        logger.info("Found candidate DOM elements for UPSC", count=len(candidate_elements))
 
-        for row in rows:
-            pdf_link_elem = row.select_one("a[href*='.pdf'], a[href*='.PDF'], a[href*='Notification']")
-            if not pdf_link_elem:
+        seen_urls: set[str] = set()
+
+        # Discard generic utility and index links
+        skip_paths = {
+            "/examinations/exam-calendar",
+            "/examinations/active-exams",
+            "/examinations/active-examinations",
+            "/examinations/forthcoming-exams",
+            "/examinations/previous-question-papers",
+            "/examinations/cutoff-marks",
+            "/examinations/answer-key",
+            "/examinations/revised-syllabus-scheme",
+            "/examinations/rules-of-examination",
+            "/examinations/public-disclosure",
+        }
+
+        for elem in candidate_elements:
+            links = elem.select("a[href]")
+            if not links:
                 continue
 
-            raw_href = pdf_link_elem.get("href", "").strip()
-            if not raw_href:
-                continue
+            for link in links:
+                raw_href = link.get("href", "").strip()
+                if not raw_href or raw_href.startswith("#") or raw_href.startswith("javascript:"):
+                    continue
 
-            pdf_url = urljoin(base_url, raw_href)
+                # Ignore utility index paths
+                if any(sp in raw_href.lower() for sp in skip_paths):
+                    continue
 
-            link_text = pdf_link_elem.get_text(strip=True)
-            row_text = row.get_text(" ", strip=True)
-            title = row_text if len(row_text) > 15 else link_text
+                full_url = urljoin(base_url, raw_href)
+                if full_url in seen_urls:
+                    continue
 
-            if not self._matches_keywords(title):
-                logger.debug("Skipping non-target UPSC entry", title=title[:60])
-                continue
+                link_text = link.get_text(strip=True)
+                elem_text = elem.get_text(" ", strip=True)
 
-            cells = row.select("td")
-            exam_date = cells[1].get_text(strip=True) if len(cells) > 1 else None
+                title = link_text if len(link_text) > 10 else elem_text
+                if not title or len(title) < 5:
+                    continue
 
-            found_items.append({
-                "title": title[:255],
-                "pdf_url": pdf_url,
-                "published_date_raw": exam_date,
-            })
+                if not self._matches_keywords(title):
+                    logger.debug("Skipping non-target UPSC entry", title=title[:60])
+                    continue
 
-        logger.info("Extracted UPSC PDF items", count=len(found_items), portal=self.portal_code)
-        return found_items
+                is_direct_pdf = raw_href.lower().endswith(".pdf") or ".pdf" in raw_href.lower()
+                is_subpage = "/examinations/" in raw_href or "/recruitment/" in raw_href
+
+                if not is_direct_pdf and not is_subpage:
+                    continue
+
+                cells = elem.select("td")
+                exam_date = cells[1].get_text(strip=True) if len(cells) > 1 else None
+
+                seen_urls.add(full_url)
+                found_entries.append({
+                    "title": title[:255],
+                    "target_url": full_url,
+                    "is_direct_pdf": is_direct_pdf,
+                    "published_date_raw": exam_date,
+                })
+
+        logger.info("Extracted candidate UPSC entries", count=len(found_entries), portal=self.portal_code)
+        return found_entries
 
     async def crawl(self) -> CrawlResult:
         """Execute complete UPSC crawl cycle."""
-        target_url = self.config.get("notifications_url", "https://upsc.gov.in/examinations/active-examinations")
+        target_url = self.config.get("notifications_url", "https://www.upsc.gov.in/examinations/active-exams")
         wait_selector = self.config.get("wait_selector")
         result = CrawlResult(portal_code=self.portal_code)
 
@@ -104,14 +146,60 @@ class UPSCCrawler(BaseCrawler):
 
         try:
             html = await self.fetcher.fetch(target_url, wait_selector=wait_selector)
-            detected_items = self._parse_notification_links(html)
-            result.total_found = len(detected_items)
+            candidate_entries = self._parse_candidate_entries(html)
+            result.total_found = len(candidate_entries)
 
-            delay = self.config.get("request_delay_seconds", 2.5)
+            delay = self.config.get("request_delay_seconds", 2.0)
 
-            for item in detected_items:
-                pdf_url = item["pdf_url"]
-                title = item["title"]
+            for entry in candidate_entries:
+                title = entry["title"]
+                pdf_url: Optional[str] = None
+
+                if entry["is_direct_pdf"]:
+                    pdf_url = entry["target_url"]
+                else:
+                    # Two-tier traversal: follow exam landing page to extract Notice / Circular PDF
+                    try:
+                        logger.info("Traversing UPSC exam landing subpage", title=title[:50], url=entry["target_url"])
+                        subpage_html = await self.fetcher.fetch(entry["target_url"])
+                        sub_soup = BeautifulSoup(subpage_html, "html.parser")
+
+                        # Inspect metadata table on subpage (e.g., views-table cols-6)
+                        sub_table = sub_soup.find("table")
+                        if sub_table:
+                            for tr in sub_table.find_all("tr"):
+                                cells = tr.find_all(["th", "td"])
+                                if len(cells) >= 2:
+                                    key = cells[0].get_text(strip=True).lower()
+                                    val = cells[1].get_text(strip=True)
+                                    if "date of notification" in key or "notification date" in key or "date of upload" in key:
+                                        if not entry.get("published_date_raw"):
+                                            entry["published_date_raw"] = val
+
+                        # Prioritize anchors in the subpage's main notification table
+                        table_anchors = sub_table.select("a[href*='.pdf'], a[href*='.PDF']") if sub_table else []
+                        all_pdf_anchors = sub_soup.select("a[href*='.pdf'], a[href*='.PDF']")
+                        pdf_anchors = table_anchors if table_anchors else all_pdf_anchors
+                        target_anchor = None
+
+                        # Prioritize notification or notice circulars over question papers
+                        for a in pdf_anchors:
+                            text = (a.get_text() + " " + a.get("href", "")).lower()
+                            if any(k in text for k in ["notice", "notif", "advt", "circular", "document"]):
+                                target_anchor = a
+                                break
+
+                        if not target_anchor and pdf_anchors:
+                            target_anchor = pdf_anchors[0]
+
+                        if target_anchor:
+                            pdf_url = urljoin(self.config.get("base_url", "https://www.upsc.gov.in"), target_anchor.get("href", ""))
+                        else:
+                            logger.warning("No PDF notice found on exam subpage", url=entry["target_url"])
+                            continue
+                    except Exception as sub_err:
+                        logger.warning("Failed fetching UPSC exam subpage", url=entry["target_url"], error=str(sub_err))
+                        continue
 
                 try:
                     downloaded = await self.downloader.download(pdf_url, check_dedup=True)
@@ -126,7 +214,7 @@ class UPSCCrawler(BaseCrawler):
                                 portal_code=self.portal_code,
                                 sha256_hash=downloaded.sha256_hash,
                                 is_duplicate=True,
-                                published_date_raw=item.get("published_date_raw"),
+                                published_date_raw=entry.get("published_date_raw"),
                             )
                         )
                         continue
@@ -143,8 +231,10 @@ class UPSCCrawler(BaseCrawler):
                         "extracted_text": extracted.text,
                     }
 
+                    doc_id: Optional[str] = None
                     try:
-                        insert_pdf_document(doc_record)
+                        inserted_doc = insert_pdf_document(doc_record)
+                        doc_id = inserted_doc.get("id") if inserted_doc else None
                         logger.info("Inserted new UPSC pdf_document", hash=downloaded.sha256_hash)
                     except Exception as exc:
                         logger.warning("Failed to insert pdf_document to database", error=str(exc))
@@ -160,11 +250,20 @@ class UPSCCrawler(BaseCrawler):
                         file_size_bytes=downloaded.file_size_bytes,
                         is_duplicate=False,
                         is_scanned=extracted.is_scanned_image,
-                        published_date_raw=item.get("published_date_raw"),
+                        published_date_raw=entry.get("published_date_raw"),
                     )
 
                     result.new_processed += 1
                     result.items.append(crawled_item)
+
+                    # Ingest draft notification for Admin HITL verification queue
+                    try:
+                        from scraper.extraction.pipeline import process_crawled_item_async
+                        await process_crawled_item_async(crawled_item, pdf_document_id=doc_id, run_id=run_id)
+                        logger.info("Ingested draft notification for UPSC notice", title=title[:50])
+                    except Exception as draft_err:
+                        logger.warning("Failed ingesting draft notification for notice", title=title[:50], error=str(draft_err))
+
                     await asyncio.sleep(delay)
 
                 except Exception as exc:

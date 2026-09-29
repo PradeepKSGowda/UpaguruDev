@@ -50,3 +50,6 @@ export type { ScraperTableProps } from "./ScraperTable";
 export { default as RoleBadge } from "./RoleBadge";
 export { default as UserKpiCards } from "./UserKpiCards";
 export { default as UserDirectoryTable } from "./UserDirectoryTable";
+
+export { default as PortalUrlEditModal } from "./PortalUrlEditModal";
+export type { PortalUrlEditModalProps } from "./PortalUrlEditModal";

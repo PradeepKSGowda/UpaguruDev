@@ -32,7 +32,7 @@ export default async function AdminUsersPage() {
       totalNotes: 0,
       newUsersToday: 0,
     })),
-    getUsersDirectory({ page: 1, limit: 50 }).catch(() => ({
+    getUsersDirectory({ page: 1, limit: 200 }).catch(() => ({
       users: [],
       totalCount: 0,
       activeCount: 0,

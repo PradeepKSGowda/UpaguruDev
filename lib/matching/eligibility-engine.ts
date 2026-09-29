@@ -12,7 +12,8 @@
 
 export interface CandidateProfile {
   dateOfBirth: string | null;    // ISO date string "YYYY-MM-DD"
-  gender: string | null;         // "male" | "female" | "other" | "prefer_not_to_say"
+  gender: string | null;         // "male" | "female" | "transgender" | "other" | "prefer_not_to_say"
+  maritalStatus?: string | null; // "unmarried" | "married" | "divorced" | "widowed" | "judicially_separated" | "other"
   category: string | null;       // "GM" | "OBC" | "SC" | "ST" | "EWS"
   state: string | null;          // e.g. "Karnataka", "Tamil Nadu"
   qualifications: string[];      // e.g. ["10th", "12th", "Graduate"]
@@ -426,3 +427,7 @@ export function matchCandidateToNotifications(
     return a.daysUntilDeadline - b.daysUntilDeadline;
   });
 }
+
+// ─── Export v2.0 Evaluator Types & Engine (ENH-CANDIDATE-TEST-MATRIX) ───────
+export * from "./candidate-eligibility-evaluator";
+

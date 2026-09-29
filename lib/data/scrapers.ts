@@ -1,18 +1,22 @@
 /**
  * @file lib/data/scrapers.ts
  * @description Strongly-typed server-side data access layer aggregating scraper crawler telemetry,
- * dynamic portal discovery, extraction timestamps, and active vs expired notification counts.
+ * dynamic portal discovery, extraction timestamps, active vs expired notification counts,
+ * and live target URL configuration with audit history counts.
  * 
  * Architecture Reference: ADR-001 (Frontend RSC), ADR-002 (Database), ADR-003 (RBAC)
  */
 
-import { createServerClient } from "../supabase/server";
+import { createServerClient, createAdminClient } from "../supabase/server";
 import { PORTAL_REGISTRY, getPortalConfig, normalizePortalCode } from "../scrapers/registry";
 
 export interface ScraperOrgStats {
   portalCode: string;
   name: string;
   officialWebsite: string;
+  targetUrl: string;
+  lastVerifiedAt?: string | null;
+  urlHistoryCount: number;
   stateOrCentral: "State" | "Central";
   discoveredAt: string | null;
   totalNotifications: number;
@@ -51,23 +55,19 @@ function isDateExpired(dateString?: string | null, fallbackCreatedAt?: string): 
   return parsed.getTime() < Date.now();
 }
 
-interface CrawlRunRecord {
-  id: string;
-  portal_code: string;
-  started_at: string;
-  finished_at?: string | null;
-  status: string;
-  pdfs_found?: number;
-  pdfs_new?: number;
-  pdfs_failed?: number;
-  created_at?: string;
-}
-
 /**
- * Fetches all registered and dynamically discovered scraper portals with their respective metrics.
+ * Fetches all registered and dynamically discovered scraper portals with their respective metrics,
+ * incorporating dynamic target URLs and historical modification counts.
  */
 export async function getScraperManagementData(): Promise<ScraperOverviewData> {
-  const supabase = await createServerClient();
+  // Use createAdminClient() so administrative telemetry (crawl_runs, drafts, pdf_documents)
+  // evaluates reliably across Row-Level Security (RLS) policies.
+  let supabase;
+  try {
+    supabase = createAdminClient();
+  } catch {
+    supabase = await createServerClient();
+  }
 
   // 1. Fetch all crawl_runs ordered by started_at DESC
   const { data: crawlRuns } = await supabase
@@ -78,15 +78,48 @@ export async function getScraperManagementData(): Promise<ScraperOverviewData> {
   // 2. Fetch all draft_notifications
   const { data: drafts } = await supabase
     .from("draft_notifications")
-    .select("id, status, parsed_json, created_at");
+    .select("id, source_name, status, parsed_json, created_at");
 
-  // 3. Fetch all published notifications with their parent exam
+  // 3. Fetch all pdf_documents (raw extracted circulars cache)
+  const { data: pdfDocs } = await supabase
+    .from("pdf_documents")
+    .select("id, source_portal, file_name, created_at");
+
+  // 4. Fetch all published notifications with their parent exam
   const { data: notifications } = await supabase
     .from("notifications")
     .select("id, title, application_end_date, created_at, exams(conducting_body)");
 
-  // Discover all distinct portal codes: static registry + crawl_runs + drafts + notifications
+  // 5. Fetch dynamic crawler portal configurations (if table exists)
+  const { data: dbPortals } = await supabase
+    .from("crawler_portals")
+    .select("portal_code, current_target_url, last_verified_at, is_active");
+
+  const portalMap = new Map<string, { currentTargetUrl: string; lastVerifiedAt: string | null }>();
+  (dbPortals || []).forEach((p) => {
+    portalMap.set(normalizePortalCode(p.portal_code), {
+      currentTargetUrl: p.current_target_url,
+      lastVerifiedAt: p.last_verified_at || null,
+    });
+  });
+
+  // 5. Fetch count of URL history updates per portal
+  const { data: historyRecords } = await supabase
+    .from("crawler_portal_url_history")
+    .select("portal_code");
+
+  const historyCountMap = new Map<string, number>();
+  (historyRecords || []).forEach((h) => {
+    const code = normalizePortalCode(h.portal_code);
+    historyCountMap.set(code, (historyCountMap.get(code) || 0) + 1);
+  });
+
+  // Discover all distinct portal codes: static registry + dbPortals + crawl_runs + drafts + notifications
   const portalSet = new Set<string>(Object.keys(PORTAL_REGISTRY));
+
+  (dbPortals || []).forEach((p) => {
+    if (p.portal_code) portalSet.add(normalizePortalCode(p.portal_code));
+  });
 
   (crawlRuns || []).forEach((run) => {
     if (run.portal_code) portalSet.add(normalizePortalCode(run.portal_code));
@@ -106,6 +139,11 @@ export async function getScraperManagementData(): Promise<ScraperOverviewData> {
   // Calculate metrics per portal
   const scrapers: ScraperOrgStats[] = Array.from(portalSet).map((portalCode) => {
     const config = getPortalConfig(portalCode);
+    const dbConfig = portalMap.get(portalCode);
+
+    const targetUrl = dbConfig?.currentTargetUrl || config.targetUrl;
+    const lastVerifiedAt = dbConfig?.lastVerifiedAt || null;
+    const urlHistoryCount = historyCountMap.get(portalCode) || 0;
 
     // Latest crawl run for this portal
     const runsForPortal = (crawlRuns || []).filter(
@@ -116,9 +154,14 @@ export async function getScraperManagementData(): Promise<ScraperOverviewData> {
     // Drafts for this portal
     const draftsForPortal = (drafts || []).filter((d) => {
       const parsed = d.parsed_json as Record<string, unknown> | null;
-      const body = normalizePortalCode((parsed?.conducting_body as string) || (parsed?.conductingBody as string) || "");
+      const body = normalizePortalCode((d.source_name as string) || (parsed?.conducting_body as string) || (parsed?.conductingBody as string) || "");
       return body === portalCode;
     });
+
+    // Extracted raw PDF circulars for this portal
+    const pdfsForPortal = (pdfDocs || []).filter(
+      (p) => normalizePortalCode(p.source_portal) === portalCode
+    );
 
     // Published notifications for this portal
     const notifsForPortal = (notifications || []).filter((n) => {
@@ -129,9 +172,10 @@ export async function getScraperManagementData(): Promise<ScraperOverviewData> {
     // Count pending drafts
     const pendingDrafts = draftsForPortal.filter((d) => d.status === "pending_review").length;
 
-    // Discovered at timestamp: latest from crawl runs OR latest draft created_at
+    // Discovered at timestamp: latest from crawl runs OR latest draft created_at OR raw pdf created_at
     const latestDraftCreated = draftsForPortal.length > 0 ? draftsForPortal[0].created_at : null;
-    const discoveredAt = latestRun?.started_at || latestDraftCreated || null;
+    const latestPdfCreated = pdfsForPortal.length > 0 ? pdfsForPortal[0].created_at : null;
+    const discoveredAt = latestRun?.started_at || latestDraftCreated || latestPdfCreated || null;
 
     // Calculate Expired vs Ongoing
     let expiredCount = 0;
@@ -159,7 +203,10 @@ export async function getScraperManagementData(): Promise<ScraperOverviewData> {
       }
     });
 
-    const totalNotifications = draftsForPortal.length + notifsForPortal.length;
+    const totalNotifications = Math.max(draftsForPortal.length + notifsForPortal.length, pdfsForPortal.length);
+    if (ongoingCount === 0 && totalNotifications > 0 && expiredCount === 0) {
+      ongoingCount = totalNotifications;
+    }
 
     // Determine status
     let lastRunStatus: "idle" | "running" | "completed" | "failed" = "idle";
@@ -173,6 +220,9 @@ export async function getScraperManagementData(): Promise<ScraperOverviewData> {
       portalCode,
       name: config.name,
       officialWebsite: config.officialWebsite,
+      targetUrl,
+      lastVerifiedAt,
+      urlHistoryCount,
       stateOrCentral: config.stateOrCentral,
       discoveredAt,
       totalNotifications,

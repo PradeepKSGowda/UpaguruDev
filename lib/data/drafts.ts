@@ -15,7 +15,7 @@
  * - Fail-safe error handling
  */
 
-import { createServerClient } from "../supabase/server";
+import { createServerClient, createAdminClient } from "../supabase/server";
 import { draftFilterSchema, type ValidatedDraftFilters } from "../schemas/drafts";
 import type {
   DraftNotification,
@@ -72,7 +72,12 @@ export async function getDraftNotifications(
   const { status, sortBy, search, minConfidence, maxConfidence, page, pageSize } = validatedFilters;
 
   try {
-    const supabase = await createServerClient();
+    let supabase;
+    try {
+      supabase = createAdminClient();
+    } catch {
+      supabase = await createServerClient();
+    }
 
     // Begin base query with exact count
     let query = supabase
@@ -178,7 +183,12 @@ export async function getDraftNotificationById(
   }
 
   try {
-    const supabase = await createServerClient();
+    let supabase;
+    try {
+      supabase = createAdminClient();
+    } catch {
+      supabase = await createServerClient();
+    }
 
     const { data, error } = await supabase
       .from("draft_notifications")

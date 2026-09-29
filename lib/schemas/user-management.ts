@@ -12,12 +12,13 @@ export const userFilterSchema = z
   .object({
     query: z.string().trim().max(100).optional(),
     search: z.string().trim().max(100).optional(),
-    role: z.enum(["all", "super_admin", "admin", "moderator", "support", "candidate"]).default("all"),
+    role: z.enum(["all", "super_admin", "admin", "moderator", "support", "candidate", "test_candidate"]).default("all"),
     status: z.enum(["all", "active", "blocked"]).default("all"),
+    userType: z.enum(["all", "real", "test"]).default("all"),
     verifiedOnly: z.boolean().optional().default(false),
     page: z.number().int().min(1).default(1),
-    limit: z.number().int().min(1).max(100).default(20),
-    pageSize: z.number().int().min(1).max(100).default(20),
+    limit: z.number().int().min(1).max(500).default(20),
+    pageSize: z.number().int().min(1).max(500).default(20),
   })
   .transform((data) => {
     const effectiveLimit = data.limit !== 20 ? data.limit : data.pageSize;
@@ -62,7 +63,8 @@ export const assignRoleSchema = z
     };
   });
 
-export type AssignRoleInput = z.infer<typeof assignRoleSchema>;
+export type AssignRoleInput = z.input<typeof assignRoleSchema>;
+export type AssignRoleOutput = z.output<typeof assignRoleSchema>;
 
 export const createAdminSchema = z.object({
   email: z.string().trim().email("Invalid email address"),

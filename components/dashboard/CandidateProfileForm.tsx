@@ -101,6 +101,7 @@ export default function CandidateProfileForm({
     phone: initialProfile?.phone || "",
     alternatePhone: initialProfile?.alternate_phone || "",
     gender: (initialProfile?.gender as any) || "prefer_not_to_say",
+    maritalStatus: (initialProfile?.marital_status as any) || "unmarried",
     dateOfBirth: initialProfile?.date_of_birth || "",
     category: initialProfile?.category || "General",
     addressLine: initialProfile?.address_line || "",
@@ -263,6 +264,26 @@ export default function CandidateProfileForm({
               <option value="prefer_not_to_say">Prefer not to say</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
+              <option value="transgender">Transgender</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              Marital Status
+            </label>
+            <select
+              name="maritalStatus"
+              value={formData.maritalStatus || "unmarried"}
+              onChange={handleInputChange}
+              className="w-full px-3.5 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900 dark:text-white"
+            >
+              <option value="unmarried">Unmarried / Single</option>
+              <option value="married">Married</option>
+              <option value="divorced">Divorced</option>
+              <option value="widowed">Widow / Widower</option>
+              <option value="judicially_separated">Judicially Separated</option>
               <option value="other">Other</option>
             </select>
           </div>

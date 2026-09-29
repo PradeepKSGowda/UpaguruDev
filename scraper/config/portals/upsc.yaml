@@ -7,42 +7,49 @@ portal_code: "UPSC"
 portal_name: "Union Public Service Commission"
 conducting_body: "UPSC"
 state_or_central: "Central"
-official_website: "https://upsc.gov.in"
-notifications_url: "https://upsc.gov.in/examinations/active-examinations"
+official_website: "https://www.upsc.gov.in"
+notifications_url: "https://www.upsc.gov.in/examinations/active-exams"
 
 # Crawl Engine Configuration
-engine: "playwright"
+engine: "httpx"
 headless: true
 timeout_seconds: 40
-request_delay_seconds: 2.5
+request_delay_seconds: 2.0
 max_retries: 3
 max_pages: 3
 
 # DOM Extraction Selectors
-wait_selector: "table, .view-content, a[href$='.pdf']"
+wait_selector: ".view-content, .views-row, .views-field-field-exam-name"
 selectors:
-  container: "table.views-table tbody tr, .view-content tbody tr, .region-content table tr"
-  pdf_link: "a[href$='.pdf'], a[href*='.pdf'], a[href*='Notification']"
-  title: "td:nth-child(1), td.views-field-title, a"
-  publish_date: "td:nth-child(2), td.views-field-field-exam-date"
-  notification_number: "td:nth-child(1) a"
+  container: ".view-content .views-row, .views-row, table.views-table tbody tr"
+  pdf_link: "a[href*='/examinations/'], a[href*='.pdf'], a[href$='.pdf']"
+  title: ".views-field-field-exam-name a, td:nth-child(1), a"
+  publish_date: ".views-field-field-exam-date, td:nth-child(2)"
+  notification_number: ".views-field-field-exam-name a, td:nth-child(1) a"
 
 # URL Canonicalization Rules
-base_url: "https://upsc.gov.in"
-relative_url_prefix: "https://upsc.gov.in/"
+base_url: "https://www.upsc.gov.in"
+relative_url_prefix: "https://www.upsc.gov.in/"
 
 # Keyword Filters
 include_keywords:
   - "examination"
+  - "exam"
   - "notification"
+  - "recruitment"
   - "civil services"
   - "engineering services"
   - "combined defense"
+  - "defense"
   - "nda"
   - "cds"
   - "capf"
   - "forest service"
   - "advertisement"
+  - "ldce"
+  - "officer"
+  - "geoscientist"
+  - "geo-scientist"
 exclude_keywords:
   - "final result"
   - "written result"

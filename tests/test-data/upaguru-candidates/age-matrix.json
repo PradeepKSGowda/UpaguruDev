@@ -1,0 +1,155 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UPA-GURU Age & Boundary Test Matrix",
+  "description": "Standardized boundary points and age calculations as of reference date 2027-01-01",
+  "version": "2.0.0",
+  "reference_date": "2027-01-01",
+  "base_limits": {
+    "min_age": 18,
+    "max_age": 27
+  },
+  "relaxation_rules": {
+    "GM": 0,
+    "General": 0,
+    "OBC": 3,
+    "SC": 5,
+    "ST": 5,
+    "EWS": 0,
+    "Ex-Servicemen": 5,
+    "PwD": 10,
+    "PwBD": 10
+  },
+  "stacking_rule_policy": {
+    "mode": "MAX_APPLICABLE",
+    "description": "When multiple relaxations apply (e.g. SC + Ex-Servicemen), engine grants Math.max(relaxation_A, relaxation_B) unless notification explicitly declares cumulative addition"
+  },
+  "boundaries": [
+    {
+      "boundary_code": "MIN_MINUS_2_DAYS",
+      "dob": "2009-01-03",
+      "age_as_of_ref": "17y 363d",
+      "expected_status_unreserved": "INELIGIBLE_UNDERAGE",
+      "reason": "Candidate is below the minimum age of 18 years as on 2027-01-01"
+    },
+    {
+      "boundary_code": "MIN_MINUS_1_DAY",
+      "dob": "2009-01-02",
+      "age_as_of_ref": "17y 364d",
+      "expected_status_unreserved": "INELIGIBLE_UNDERAGE",
+      "reason": "Candidate is below the minimum age of 18 years as on 2027-01-01"
+    },
+    {
+      "boundary_code": "MIN_EXACT",
+      "dob": "2009-01-01",
+      "age_as_of_ref": "18y 0d",
+      "expected_status_unreserved": "ELIGIBLE",
+      "reason": "Exact minimum age boundary satisfied"
+    },
+    {
+      "boundary_code": "MIN_PLUS_1_DAY",
+      "dob": "2008-12-31",
+      "age_as_of_ref": "18y 1d",
+      "expected_status_unreserved": "ELIGIBLE",
+      "reason": "Candidate satisfies minimum age"
+    },
+    {
+      "boundary_code": "MIN_PLUS_1_YEAR",
+      "dob": "2008-01-01",
+      "age_as_of_ref": "19y 0d",
+      "expected_status_unreserved": "ELIGIBLE",
+      "reason": "Comfortably within age window"
+    },
+    {
+      "boundary_code": "MID_RANGE",
+      "dob": "2003-01-01",
+      "age_as_of_ref": "24y 0d",
+      "expected_status_unreserved": "ELIGIBLE",
+      "reason": "Mid-range unreserved age"
+    },
+    {
+      "boundary_code": "MAX_MINUS_1_YEAR",
+      "dob": "2001-01-01",
+      "age_as_of_ref": "26y 0d",
+      "expected_status_unreserved": "ELIGIBLE",
+      "reason": "Candidate within maximum age"
+    },
+    {
+      "boundary_code": "MAX_MINUS_1_DAY",
+      "dob": "2000-01-02",
+      "age_as_of_ref": "26y 364d",
+      "expected_status_unreserved": "ELIGIBLE",
+      "reason": "Candidate within maximum age"
+    },
+    {
+      "boundary_code": "MAX_EXACT",
+      "dob": "2000-01-01",
+      "age_as_of_ref": "27y 0d",
+      "expected_status_unreserved": "ELIGIBLE",
+      "reason": "Exact maximum age boundary satisfied"
+    },
+    {
+      "boundary_code": "MAX_PLUS_1_DAY",
+      "dob": "1999-12-31",
+      "age_as_of_ref": "27y 1d",
+      "expected_status_unreserved": "INELIGIBLE_OVERAGE",
+      "reason": "Candidate exceeds maximum allowed age of 27 years as on 2027-01-01"
+    },
+    {
+      "boundary_code": "MAX_PLUS_1_YEAR",
+      "dob": "1999-01-01",
+      "age_as_of_ref": "28y 0d",
+      "expected_status_unreserved": "INELIGIBLE_OVERAGE",
+      "reason": "Candidate exceeds maximum allowed age of 27 years as on 2027-01-01"
+    },
+    {
+      "boundary_code": "OBC_RELAX_ELIGIBLE",
+      "dob": "1997-01-01",
+      "age_as_of_ref": "30y 0d",
+      "category": "OBC",
+      "expected_status": "ELIGIBLE",
+      "reason": "Candidate qualifies under OBC 3-year age relaxation (effective max age 30 years)"
+    },
+    {
+      "boundary_code": "OBC_RELAX_OVERAGE",
+      "dob": "1996-12-31",
+      "age_as_of_ref": "30y 1d",
+      "category": "OBC",
+      "expected_status": "INELIGIBLE_OVERAGE",
+      "reason": "Candidate exceeds maximum allowed age of 30 years (with OBC relaxation) as on 2027-01-01"
+    },
+    {
+      "boundary_code": "SC_RELAX_ELIGIBLE",
+      "dob": "1995-01-01",
+      "age_as_of_ref": "32y 0d",
+      "category": "SC",
+      "expected_status": "ELIGIBLE",
+      "reason": "Candidate qualifies under SC 5-year age relaxation (effective max age 32 years)"
+    },
+    {
+      "boundary_code": "SC_RELAX_OVERAGE",
+      "dob": "1994-12-31",
+      "age_as_of_ref": "32y 1d",
+      "category": "SC",
+      "expected_status": "INELIGIBLE_OVERAGE",
+      "reason": "Candidate exceeds maximum allowed age of 32 years (with SC relaxation) as on 2027-01-01"
+    },
+    {
+      "boundary_code": "STACKED_SC_EXSERVICEMAN",
+      "dob": "1995-01-01",
+      "age_as_of_ref": "32y 0d",
+      "category": "SC",
+      "special_status": "Ex-Servicemen",
+      "expected_status": "ELIGIBLE",
+      "reason": "Candidate qualifies under max(5, 5) = 5-year relaxation"
+    },
+    {
+      "boundary_code": "PWBD_RELAX_ELIGIBLE",
+      "dob": "1990-01-01",
+      "age_as_of_ref": "37y 0d",
+      "category": "General",
+      "special_status": "PwBD",
+      "expected_status": "ELIGIBLE",
+      "reason": "Candidate qualifies under PwBD 10-year age relaxation (effective max age 37 years)"
+    }
+  ]
+}

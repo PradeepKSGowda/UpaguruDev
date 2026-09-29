@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UPA-GURU Category & Reservation Test Matrix",
+  "description": "Standard reservation categories, special quotas, and concession test scenarios",
+  "version": "2.0.0",
+  "categories": [
+    { "code": "GM", "title": "General Merit / Unreserved (UR)", "age_relaxation_years": 0, "fee_concession": false },
+    { "code": "OBC", "title": "Other Backward Classes (2A/2B/3A/3B / Central OBC-NCL)", "age_relaxation_years": 3, "fee_concession": true },
+    { "code": "SC", "title": "Scheduled Castes", "age_relaxation_years": 5, "fee_concession": true },
+    { "code": "ST", "title": "Scheduled Tribes", "age_relaxation_years": 5, "fee_concession": true },
+    { "code": "EWS", "title": "Economically Weaker Sections", "age_relaxation_years": 0, "fee_concession": false }
+  ],
+  "special_quotas": [
+    { "code": "EX_SERVICEMEN", "title": "Ex-Servicemen / Defense Personnel", "age_relaxation_years": 5 },
+    { "code": "PWBD", "title": "Persons with Benchmark Disabilities", "age_relaxation_years": 10 },
+    { "code": "SPORTS", "title": "Meritorious Sports Persons", "age_relaxation_years": 5 },
+    { "code": "WOMEN", "title": "Women Horizontal Reservation", "age_relaxation_years": 0 }
+  ],
+  "test_scenarios": [
+    {
+      "scenario_id": "CAT-UR-ELIGIBLE",
+      "category": "GM",
+      "notification_quota": "UR",
+      "expected_outcome": "PASS"
+    },
+    {
+      "scenario_id": "CAT-RESERVED-POST-MISMATCH",
+      "category": "GM",
+      "notification_quota": "SC",
+      "expected_outcome": "FAIL",
+      "reason": "Post is exclusively reserved for SC candidates. Candidate is GM/UR."
+    },
+    {
+      "scenario_id": "CAT-OBC-ON-UR",
+      "category": "OBC",
+      "notification_quota": "UR",
+      "expected_outcome": "PASS",
+      "reason": "Reserved category candidates can compete for Unreserved (UR) seats on merit."
+    },
+    {
+      "scenario_id": "CAT-STACKED-RELAXATION-SC-EX",
+      "category": "SC",
+      "special_quota": "EX_SERVICEMEN",
+      "expected_relaxation_granted": 5,
+      "rule": "Math.max(SC: 5, EX_SERVICEMEN: 5) = 5 years"
+    }
+  ]
+}

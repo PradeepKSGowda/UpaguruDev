@@ -23,7 +23,7 @@ This design establishes an extensible Role-Based Access Control (RBAC) governanc
 2. **Candidate Personal Workspace (`/dashboard/*`)**:
    - Secondary sticky tab navigation (`Overview`, `Profile & KYC`, `Saved Circulars`, `Exam Notes`, `Application Tracker`, `Alert Preferences`).
    - Profile Readiness Score Gauge (`ProfileCompletionBar`) with dynamic weighted percentage calculation and next-step onboarding checklist.
-   - Candidate Profile & KYC Editor (`CandidateProfileForm`) for demographics, date of birth, reservation eligibility (General, OBC, SC, ST, EWS), domicile state/district, and language preference.
+   - Candidate Profile & KYC Editor (`CandidateProfileForm`) for demographics, date of birth, gender (`male`, `female`, `transgender`, `other`, `prefer_not_to_say`), marital status (`unmarried`, `married`, `divorced`, `widowed`, `widow_widower`, `judicially_separated`, `other`), reservation eligibility (General, OBC, SC, ST, EWS), domicile state/district, and language preference.
    - Verified Contact Channels with simulated 6-digit OTP delivery (`sendContactOtpAction`) and verification badge (`verifyContactOtpAction`).
    - Saved Circulars & Bookmarks Manager (`BookmarksList`) with search, filter, direct official PDF view, and one-click removal.
    - Personal Exam Revision Notes (`NotesList`) with custom hashtag filtering and markdown note authoring.
@@ -40,7 +40,7 @@ erDiagram
     roles ||--o{ role_permissions : "includes"
     permissions ||--o{ role_permissions : "granted to"
     
-    auth_users ||--|| user_profiles : "extends candidate KYC"
+    auth_users ||--|| user_profiles : "extends candidate KYC (gender, marital_status, dob)"
     auth_users ||--o| admin_profiles : "extends admin details"
     auth_users ||--o{ bookmarks : "saves"
     auth_users ||--o{ exam_notes : "authors"
@@ -53,7 +53,7 @@ erDiagram
 
 ---
 
-## 3. Security & Privilege Escalation Invariants
+## 3. Security, RLS & Privilege Invariants
 
 1. **Privilege Escalation Prevention (`canAssignRole`)**:
    - An `admin` cannot grant the `super_admin` or `admin` role.
@@ -61,9 +61,10 @@ erDiagram
    - Only `super_admin` can manage system roles or modify role-to-permission mappings.
 2. **Next.js 15 App Router Conventions**:
    - All Server Action files marked `"use server"` export strictly `async` functions. No types, interfaces, or schemas are exported from action files (preventing Turbopack compilation errors).
-3. **Mandatory Row Level Security (RLS)**:
+3. **Mandatory Row Level Security (RLS) & Directory Isolation**:
    - Candidates can only read and mutate their own bookmarks, notes, tracking records, and profile.
-   - Admins can query user lists through `public.has_permission(auth.uid(), 'users:read:all')`.
+   - Admins can query user lists through `public.is_admin_or_moderator(auth.uid())` and verified Server Actions using `createAdminClient()` once `assertPermission(currentUser.id, PERMISSIONS.USERS_READ_ALL)` passes.
+   - In Supabase Auth, standard JWTs carry `auth.jwt() ->> 'role'` as `'authenticated'`. Using `createAdminClient()` in administrative Server Actions bypasses caller RLS suppression of candidate accounts while preserving cryptographic permission verification.
 
 ---
 
@@ -76,10 +77,13 @@ erDiagram
   - Moderator drafting and review boundary
   - Candidate workspace isolation
   - Privilege escalation guard verification via `canAssignRole`
-- **`tests/unit/schemas/user-management.test.ts` (10 tests passed)**:
+- **`tests/unit/schemas/user-management.test.ts` (12 tests passed)**:
   - `userFilterSchema` pagination and filtering
   - `userBlockStatusSchema` constraint checking (minimum 5-character reason)
   - `assignRoleSchema` role validation
   - `accountSettingsSchema` Indian mobile regex and 6-digit PIN code validation
+  - `accountSettingsSchema` marital status validation (unmarried, married, divorced, widowed, widow_widower, judicially_separated, other)
+  - `accountSettingsSchema` gender validation (male, female, transgender, other, prefer_not_to_say)
   - `bookmarkToggleSchema`, `examNoteSchema`, `examTrackingSchema`
-- **Overall Project Suite**: 115 tests passed across 11 test suites with zero failures.
+- **`tests/unit/admin-user-directory.test.ts`**:
+  - Validates multi-user directory aggregation and profile visibility without suppression.

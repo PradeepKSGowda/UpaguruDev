@@ -10,6 +10,7 @@
  */
 
 import React, { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   RefreshCw,
   ExternalLink,
@@ -22,10 +23,15 @@ import {
   Sparkles,
   ArrowRight,
   Filter,
+  Globe,
+  History,
+  Edit3,
+  Eye,
 } from "lucide-react";
 import Link from "next/link";
 import type { ScraperOrgStats, ScraperOverviewData } from "../../lib/data/scrapers";
 import { triggerManualExtraction } from "../../app/admin/scrapers/actions";
+import PortalUrlEditModal from "./PortalUrlEditModal";
 
 export interface ScraperTableProps {
   scrapers?: ScraperOrgStats[] | ScraperOverviewData | null;
@@ -56,6 +62,7 @@ function formatDiscoveredAt(isoString?: string | null): string {
 }
 
 export default function ScraperTable({ scrapers, lastUpdated }: ScraperTableProps) {
+  const router = useRouter();
   const [activePortalAction, setActivePortalAction] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<{
     portal: string;
@@ -63,6 +70,12 @@ export default function ScraperTable({ scrapers, lastUpdated }: ScraperTableProp
     text: string;
   } | null>(null);
   const [searchFilter, setSearchFilter] = useState("");
+  const [editingPortal, setEditingPortal] = useState<{
+    code: string;
+    name: string;
+    url: string;
+    initialTab?: "edit" | "preview" | "history";
+  } | null>(null);
   const [, startTransition] = useTransition();
 
   // Defensively extract scraper list whether scrapers is an array or the full overview object
@@ -250,11 +263,11 @@ export default function ScraperTable({ scrapers, lastUpdated }: ScraperTableProp
                   >
                     {/* 1. Organisation */}
                     <td className="py-3.5 px-4 sm:px-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-heading font-black text-xs flex items-center justify-center border border-blue-200/80 dark:border-blue-800/80 shrink-0">
+                      <div className="flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-heading font-black text-xs flex items-center justify-center border border-blue-200/80 dark:border-blue-800/80 shrink-0 mt-0.5">
                           {item.portalCode}
                         </div>
-                        <div className="flex flex-col min-w-0">
+                        <div className="flex flex-col min-w-0 max-w-sm sm:max-w-md">
                           <div className="flex items-center gap-1.5">
                             <span className="font-heading font-bold text-sm text-slate-900 dark:text-white">
                               {item.portalCode}
@@ -273,12 +286,87 @@ export default function ScraperTable({ scrapers, lastUpdated }: ScraperTableProp
                             href={item.officialWebsite}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[11px] text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-300 truncate max-w-xs sm:max-w-sm inline-flex items-center gap-1 transition"
+                            className="text-[11px] text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-300 truncate inline-flex items-center gap-1 transition"
                             title={item.name}
                           >
                             <span>{item.name}</span>
                             <ExternalLink className="w-2.5 h-2.5 shrink-0 opacity-70" />
                           </a>
+
+                          {/* Extraction Target URL & Management */}
+                          <div className="mt-1.5 pt-1.5 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-1.5">
+                            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider shrink-0 flex items-center gap-1">
+                              <Globe className="w-2.5 h-2.5 text-blue-500" />
+                              Target URL:
+                            </span>
+                            <a
+                              href={item.targetUrl || item.officialWebsite}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[11px] font-mono text-blue-600 dark:text-blue-400 hover:underline truncate max-w-[170px] sm:max-w-[220px]"
+                              title={item.targetUrl || item.officialWebsite}
+                            >
+                              {item.targetUrl || item.officialWebsite}
+                            </a>
+
+                            <div className="flex items-center gap-1 shrink-0">
+                              <button
+                                type="button"
+                                id={`btn-edit-url-${item.portalCode.toLowerCase()}`}
+                                data-testid={`btn-edit-url-${item.portalCode.toLowerCase()}`}
+                                onClick={() =>
+                                  setEditingPortal({
+                                    code: item.portalCode,
+                                    name: item.name,
+                                    url: item.targetUrl || item.officialWebsite,
+                                  })
+                                }
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 dark:hover:text-blue-300 border border-slate-200 dark:border-slate-700 transition"
+                                title="Edit & Verify Crawl Target URL in portal"
+                              >
+                                <Edit3 className="w-2.5 h-2.5" />
+                                <span>Edit URL</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                id={`btn-dry-run-${item.portalCode.toLowerCase()}`}
+                                data-testid={`btn-dry-run-${item.portalCode.toLowerCase()}`}
+                                onClick={() =>
+                                  setEditingPortal({
+                                    code: item.portalCode,
+                                    name: item.name,
+                                    url: item.targetUrl || item.officialWebsite,
+                                    initialTab: "preview",
+                                  })
+                                }
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900 border border-blue-200/80 dark:border-blue-800/80 transition"
+                                title="Dry-run parser: test if website structure or circular links have changed"
+                              >
+                                <Eye className="w-2.5 h-2.5" />
+                                <span>Dry Run</span>
+                              </button>
+
+                              {(item.urlHistoryCount ?? 0) > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setEditingPortal({
+                                      code: item.portalCode,
+                                      name: item.name,
+                                      url: item.targetUrl || item.officialWebsite,
+                                      initialTab: "history",
+                                    })
+                                  }
+                                  className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/60 hover:bg-amber-100 transition"
+                                  title={`${item.urlHistoryCount} historical change(s) recorded. Click to view history.`}
+                                >
+                                  <History className="w-2.5 h-2.5" />
+                                  <span>{item.urlHistoryCount}</span>
+                                </button>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -398,6 +486,26 @@ export default function ScraperTable({ scrapers, lastUpdated }: ScraperTableProp
           <ArrowRight className="w-3 h-3" />
         </Link>
       </div>
+
+      {/* Portal Target URL Edit & Audit History Modal */}
+      {editingPortal && (
+        <PortalUrlEditModal
+          isOpen={!!editingPortal}
+          onClose={() => setEditingPortal(null)}
+          portalCode={editingPortal.code}
+          portalName={editingPortal.name}
+          currentTargetUrl={editingPortal.url}
+          initialTab={editingPortal.initialTab || "edit"}
+          onSuccess={(newUrl) => {
+            setActionMessage({
+              portal: editingPortal.code,
+              type: "success",
+              text: `Target URL updated to "${newUrl}". Subsequent manual and automated extractions will use this URL.`,
+            });
+            router.refresh();
+          }}
+        />
+      )}
     </div>
   );
 }

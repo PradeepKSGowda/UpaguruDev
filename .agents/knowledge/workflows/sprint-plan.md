@@ -230,3 +230,5 @@ Sprint 4: QA (6)        | Backend (11)  | Frontend (2)  | DevOps (1)
 2. **Milestone 2 (End of Week 4)**: Automated government scrapers extracting notices via Gemini 1.5 Flash into Admin queue; Admin can review PDF, edit, approve, and publish.
 3. **Milestone 3 (End of Week 6)**: Candidate homepage feed, category filters, full-text search, and `/notification/[slug]` live with validated Google `JobPosting` schema tags and ISR caching.
 4. **Milestone 4 (End of Week 8)**: Candidate push/email alerts delivering on publish, REST API documented, Vitest + Playwright tests passing in CI, mobile Lighthouse score >= 95, and production MVP launched.
+5. **Milestone 5 (Post-MVP Quality & Rules Hardening — ENH-CANDIDATE-TEST-MATRIX)**: Deterministic 120-candidate test population, confidence-aware Eligibility Rules Engine v2.0 with INDETERMINATE classification for low-confidence AI extraction or missing reference dates, sub-2ms batch evaluation, and DPDP-compliant synthetic test data isolation.
+

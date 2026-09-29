@@ -22,6 +22,7 @@ export type AppRoleEnum =
   | "guest"
   | "candidate"
   | "moderator"
+  | "support"
   | "admin"
   | "super_admin";
 
@@ -579,75 +580,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      user_profiles: {
-        Row: {
-          id: string;
-          first_name: string | null;
-          last_name: string | null;
-          alternate_email: string | null;
-          is_alternate_email_verified: boolean;
-          phone: string | null;
-          is_phone_verified: boolean;
-          alternate_phone: string | null;
-          gender: string | null;
-          date_of_birth: string | null;
-          category: string | null;
-          address_line: string | null;
-          state: string | null;
-          district: string | null;
-          pincode: string | null;
-          avatar_url: string | null;
-          language_preference: string;
-          profile_completion_percentage: number;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id: string;
-          first_name?: string | null;
-          last_name?: string | null;
-          alternate_email?: string | null;
-          is_alternate_email_verified?: boolean;
-          phone?: string | null;
-          is_phone_verified?: boolean;
-          alternate_phone?: string | null;
-          gender?: string | null;
-          date_of_birth?: string | null;
-          category?: string | null;
-          address_line?: string | null;
-          state?: string | null;
-          district?: string | null;
-          pincode?: string | null;
-          avatar_url?: string | null;
-          language_preference?: string;
-          profile_completion_percentage?: number;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          first_name?: string | null;
-          last_name?: string | null;
-          alternate_email?: string | null;
-          is_alternate_email_verified?: boolean;
-          phone?: string | null;
-          is_phone_verified?: boolean;
-          alternate_phone?: string | null;
-          gender?: string | null;
-          date_of_birth?: string | null;
-          category?: string | null;
-          address_line?: string | null;
-          state?: string | null;
-          district?: string | null;
-          pincode?: string | null;
-          avatar_url?: string | null;
-          language_preference?: string;
-          profile_completion_percentage?: number;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
       admin_profiles: {
         Row: {
           id: string;
@@ -910,6 +842,86 @@ export type Database = {
             columns: ["notification_id"];
             isOneToOne: false;
             referencedRelation: "notifications";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      user_profiles: {
+        Row: {
+          id: string;
+          first_name: string | null;
+          last_name: string | null;
+          alternate_email: string | null;
+          is_alternate_email_verified: boolean;
+          phone: string | null;
+          is_phone_verified: boolean;
+          alternate_phone: string | null;
+          gender: string | null;
+          marital_status: string | null;
+          date_of_birth: string | null;
+          category: string | null;
+          address_line: string | null;
+          state: string | null;
+          district: string | null;
+          pincode: string | null;
+          avatar_url: string | null;
+          language_preference: string;
+          profile_completion_percentage: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          first_name?: string | null;
+          last_name?: string | null;
+          alternate_email?: string | null;
+          is_alternate_email_verified?: boolean;
+          phone?: string | null;
+          is_phone_verified?: boolean;
+          alternate_phone?: string | null;
+          gender?: string | null;
+          marital_status?: string | null;
+          date_of_birth?: string | null;
+          category?: string | null;
+          address_line?: string | null;
+          state?: string | null;
+          district?: string | null;
+          pincode?: string | null;
+          avatar_url?: string | null;
+          language_preference?: string;
+          profile_completion_percentage?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          first_name?: string | null;
+          last_name?: string | null;
+          alternate_email?: string | null;
+          is_alternate_email_verified?: boolean;
+          phone?: string | null;
+          is_phone_verified?: boolean;
+          alternate_phone?: string | null;
+          gender?: string | null;
+          marital_status?: string | null;
+          date_of_birth?: string | null;
+          category?: string | null;
+          address_line?: string | null;
+          state?: string | null;
+          district?: string | null;
+          pincode?: string | null;
+          avatar_url?: string | null;
+          language_preference?: string;
+          profile_completion_percentage?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_profiles_id_fkey";
+            columns: ["id"];
+            isOneToOne: true;
+            referencedRelation: "users";
             referencedColumns: ["id"];
           }
         ];

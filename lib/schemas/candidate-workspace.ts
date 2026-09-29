@@ -12,6 +12,27 @@ import { z } from "zod";
 const phoneRegex = /^[6-9]\d{9}$/;
 const pincodeRegex = /^[1-9][0-9]{5}$/;
 
+export const GENDER_OPTIONS = [
+  "male",
+  "female",
+  "transgender",
+  "other",
+  "prefer_not_to_say",
+] as const;
+
+export const MARITAL_STATUS_OPTIONS = [
+  "unmarried",
+  "married",
+  "divorced",
+  "widowed",
+  "widow_widower",
+  "judicially_separated",
+  "other",
+] as const;
+
+export type GenderType = typeof GENDER_OPTIONS[number];
+export type MaritalStatusType = typeof MARITAL_STATUS_OPTIONS[number];
+
 export const accountSettingsSchema = z.object({
   firstName: z.string().trim().min(1, "First name is required").max(60),
   lastName: z.string().trim().max(60).optional().default(""),
@@ -28,7 +49,8 @@ export const accountSettingsSchema = z.object({
     .regex(phoneRegex, "Enter a valid 10-digit Indian mobile number")
     .optional()
     .or(z.literal("")),
-  gender: z.enum(["male", "female", "other", "prefer_not_to_say"]).optional(),
+  gender: z.enum(GENDER_OPTIONS).optional().or(z.literal("")),
+  maritalStatus: z.enum(MARITAL_STATUS_OPTIONS).optional().or(z.literal("")),
   dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format must be YYYY-MM-DD").optional().or(z.literal("")),
   category: z.string().trim().max(50).optional().default("General"),
   addressLine: z.string().trim().max(200).optional().default(""),
