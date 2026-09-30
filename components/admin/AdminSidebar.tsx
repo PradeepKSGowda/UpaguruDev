@@ -24,6 +24,7 @@ import {
   ShieldCheck,
   Users,
   UserCog,
+  Sparkles,
 } from "lucide-react";
 
 export interface AdminSidebarProps {
@@ -72,6 +73,12 @@ const NAV_ITEMS: NavItem[] = [
     href: "/admin/review-queue",
     icon: ShieldCheck,
     id: "admin-nav-review-queue",
+  },
+  {
+    name: "Lifecycle Update",
+    href: "/admin/lifecycle-update",
+    icon: Sparkles,
+    id: "admin-nav-lifecycle-update",
   },
   {
     name: "Exams Master",

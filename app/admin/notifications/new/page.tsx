@@ -1,19 +1,17 @@
 /**
  * @file app/admin/notifications/new/page.tsx
- * @description Page for authoring a new job notification manually.
- * 
- * Task ID: TASK-03030102 (Subtask: SUB-0303010201)
- * Architecture Reference: ADR-001 (App Router)
+ * @description Page for adding examination lifecycle updates or authoring new job notifications.
+ * Defaults to the Master Examination Lifecycle Engine, with legacy fallback support.
  */
 
 import React from "react";
 import { Metadata } from "next";
 import { getExamOptionsForSelector } from "@/lib/data/admin-notifications";
-import NotificationForm from "@/components/admin/NotificationForm";
+import DynamicExamLifecycleForm from "@/components/admin/lifecycle/DynamicExamLifecycleForm";
 
 export const metadata: Metadata = {
-  title: "Author Job Notification | Admin HITL Portal",
-  description: "Manually author and publish a new government job opening.",
+  title: "Examination Lifecycle Update | Admin HITL Portal",
+  description: "Publish official examination updates, deadline extensions, admit cards, or initial vacancy circulars.",
 };
 
 export default async function CreateNotificationPage() {
@@ -21,7 +19,7 @@ export default async function CreateNotificationPage() {
 
   return (
     <div className="py-2">
-      <NotificationForm mode="create" examOptions={examOptions} />
+      <DynamicExamLifecycleForm />
     </div>
   );
 }

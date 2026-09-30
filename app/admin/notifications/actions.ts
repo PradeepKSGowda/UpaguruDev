@@ -11,7 +11,7 @@
  */
 
 import { revalidatePath, revalidateTag } from "next/cache";
-import { createServerClient } from "@/lib/supabase/server";
+import { createServerClient, createAdminClient, type ServerClient } from "@/lib/supabase/server";
 import { adminNotificationInputSchema } from "@/lib/schemas/admin-notifications";
 import { revalidateNotification } from "@/lib/cache";
 import { Json } from "@/types/database.types";
@@ -42,7 +42,14 @@ async function requireAdminSession() {
     throw new Error("Forbidden: Administrator privileges required");
   }
 
-  return { supabase, user };
+  let dbClient: ServerClient = supabase;
+  try {
+    dbClient = createAdminClient();
+  } catch {
+    dbClient = supabase;
+  }
+
+  return { supabase: dbClient, user };
 }
 
 /**

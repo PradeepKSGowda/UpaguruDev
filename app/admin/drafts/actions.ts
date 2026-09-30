@@ -12,7 +12,7 @@
  */
 
 import { revalidateNotification, revalidateDraft } from "../../../lib/cache";
-import { createServerClient } from "../../../lib/supabase/server";
+import { createServerClient, createAdminClient, type ServerClient } from "../../../lib/supabase/server";
 import { dispatchEligibilityAlertsForNotification } from "@/lib/matching/eligibility-dispatcher";
 import {
   draftParsedFieldsSchema,
@@ -98,6 +98,22 @@ export async function publishNotificationAction(
       };
     }
 
+    const role = user.app_metadata?.role;
+    if (role !== "admin" && role !== "super_admin") {
+      return {
+        success: false,
+        message: "Forbidden: Super Administrator or Administrator role required.",
+        error: "FORBIDDEN",
+      };
+    }
+
+    let dbClient: ServerClient = supabase;
+    try {
+      dbClient = createAdminClient();
+    } catch {
+      dbClient = supabase;
+    }
+
     const now = new Date().toISOString();
 
     // 3. Resolve parent exam entity from public.exams (Foreign Key FK requirement)
@@ -105,7 +121,7 @@ export async function publishNotificationAction(
 
     if (!resolvedExamId) {
       // Query existing exam by exact conducting_body or exam_name
-      const { data: existingExam } = await supabase
+      const { data: existingExam } = await dbClient
         .from("exams")
         .select("id")
         .eq("conducting_body", validatedData.conducting_body)
@@ -133,7 +149,7 @@ export async function publishNotificationAction(
           ? (validatedData.category as ExamCategoryEnum)
           : "other";
 
-        const { data: createdExam, error: examCreateError } = await supabase
+        const { data: createdExam, error: examCreateError } = await dbClient
           .from("exams")
           .insert({
             slug: examSlug,
@@ -152,7 +168,7 @@ export async function publishNotificationAction(
         if (examCreateError || !createdExam) {
           console.warn("[publishNotificationAction] Exam auto-provision note:", examCreateError);
           // Query fallback: try to pick any existing exam
-          const { data: fallbackExam } = await supabase.from("exams").select("id").limit(1).maybeSingle();
+          const { data: fallbackExam } = await dbClient.from("exams").select("id").limit(1).maybeSingle();
           resolvedExamId = fallbackExam?.id || null;
         } else {
           resolvedExamId = createdExam.id;
@@ -192,7 +208,7 @@ export async function publishNotificationAction(
     }
 
     // 5. Insert verified notification into public.notifications
-    const { data: insertedNotification, error: notifInsertError } = await supabase
+    const { data: insertedNotification, error: notifInsertError } = await dbClient
       .from("notifications")
       .insert({
         exam_id: resolvedExamId,
@@ -227,7 +243,7 @@ export async function publishNotificationAction(
     }
 
     // 6. Update draft_notifications record status to 'approved'
-    const { error: draftUpdateError } = await supabase
+    const { error: draftUpdateError } = await dbClient
       .from("draft_notifications")
       .update({
         status: "approved" as const,
@@ -241,7 +257,7 @@ export async function publishNotificationAction(
     }
 
     // 7. Record publication in public.audit_logs (AGENTS.md Rule 3)
-    const { error: auditError } = await supabase.from("audit_logs").insert({
+    const { error: auditError } = await dbClient.from("audit_logs").insert({
       admin_id: user.id,
       action: "NOTIFICATION_PUBLISHED",
       target_entity: "notifications",
@@ -264,7 +280,7 @@ export async function publishNotificationAction(
 
     // 8. Record telemetry in draft_verification_sessions (failsafe)
     try {
-      await supabase.from("draft_verification_sessions").insert({
+      await dbClient.from("draft_verification_sessions").insert({
         draft_id: draftId,
         admin_id: user.id,
         verification_action: "published",
@@ -368,10 +384,26 @@ export async function rejectDraftAction(
       };
     }
 
+    const role = user.app_metadata?.role;
+    if (role !== "admin" && role !== "super_admin") {
+      return {
+        success: false,
+        message: "Forbidden: Super Administrator or Administrator role required.",
+        error: "FORBIDDEN",
+      };
+    }
+
+    let dbClient: ServerClient = supabase;
+    try {
+      dbClient = createAdminClient();
+    } catch {
+      dbClient = supabase;
+    }
+
     const now = new Date().toISOString();
 
     // 3. Update draft notification to 'rejected'
-    const { error: updateError } = await supabase
+    const { error: updateError } = await dbClient
       .from("draft_notifications")
       .update({
         status: "rejected" as const,
@@ -389,7 +421,7 @@ export async function rejectDraftAction(
     }
 
     // 4. Log the rejection in audit_logs (AGENTS.md Rule 3)
-    const { error: auditError } = await supabase.from("audit_logs").insert({
+    const { error: auditError } = await dbClient.from("audit_logs").insert({
       admin_id: user.id,
       action: "DRAFT_REJECTED",
       target_entity: "draft_notifications",
@@ -407,7 +439,7 @@ export async function rejectDraftAction(
 
     // 5. Record rejection telemetry in draft_verification_sessions (failsafe)
     try {
-      await supabase.from("draft_verification_sessions").insert({
+      await dbClient.from("draft_verification_sessions").insert({
         draft_id: draftId,
         admin_id: user.id,
         verification_action: "rejected",
@@ -415,7 +447,7 @@ export async function rejectDraftAction(
         verified_at: now,
       });
     } catch (sessionErr) {
-      console.warn("[rejectDraftAction] Verification session tracking note:", sessionErr);
+      console.warn("[rejectDraftAction] Telemetry session tracking note:", sessionErr);
     }
 
     // 6. Revalidate cache tags and route paths
