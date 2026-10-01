@@ -96,7 +96,7 @@ export default function RawTextPanel({
       className="flex flex-col h-full rounded-2xl bg-slate-900 border border-slate-800 text-slate-200 overflow-hidden shadow-sm"
     >
       {/* Panel Top Action Bar */}
-      <div className="p-3 sm:p-4 bg-slate-950/80 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
+      <div className="p-3 sm:p-4 bg-slate-950/80 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-3 flex-shrink-0">
         <div className="flex items-center gap-2">
           <FileCode className="w-4 h-4 text-blue-400" />
           <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
@@ -145,7 +145,7 @@ export default function RawTextPanel({
       </div>
 
       {/* In-Text Search Filter */}
-      <div className="px-3 sm:px-4 py-2 bg-slate-950/40 border-b border-slate-800/60">
+      <div className="px-3 sm:px-4 py-2 bg-slate-950/40 border-b border-slate-800/60 flex-shrink-0">
         <div className="relative flex items-center">
           <Search className="w-3.5 h-3.5 absolute left-3 text-slate-500 pointer-events-none" />
           <input
@@ -162,7 +162,7 @@ export default function RawTextPanel({
       {/* Scrollable Monospace Body Container */}
       <div
         id="raw-text-content"
-        className="flex-1 p-4 overflow-y-auto max-h-[calc(100vh-280px)] font-mono text-xs leading-relaxed break-words whitespace-pre-wrap selection:bg-blue-600 selection:text-white"
+        className="flex-1 p-4 overflow-y-auto min-h-0 font-mono text-xs leading-relaxed break-words whitespace-pre-wrap selection:bg-blue-600 selection:text-white"
         tabIndex={0}
         aria-label="Raw text content"
       >

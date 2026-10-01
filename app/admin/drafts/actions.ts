@@ -149,6 +149,14 @@ export async function publishNotificationAction(
           ? (validatedData.category as ExamCategoryEnum)
           : "other";
 
+        const conductingBodyUpper = (validatedData.conducting_body || "").toUpperCase();
+        const isKarnataka = conductingBodyUpper.includes("KPSC") || conductingBodyUpper.includes("KARNATAKA");
+        const determinedStateOrCentral = isKarnataka
+          ? "Karnataka"
+          : validCategory === "state_psc"
+          ? "State"
+          : "Central";
+
         const { data: createdExam, error: examCreateError } = await dbClient
           .from("exams")
           .insert({
@@ -156,7 +164,7 @@ export async function publishNotificationAction(
             title: rawExamTitle,
             conducting_body: validatedData.conducting_body,
             category: validCategory,
-            state_or_central: "central",
+            state_or_central: determinedStateOrCentral,
             official_website:
               validatedData.official_pdf_url ||
               validatedData.apply_online_url ||
@@ -207,47 +215,146 @@ export async function publishNotificationAction(
       applicationEndDate = validatedData.application_end_date;
     }
 
-    // 5. Insert verified notification into public.notifications
-    const { data: insertedNotification, error: notifInsertError } = await dbClient
-      .from("notifications")
-      .insert({
-        exam_id: resolvedExamId,
-        slug: notificationSlug,
-        title: validatedData.title,
-        notification_number: validatedData.notification_number || null,
-        total_vacancies: validatedData.total_vacancies ?? 0,
-        application_start_date: applicationStartDate,
-        application_end_date: applicationEndDate,
-        exam_date: validatedData.exam_date || null,
-        qualification_required: qualifications,
-        age_limit_min: validatedData.age_limit_min ?? null,
-        age_limit_max: validatedData.age_limit_max ?? null,
-        official_pdf_url: validatedData.official_pdf_url || null,
-        apply_online_url: validatedData.apply_online_url || null,
-        syllabus_summary: {} as unknown as Json,
-        selection_process: [],
-        status: "published" as const,
-        verified_by: user.id,
-        published_at: now,
-      })
-      .select("id, slug")
-      .single();
+    // 5. Check if this draft was previously approved and already has an associated published notification
+    let existingNotificationId: string | null = null;
 
-    if (notifInsertError) {
-      console.error("[publishNotificationAction] Failed to insert notification:", notifInsertError);
-      return {
-        success: false,
-        message: `Database insertion failed: ${notifInsertError.message}`,
-        error: notifInsertError.code,
-      };
+    const { data: currentDraft } = await dbClient
+      .from("draft_notifications")
+      .select("status, parsed_json")
+      .eq("id", draftId)
+      .maybeSingle();
+
+    const currentDraftJson = (currentDraft?.parsed_json as Record<string, unknown>) || {};
+    if (typeof currentDraftJson.published_notification_id === "string") {
+      existingNotificationId = currentDraftJson.published_notification_id;
     }
 
-    // 6. Update draft_notifications record status to 'approved'
+    if (!existingNotificationId) {
+      const { data: auditLogMatch } = await dbClient
+        .from("audit_logs")
+        .select("target_id")
+        .eq("action", "NOTIFICATION_PUBLISHED")
+        .filter("metadata->>draft_id", "eq", draftId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (auditLogMatch?.target_id) {
+        existingNotificationId = auditLogMatch.target_id;
+      }
+    }
+
+    let notificationRecord: { id: string; slug: string };
+    const isUpdate = Boolean(existingNotificationId);
+
+    if (existingNotificationId) {
+      const { data: updatedNotification, error: notifUpdateError } = await dbClient
+        .from("notifications")
+        .update({
+          exam_id: resolvedExamId,
+          title: validatedData.title,
+          notification_number: validatedData.notification_number || null,
+          total_vacancies: validatedData.total_vacancies ?? 0,
+          application_start_date: applicationStartDate,
+          application_end_date: applicationEndDate,
+          exam_date: validatedData.exam_date || null,
+          qualification_required: qualifications,
+          age_limit_min: validatedData.age_limit_min ?? null,
+          age_limit_max: validatedData.age_limit_max ?? null,
+          official_pdf_url: validatedData.official_pdf_url || null,
+          apply_online_url: validatedData.apply_online_url || null,
+          verified_by: user.id,
+          updated_at: now,
+        })
+        .eq("id", existingNotificationId)
+        .select("id, slug")
+        .maybeSingle();
+
+      if (notifUpdateError || !updatedNotification) {
+        console.warn("[publishNotificationAction] Existing notification update fallback to insert:", notifUpdateError);
+        const { data: insertedNotification, error: notifInsertError } = await dbClient
+          .from("notifications")
+          .insert({
+            exam_id: resolvedExamId,
+            slug: notificationSlug,
+            title: validatedData.title,
+            notification_number: validatedData.notification_number || null,
+            total_vacancies: validatedData.total_vacancies ?? 0,
+            application_start_date: applicationStartDate,
+            application_end_date: applicationEndDate,
+            exam_date: validatedData.exam_date || null,
+            qualification_required: qualifications,
+            age_limit_min: validatedData.age_limit_min ?? null,
+            age_limit_max: validatedData.age_limit_max ?? null,
+            official_pdf_url: validatedData.official_pdf_url || null,
+            apply_online_url: validatedData.apply_online_url || null,
+            syllabus_summary: {} as unknown as Json,
+            selection_process: [],
+            status: "published" as const,
+            verified_by: user.id,
+            published_at: now,
+          })
+          .select("id, slug")
+          .single();
+
+        if (notifInsertError || !insertedNotification) {
+          return {
+            success: false,
+            message: `Database insertion failed: ${notifInsertError?.message}`,
+            error: notifInsertError?.code,
+          };
+        }
+        notificationRecord = insertedNotification;
+      } else {
+        notificationRecord = updatedNotification;
+      }
+    } else {
+      const { data: insertedNotification, error: notifInsertError } = await dbClient
+        .from("notifications")
+        .insert({
+          exam_id: resolvedExamId,
+          slug: notificationSlug,
+          title: validatedData.title,
+          notification_number: validatedData.notification_number || null,
+          total_vacancies: validatedData.total_vacancies ?? 0,
+          application_start_date: applicationStartDate,
+          application_end_date: applicationEndDate,
+          exam_date: validatedData.exam_date || null,
+          qualification_required: qualifications,
+          age_limit_min: validatedData.age_limit_min ?? null,
+          age_limit_max: validatedData.age_limit_max ?? null,
+          official_pdf_url: validatedData.official_pdf_url || null,
+          apply_online_url: validatedData.apply_online_url || null,
+          syllabus_summary: {} as unknown as Json,
+          selection_process: [],
+          status: "published" as const,
+          verified_by: user.id,
+          published_at: now,
+        })
+        .select("id, slug")
+        .single();
+
+      if (notifInsertError || !insertedNotification) {
+        console.error("[publishNotificationAction] Failed to insert notification:", notifInsertError);
+        return {
+          success: false,
+          message: `Database insertion failed: ${notifInsertError.message}`,
+          error: notifInsertError.code,
+        };
+      }
+      notificationRecord = insertedNotification;
+    }
+
+    // 6. Update draft_notifications record status to 'approved' and store published_notification_id
     const { error: draftUpdateError } = await dbClient
       .from("draft_notifications")
       .update({
         status: "approved" as const,
-        parsed_json: validatedData as unknown as Json,
+        parsed_json: {
+          ...validatedData,
+          published_notification_id: notificationRecord.id,
+          published_slug: notificationRecord.slug,
+        } as unknown as Json,
         updated_at: now,
       })
       .eq("id", draftId);
@@ -256,20 +363,21 @@ export async function publishNotificationAction(
       console.warn("[publishNotificationAction] Draft update status note:", draftUpdateError);
     }
 
-    // 7. Record publication in public.audit_logs (AGENTS.md Rule 3)
+    // 7. Record publication/update in public.audit_logs (AGENTS.md Rule 3)
     const { error: auditError } = await dbClient.from("audit_logs").insert({
       admin_id: user.id,
-      action: "NOTIFICATION_PUBLISHED",
+      action: isUpdate ? "NOTIFICATION_UPDATED" : "NOTIFICATION_PUBLISHED",
       target_entity: "notifications",
-      target_id: insertedNotification.id,
+      target_id: notificationRecord.id,
       metadata: {
         draft_id: draftId,
-        notification_id: insertedNotification.id,
-        slug: insertedNotification.slug,
+        notification_id: notificationRecord.id,
+        slug: notificationRecord.slug,
         title: validatedData.title,
         conducting_body: validatedData.conducting_body,
         verified_by: user.id,
         published_at: now,
+        is_update: isUpdate,
       } as unknown as Json,
       created_at: now,
     });
@@ -278,12 +386,89 @@ export async function publishNotificationAction(
       console.warn("[publishNotificationAction] Audit log insertion warning:", auditError);
     }
 
+    // 7b. Automatically link or provision Recruitment Lifecycle Engine (exam_master and exam_cycle)
+    try {
+      let orgCode = "UPSC";
+      const cbUpper = (validatedData.conducting_body || "").toUpperCase();
+      if (cbUpper.includes("KPSC") || cbUpper.includes("KARNATAKA")) {
+        orgCode = "KPSC";
+      } else if (cbUpper.includes("SSC") || cbUpper.includes("STAFF SELECTION")) {
+        orgCode = "SSC";
+      } else if (cbUpper.includes("RRB") || cbUpper.includes("RAILWAY")) {
+        orgCode = "RRB";
+      } else if (cbUpper.includes("IBPS") || cbUpper.includes("BANKING")) {
+        orgCode = "IBPS";
+      }
+
+      const { data: orgRecord } = await dbClient
+        .from("organizations")
+        .select("id")
+        .eq("code", orgCode)
+        .maybeSingle();
+
+      if (orgRecord?.id) {
+        const canonicalCode = `${orgCode}_${notificationRecord.slug.toUpperCase().replace(/[^A-Z0-9]/g, "_").slice(0, 35)}`;
+        const normalizedTitle = validatedData.title.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+        const { data: masterRecord } = await dbClient
+          .from("exam_master")
+          .upsert(
+            {
+              organization_id: orgRecord.id,
+              exam_code: canonicalCode,
+              name: validatedData.title,
+              normalized_name: normalizedTitle,
+              short_name: validatedData.conducting_body,
+              category: "OTHER",
+              active: true,
+              aliases: [validatedData.title],
+            },
+            { onConflict: "exam_code" }
+          )
+          .select("id")
+          .single();
+
+        if (masterRecord?.id) {
+          const yearMatch = validatedData.title.match(/20\d\d/) || applicationStartDate.match(/20\d\d/);
+          const cycleYear = yearMatch ? parseInt(yearMatch[0], 10) : new Date().getFullYear();
+          const cycleCode = `${canonicalCode}_${cycleYear}`;
+
+          await dbClient
+            .from("exam_cycle")
+            .upsert(
+              {
+                exam_master_id: masterRecord.id,
+                cycle_year: cycleYear,
+                cycle_code: cycleCode,
+                cycle_label: `${validatedData.title} (Cycle ${cycleYear})`,
+                primary_reference_no: validatedData.notification_number || null,
+                status: "APPLICATION_OPEN",
+                current_stage: "APPLICATION",
+                start_date: applicationStartDate || null,
+                end_date: applicationEndDate || null,
+                total_vacancies_current: validatedData.total_vacancies || 0,
+                latest_update_summary: `Published: ${validatedData.title}`,
+                verification_status: "VERIFIED",
+                metadata_json: {
+                  notification_id: notificationRecord.id,
+                  notification_slug: notificationRecord.slug,
+                  official_pdf_url: validatedData.official_pdf_url || null,
+                },
+              },
+              { onConflict: "exam_master_id,cycle_code" }
+            );
+        }
+      }
+    } catch (lifecycleEngineErr) {
+      console.warn("[publishNotificationAction] Lifecycle Engine sync note:", lifecycleEngineErr);
+    }
+
     // 8. Record telemetry in draft_verification_sessions (failsafe)
     try {
       await dbClient.from("draft_verification_sessions").insert({
         draft_id: draftId,
         admin_id: user.id,
-        verification_action: "published",
+        verification_action: isUpdate ? "updated" : "published",
         fields_modified: validatedData as unknown as Json,
         verified_at: now,
       });
@@ -293,23 +478,25 @@ export async function publishNotificationAction(
 
     // 9. Edge cache invalidation across candidate and administrative routes
     await revalidateNotification({
-      slug: insertedNotification.slug,
+      slug: notificationRecord.slug,
       category: validatedData.category ?? undefined,
       reason: "status_change",
     });
     revalidateDraft(draftId);
 
     // 10. Trigger event-driven eligibility matching & alert dispatch in background (ENH-0010)
-    dispatchEligibilityAlertsForNotification(insertedNotification.id).catch((dispatchErr) => {
+    dispatchEligibilityAlertsForNotification(notificationRecord.id).catch((dispatchErr) => {
       console.warn("[publishNotificationAction] Background eligibility dispatch warning:", dispatchErr);
     });
 
     return {
       success: true,
-      message: `Notification "${validatedData.title}" has been successfully published to the live candidate portal!`,
+      message: isUpdate
+        ? `Notification "${validatedData.title}" has been successfully updated on the live portal!`
+        : `Notification "${validatedData.title}" has been successfully published to the live candidate portal!`,
       data: {
-        notificationId: insertedNotification.id,
-        slug: insertedNotification.slug,
+        notificationId: notificationRecord.id,
+        slug: notificationRecord.slug,
       },
     };
   } catch (err) {

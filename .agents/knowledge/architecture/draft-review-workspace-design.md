@@ -20,7 +20,7 @@ Key architectural responsibilities:
    - **Left Panel (`RawTextPanel.tsx`)**: Displays full `raw_extracted_text` in a scrollable, high-contrast monospace container with client-side text searching, character/word counters, and one-click copy to clipboard.
    - **Right Panel (`ParsedFieldsForm.tsx`)**: Pre-populates all structured fields extracted by the AI engine (`title`, `conducting_body`, `category`, `vacancies`, `deadlines`, `age_limits`, `qualifications`, `application_urls`) into an editable form with inline Zod validation.
 2. **Human-In-The-Loop (HITL) Verification Controls**:
-   - **Approve Action**: Operators modify any incorrect or missing fields and submit. The action triggers `approveAndPublishDraftAction`, persists changes to `draft_notifications`, records an audit event in `public.audit_logs`, and redirects back to `/admin/drafts`.
+   - **Approve / Update Action**: Operators modify any incorrect or missing fields (e.g. notification title) and submit. For pending drafts, it publishes a new notification. For already-approved drafts, it performs an idempotent update on both `draft_notifications` and the published `notifications` record, records a `NOTIFICATION_UPDATED` audit entry in `public.audit_logs`, and preserves operator context with feedback. Includes a one-click "Decode & Clean Title" helper for raw URL-encoded filenames.
    - **Reject Action**: Requires an explicit reason string ($\ge 10$ characters) via an interactive modal before executing `rejectDraftAction`, marking status as `rejected` and logging the audit event.
 3. **Server Actions Contract (`app/admin/drafts/actions.ts`)**:
    - Executes with cryptographic session validation via `createServerClient()`.
@@ -56,10 +56,12 @@ Key architectural responsibilities:
 
 ### 3.1 `RawTextPanel.tsx` (`components/admin/RawTextPanel.tsx`)
 * **State Management**: Controls text search filter query and clipboard copy state.
-* **Layout Safeguards**: `overflow-y-auto break-words whitespace-pre-wrap font-mono max-h-[calc(100vh-240px)]`. Prevents layout breakage regardless of document length.
+* **Layout Safeguards**: `flex-1 min-h-0 overflow-y-auto break-words whitespace-pre-wrap font-mono`. Header and search bar pinned with `flex-shrink-0`. Prevents layout breakage and empty voids regardless of document length.
 
 ### 3.2 `ParsedFieldsForm.tsx` (`components/admin/ParsedFieldsForm.tsx`)
-* **Form Inputs**: Supports all 12 key schema fields with real-time Zod parsing.
+* **Form Inputs**: Supports all key schema fields in a clean scrollable container (`flex-1 min-h-0 overflow-y-auto space-y-4`).
+* **Pinned Action Controls Bar**: Pinned at the bottom (`flex-shrink-0 bg-slate-950/90 border-t border-slate-800/80 p-4`) containing `Reject Draft` and `Approve & Publish` buttons. Buttons are always visible and accessible to the operator without requiring scrolling past all fields or suffering from height clipping.
+* **Blank Void Elimination**: Removed artificial `max-h-[calc(100vh-320px)]` constraint that previously left 200-300px blank gaps on 768p/800p displays.
 * **Rejection Workflow**: Opens a modal dialog with mandatory rejection reason text before submitting.
 * **Server Action Hooks**: Uses `useTransition` to provide instant pending visual feedback.
 

@@ -39,6 +39,7 @@ export default async function DraftsQueuePage({ searchParams }: DraftsPageProps)
     status: (resolvedParams.status as any) || "pending_review",
     sortBy: (resolvedParams.sortBy as any) || "confidence_asc",
     search: typeof resolvedParams.search === "string" ? resolvedParams.search : undefined,
+    institution: typeof resolvedParams.institution === "string" ? resolvedParams.institution : undefined,
     minConfidence:
       typeof resolvedParams.minConfidence === "string"
         ? parseFloat(resolvedParams.minConfidence)
@@ -64,6 +65,7 @@ export default async function DraftsQueuePage({ searchParams }: DraftsPageProps)
         status: "pending_review" as const,
         sortBy: "confidence_asc" as const,
         search: "",
+        institution: "all",
         page: 1,
         pageSize: 20,
       };
@@ -79,6 +81,7 @@ export default async function DraftsQueuePage({ searchParams }: DraftsPageProps)
     const p = new URLSearchParams();
     if (filters.status && filters.status !== "pending_review") p.set("status", filters.status);
     if (filters.sortBy && filters.sortBy !== "confidence_asc") p.set("sortBy", filters.sortBy);
+    if (filters.institution && filters.institution !== "all") p.set("institution", filters.institution);
     if (filters.search) p.set("search", filters.search);
     if (targetPage > 1) p.set("page", targetPage.toString());
     const qs = p.toString();
@@ -123,6 +126,7 @@ export default async function DraftsQueuePage({ searchParams }: DraftsPageProps)
         currentStatus={filters.status}
         currentSortBy={filters.sortBy}
         currentSearch={filters.search}
+        currentInstitution={filters.institution || "all"}
       />
 
       {/* 4. Queue Content Area: Empty State vs DraftCards List */}

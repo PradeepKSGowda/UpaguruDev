@@ -11,13 +11,14 @@
 
 import React, { useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, Building2 } from "lucide-react";
 import type { DraftStatus, DraftSortBy } from "../../types/drafts";
 
 export interface DraftQueueFilterBarProps {
   currentStatus: DraftStatus | "all";
   currentSortBy: DraftSortBy;
   currentSearch: string;
+  currentInstitution?: string;
 }
 
 const STATUS_TABS: { label: string; value: DraftStatus | "all" }[] = [
@@ -25,6 +26,15 @@ const STATUS_TABS: { label: string; value: DraftStatus | "all" }[] = [
   { label: "Approved", value: "approved" },
   { label: "Rejected", value: "rejected" },
   { label: "All Drafts", value: "all" },
+];
+
+const INSTITUTION_OPTIONS = [
+  { label: "All Institutions (UPSC, KPSC, etc.)", value: "all" },
+  { label: "UPSC (Union Public Service Commission)", value: "UPSC" },
+  { label: "KPSC (Karnataka Public Service Commission)", value: "KPSC" },
+  { label: "SSC (Staff Selection Commission)", value: "SSC" },
+  { label: "RRB (Railway Recruitment Boards)", value: "RRB" },
+  { label: "IBPS (Banking Personnel Selection)", value: "IBPS" },
 ];
 
 const SORT_OPTIONS: { label: string; value: DraftSortBy }[] = [
@@ -38,6 +48,7 @@ export default function DraftQueueFilterBar({
   currentStatus,
   currentSortBy,
   currentSearch,
+  currentInstitution = "all",
 }: DraftQueueFilterBarProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -100,24 +111,46 @@ export default function DraftQueueFilterBar({
           })}
         </nav>
 
-        {/* Priority Sort Dropdown */}
-        <div className="flex items-center gap-2 self-start lg:self-auto">
-          <SlidersHorizontal className="w-4 h-4 text-slate-400 shrink-0" />
-          <label htmlFor="draft-sort-select" className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-            Sort:
-          </label>
-          <select
-            id="draft-sort-select"
-            value={currentSortBy}
-            onChange={(e) => updateParam("sortBy", e.target.value)}
-            className="text-xs font-semibold rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
-          >
-            {SORT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+        <div className="flex flex-wrap items-center gap-4 self-start lg:self-auto">
+          {/* Institution Dropdown */}
+          <div className="flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-slate-400 shrink-0" />
+            <label htmlFor="draft-institution-select" className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              Institution:
+            </label>
+            <select
+              id="draft-institution-select"
+              value={currentInstitution}
+              onChange={(e) => updateParam("institution", e.target.value)}
+              className="text-xs font-semibold rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            >
+              {INSTITUTION_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Priority Sort Dropdown */}
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-slate-400 shrink-0" />
+            <label htmlFor="draft-sort-select" className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              Sort:
+            </label>
+            <select
+              id="draft-sort-select"
+              value={currentSortBy}
+              onChange={(e) => updateParam("sortBy", e.target.value)}
+              className="text-xs font-semibold rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 

@@ -221,10 +221,12 @@ export async function publishLifecycleUpdateAction(
         cycle_year,
         cycle_code,
         cycle_label,
+        primary_reference_no,
         status,
         end_date,
         start_date,
         total_vacancies_current,
+        metadata_json,
         exam_master:exam_master_id (
           id,
           organization_id,
@@ -398,6 +400,10 @@ export async function publishLifecycleUpdateAction(
     }
 
     // Type-specific field updates
+    const cycleMeta = ((cycleData as any).metadata_json as Record<string, unknown>) || {};
+    const linkedNotifId = cycleMeta.notification_id as string | undefined;
+    const linkedNotifSlug = cycleMeta.notification_slug as string | undefined;
+
     if (payload.notificationTypeCode === "APPLICATION_EXTENSION" && v.new_closing_date) {
       cycleUpdates.end_date = v.new_closing_date;
       cycleUpdates.status = "APPLICATION_OPEN";
@@ -414,10 +420,38 @@ export async function publishLifecycleUpdateAction(
         is_current: true,
         verification_status: "VERIFIED",
       });
+
+      // Synchronize to public.notifications for candidate views
+      if (linkedNotifId) {
+        await dbClient
+          .from("notifications")
+          .update({
+            application_end_date: v.new_closing_date as string,
+            updated_at: now,
+          })
+          .eq("id", linkedNotifId);
+      } else if (cycleData.primary_reference_no) {
+        await dbClient
+          .from("notifications")
+          .update({
+            application_end_date: v.new_closing_date as string,
+            updated_at: now,
+          })
+          .eq("notification_number", cycleData.primary_reference_no);
+      }
     } else if (payload.notificationTypeCode === "EXAM_DATE_POSTPONED") {
       cycleUpdates.status = "EXAM_SCHEDULED";
       if (v.new_date_available === true && v.new_exam_date) {
         cycleUpdates.start_date = v.new_exam_date;
+        if (linkedNotifId) {
+          await dbClient
+            .from("notifications")
+            .update({
+              exam_date: v.new_exam_date as string,
+              updated_at: now,
+            })
+            .eq("id", linkedNotifId);
+        }
       }
     } else if (payload.notificationTypeCode === "ADMIT_CARD_RELEASED") {
       cycleUpdates.status = "EXAM_SCHEDULED";
@@ -437,6 +471,16 @@ export async function publishLifecycleUpdateAction(
         is_current: true,
         verification_status: "VERIFIED",
       });
+
+      if (linkedNotifId) {
+        await dbClient
+          .from("notifications")
+          .update({
+            total_vacancies: Number(v.new_vacancies),
+            updated_at: now,
+          })
+          .eq("id", linkedNotifId);
+      }
     }
 
     await dbClient.from("exam_cycle").update(cycleUpdates as any).eq("id", payload.examCycleId);
@@ -454,6 +498,7 @@ export async function publishLifecycleUpdateAction(
         new_values: v,
         published_by_email: user.email,
         published_at: now,
+        linked_notification_id: linkedNotifId || null,
       } as unknown as Json,
       created_at: now,
     });
@@ -462,7 +507,12 @@ export async function publishLifecycleUpdateAction(
     revalidatePath("/admin/review-queue");
     revalidatePath("/admin/notifications");
     revalidatePath("/admin/exams");
+    revalidatePath("/admin/lifecycle-update");
     revalidatePath(`/notification/${payload.examCycleId}`);
+    if (linkedNotifSlug) {
+      revalidatePath(`/notification/${linkedNotifSlug}`);
+    }
+    revalidatePath("/");
 
     return {
       success: true,

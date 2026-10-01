@@ -65,11 +65,12 @@ export async function getDraftNotifications(
         status: "pending_review",
         sortBy: "confidence_asc",
         search: "",
+        institution: "all",
         page: 1,
         pageSize: 20,
       };
 
-  const { status, sortBy, search, minConfidence, maxConfidence, page, pageSize } = validatedFilters;
+  const { status, sortBy, search, institution, minConfidence, maxConfidence, page, pageSize } = validatedFilters;
 
   try {
     let supabase;
@@ -89,12 +90,30 @@ export async function getDraftNotifications(
       query = query.eq("status", status);
     }
 
-    // 2. Search query filter (source URL)
+    // 2. Institution / Conducting Body filter (UPSC, KPSC, SSC, RRB, IBPS, etc.)
+    if (institution && institution !== "all") {
+      const inst = institution.trim().toUpperCase();
+      if (inst === "UPSC") {
+        query = query.or("parsed_json->>conducting_body.ilike.%upsc%,source_url.ilike.%upsc%");
+      } else if (inst === "KPSC") {
+        query = query.or("parsed_json->>conducting_body.ilike.%kpsc%,source_url.ilike.%kpsc%");
+      } else if (inst === "SSC") {
+        query = query.or("parsed_json->>conducting_body.ilike.%ssc%,source_url.ilike.%ssc%");
+      } else if (inst === "RRB") {
+        query = query.or("parsed_json->>conducting_body.ilike.%rrb%,source_url.ilike.%rrb%,source_url.ilike.%railway%");
+      } else if (inst === "IBPS") {
+        query = query.or("parsed_json->>conducting_body.ilike.%ibps%,source_url.ilike.%ibps%");
+      } else {
+        query = query.or(`parsed_json->>conducting_body.ilike.%${inst}%,source_url.ilike.%${inst}%`);
+      }
+    }
+
+    // 3. Search query filter (source URL)
     if (search && search.trim().length > 0) {
       query = query.ilike("source_url", `%${search.trim()}%`);
     }
 
-    // 3. Confidence score bounds
+    // 4. Confidence score bounds
     if (typeof minConfidence === "number") {
       query = query.gte("extraction_confidence_score", minConfidence);
     }

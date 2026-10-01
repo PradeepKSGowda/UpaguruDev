@@ -37,6 +37,11 @@ export const draftFilterSchema = z.object({
     .max(100, "Search query must not exceed 100 characters")
     .optional()
     .default(""),
+  institution: z
+    .string()
+    .trim()
+    .optional()
+    .default("all"),
   minConfidence: z
     .coerce
     .number()

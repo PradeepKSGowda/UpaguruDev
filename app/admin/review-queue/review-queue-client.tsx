@@ -16,6 +16,7 @@ import {
   Filter,
   RefreshCw,
   GitBranch,
+  Building2,
 } from "lucide-react";
 import { resolveReviewQueueItemAction } from "./actions";
 
@@ -54,14 +55,27 @@ interface ReviewQueueClientProps {
 export function ReviewQueueClient({ initialItems }: ReviewQueueClientProps) {
   const [items, setItems] = useState<ReviewQueueItem[]>(initialItems);
   const [filterType, setFilterType] = useState<string>("ALL");
+  const [filterOrg, setFilterOrg] = useState<string>("ALL");
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [activeNotes, setActiveNotes] = useState<{ [key: string]: string }>({});
   const [targetCycleInput, setTargetCycleInput] = useState<{ [key: string]: string }>({});
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   const filteredItems = items.filter((item) => {
-    if (filterType === "ALL") return true;
-    return item.item_type === filterType;
+    if (filterType !== "ALL" && item.item_type !== filterType) return false;
+    if (filterOrg !== "ALL") {
+      const orgCode = item.organization?.code?.toUpperCase() || "";
+      const docTitle = item.document?.title?.toUpperCase() || "";
+      const sourceUrl = item.document?.source_url?.toUpperCase() || "";
+      if (
+        !orgCode.includes(filterOrg) &&
+        !docTitle.includes(filterOrg) &&
+        !sourceUrl.includes(filterOrg)
+      ) {
+        return false;
+      }
+    }
+    return true;
   });
 
   const handleResolve = async (
@@ -140,29 +154,53 @@ export function ReviewQueueClient({ initialItems }: ReviewQueueClientProps) {
 
       {/* Filter Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        <div className="flex items-center space-x-2 text-slate-700">
-          <Filter className="w-5 h-5 text-indigo-600" />
-          <span className="font-semibold text-sm">Filter Category:</span>
-          <div className="flex flex-wrap gap-2">
-            {[
-              { label: "All Items", value: "ALL" },
-              { label: "Document-Cycle Link", value: "DOCUMENT_CYCLE_LINK" },
-              { label: "Event Conflicts", value: "EVENT_CONFLICT" },
-              { label: "Corrigenda", value: "CORRIGENDUM_CHANGE" },
-              { label: "Data Quality", value: "DATA_QUALITY_FLAG" },
-            ].map((tab) => (
-              <button
-                key={tab.value}
-                onClick={() => setFilterType(tab.value)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  filterType === tab.value
-                    ? "bg-indigo-600 text-white shadow-sm"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+        <div className="flex flex-wrap items-center gap-4 text-slate-700">
+          {/* Category Filter */}
+          <div className="flex items-center space-x-2">
+            <Filter className="w-5 h-5 text-indigo-600" />
+            <span className="font-semibold text-sm">Category:</span>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: "All Items", value: "ALL" },
+                { label: "Document-Cycle Link", value: "DOCUMENT_CYCLE_LINK" },
+                { label: "Event Conflicts", value: "EVENT_CONFLICT" },
+                { label: "Corrigenda", value: "CORRIGENDUM_CHANGE" },
+                { label: "Data Quality", value: "DATA_QUALITY_FLAG" },
+              ].map((tab) => (
+                <button
+                  key={tab.value}
+                  onClick={() => setFilterType(tab.value)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    filterType === tab.value
+                      ? "bg-indigo-600 text-white shadow-sm"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Institution Filter */}
+          <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+            <Building2 className="w-4 h-4 text-indigo-600" />
+            <label htmlFor="review-org-select" className="text-xs font-semibold text-slate-700">
+              Institution:
+            </label>
+            <select
+              id="review-org-select"
+              value={filterOrg}
+              onChange={(e) => setFilterOrg(e.target.value)}
+              className="text-xs font-semibold rounded-lg bg-slate-100 border border-slate-200 px-2.5 py-1.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+            >
+              <option value="ALL">All Institutions</option>
+              <option value="UPSC">UPSC</option>
+              <option value="KPSC">KPSC</option>
+              <option value="SSC">SSC</option>
+              <option value="RRB">RRB</option>
+              <option value="IBPS">IBPS</option>
+            </select>
           </div>
         </div>
 

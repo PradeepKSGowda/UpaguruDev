@@ -23,17 +23,27 @@ describe("Complete Examination Lifecycle Taxonomy Engine", () => {
     expect(keys.length).toBeGreaterThanOrEqual(20);
 
     // Initial / Recruitment
-    expect(NOTIFICATION_TAXONOMY.FIRST_NOTIFICATION.operationType).toBe("CREATE");
-    expect(NOTIFICATION_TAXONOMY.FIRST_NOTIFICATION.requiresExistingExam).toBe(false);
+    const firstNotif = getNotificationTypeMeta("FIRST_NOTIFICATION");
+    expect(firstNotif.operationType).toBe("CREATE");
+    expect(firstNotif.requiresExistingExam).toBe(false);
 
     // Updates
-    expect(NOTIFICATION_TAXONOMY.APPLICATION_EXTENSION.operationType).toBe("UPDATE");
-    expect(NOTIFICATION_TAXONOMY.APPLICATION_EXTENSION.requiresExistingExam).toBe(true);
+    const appExt = getNotificationTypeMeta("APPLICATION_EXTENSION");
+    expect(appExt.operationType).toBe("UPDATE");
+    expect(appExt.requiresExistingExam).toBe(true);
 
-    expect(NOTIFICATION_TAXONOMY.ADMIT_CARD_RELEASED.requiresStage).toBe(true);
-    expect(NOTIFICATION_TAXONOMY.ANSWER_KEY_PROVISIONAL.requiresStage).toBe(true);
-    expect(NOTIFICATION_TAXONOMY.RESULT_RELEASED.requiresStage).toBe(true);
-    expect(NOTIFICATION_TAXONOMY.EXAM_DATE_POSTPONED.requiresStage).toBe(true);
+    expect(getNotificationTypeMeta("ADMIT_CARD_RELEASED").requiresStage).toBe(true);
+    expect(getNotificationTypeMeta("ANSWER_KEY_PROVISIONAL").requiresStage).toBe(true);
+    expect(getNotificationTypeMeta("RESULT_RELEASED").requiresStage).toBe(true);
+    expect(getNotificationTypeMeta("EXAM_DATE_POSTPONED").requiresStage).toBe(true);
+  });
+
+  it("should verify defined organization stage maps", () => {
+    expect(ORGANIZATION_STAGES.UPSC).toBeDefined();
+    expect(ORGANIZATION_STAGES.KPSC).toBeDefined();
+    expect(ORGANIZATION_STAGES.SSC).toBeDefined();
+    expect(ORGANIZATION_STAGES.RRB).toBeDefined();
+    expect(ORGANIZATION_STAGES.IBPS).toBeDefined();
   });
 
   it("should return distinct and accurate stages per organization", () => {

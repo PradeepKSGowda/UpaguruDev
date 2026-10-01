@@ -118,7 +118,7 @@ export default function NotificationCard({ notification }: NotificationCardProps
         {/* Deadline Badge with Urgency Pulse */}
         <div className="flex flex-col">
           <span className="text-[10px] uppercase font-semibold text-text-muted tracking-wider">
-            Last Date: {formatDisplayDate(notification.applicationEndDate)}
+            {urgency.level === "expired" ? "Close Date" : "Last Date"}: {formatDisplayDate(notification.applicationEndDate)}
           </span>
           <div className="mt-1 flex items-center gap-1.5">
             <span

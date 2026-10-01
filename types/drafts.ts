@@ -68,6 +68,7 @@ export interface DraftFilterParams {
   status?: DraftStatus | "all";
   sortBy?: DraftSortBy;
   search?: string;
+  institution?: string;
   minConfidence?: number;
   maxConfidence?: number;
   page?: number;

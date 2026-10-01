@@ -492,7 +492,9 @@ export default async function NotificationDetailPage({ params }: PageProps) {
               </div>
 
               <div className="flex justify-between items-center">
-                <dt className="text-text-muted">Application Deadline</dt>
+                <dt className="text-text-muted">
+                  {urgency.level === "expired" ? "Close Date" : "Application Deadline"}
+                </dt>
                 <dd className="font-bold text-danger">
                   {formatDisplayDate(notification.applicationEndDate)}
                 </dd>

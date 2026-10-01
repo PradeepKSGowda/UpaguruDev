@@ -192,9 +192,9 @@ export default async function DraftReviewPage({ params }: DraftReviewPageProps) 
       </div>
 
       {/* Side-by-Side Review Workspace Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch min-h-[600px]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch lg:h-[calc(100vh-240px)] min-h-[600px]">
         {/* Left Column: Raw OCR Extracted Text Panel */}
-        <div className="h-full">
+        <div className="h-full min-h-[500px] lg:min-h-0">
           <RawTextPanel
             rawText={draft.rawExtractedText}
             sourceUrl={draft.sourceUrl}
@@ -203,7 +203,7 @@ export default async function DraftReviewPage({ params }: DraftReviewPageProps) 
         </div>
 
         {/* Right Column: Editable Parsed Fields Form */}
-        <div className="h-full">
+        <div className="h-full min-h-[500px] lg:min-h-0">
           <ParsedFieldsForm
             draftId={draft.id}
             initialFields={draft.parsedJson}

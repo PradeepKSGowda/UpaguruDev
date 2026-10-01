@@ -22,6 +22,7 @@ Key architectural responsibilities:
    - $< 0.85$ (Low Confidence): Red warning badge with `AlertTriangle` icon (`Action Required`), immediately signaling high probability of OCR errors, missing fields, or complex PDF formatting.
 2. **Interactive Queue Filtering (`DraftQueueFilterBar.tsx`)**:
    - Status tabs: `Pending Review` (default queue), `Approved`, `Rejected`, `All`.
+   - **Institution Filter Dropdown**: Allows filtering drafts by conducting institution (`UPSC`, `KPSC`, `SSC`, `RRB`, `IBPS`, `All`). Matches both `parsed_json->>'conducting_body'` and `source_url` domains.
    - Priority Sorting: `Lowest Confidence First` (`confidence_asc`), `Highest Confidence First` (`confidence_desc`), `Newest First` (`newest`), `Oldest First` (`oldest`).
    - Text search on source URLs and extracted exam titles with URL parameter synchronization.
 3. **Queue Page Assembly (`app/admin/drafts/page.tsx`)**:
@@ -29,7 +30,7 @@ Key architectural responsibilities:
    - Renders paginated list of `DraftCard`s with total count indicator.
    - Comprehensive zero-data empty states tailored to active filters.
    - Pagination controls (`Previous`, page indicators, `Next`).
-4. **Automated Testing Landmarks**: Deterministic HTML `id` attributes compliant with Playwright test automation standards (`draft-queue-page`, `draft-queue-list`, `draft-card-${id}`, `draft-verify-btn-${id}`).
+4. **Automated Testing Landmarks**: Deterministic HTML `id` attributes compliant with Playwright test automation standards (`draft-queue-page`, `draft-queue-list`, `draft-institution-select`, `draft-sort-select`, `draft-card-${id}`, `draft-verify-btn-${id}`).
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -43,7 +44,8 @@ Key architectural responsibilities:
 │ ┌─────────────────────────────────────────────────────────────────────────┐ │
 │ │  DraftQueueFilterBar (Client Component)                                 │ │
 │ │  [Status Tabs: Pending Review | Approved | Rejected | All]              │ │
-│ │  [Search Source URL / Title...] [Sort: Lowest Confidence First ▾]       │ │
+│ │  [Institution: All | UPSC | KPSC | SSC | RRB | IBPS ▾]                  │ │
+│ │  [Sort: Lowest Confidence First ▾] [Search Source URL / Title...]       │ │
 │ └─────────────────────────────────────────────────────────────────────────┘ │
 │                                                                             │
 │ ┌─────────────────────────────────────────────────────────────────────────┐ │
